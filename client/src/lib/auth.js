@@ -1,6 +1,7 @@
+import { request, shouldUseLocal } from "./api";
+
 const ACCOUNTS_KEY = "menucraft-accounts-v1";
 const SESSION_KEY = "menucraft-session-v1";
-const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "") || "";
 
 function hashSecret(email, password) {
   const raw = `${email.trim().toLowerCase()}::${password}`;
@@ -46,26 +47,6 @@ function publicUser(account) {
   };
 }
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    ...options,
-  });
-  let payload = null;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
-  }
-  if (!response.ok) {
-    const error = new Error(payload?.message || "Could not connect—please try again");
-    error.status = response.status;
-    throw error;
-  }
-  return payload;
-}
-
 export async function createAccount({ name, email, password, restaurant_name }) {
   const cleanName = String(name || "").trim();
   const cleanEmail = String(email || "").trim().toLowerCase();
@@ -82,7 +63,7 @@ export async function createAccount({ name, email, password, restaurant_name }) 
     });
     return writeSession(payload.user);
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const accounts = readAccounts();
     if (accounts.some((row) => row.email === cleanEmail)) {
       throw new Error("An account with that email already exists.");
@@ -110,7 +91,7 @@ export async function signIn({ email, password }) {
     });
     return writeSession(payload.user);
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const account = readAccounts().find((row) => row.email === cleanEmail);
     if (!account || account.password_hash !== hashSecret(cleanEmail, password)) {
       throw new Error("Email or password is not correct.");
@@ -136,7 +117,7 @@ export async function updateAccount(updates) {
     });
     return writeSession(payload.user || next);
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const accounts = readAccounts().map((row) =>
       row.email === session.email ? { ...row, name: next.name, restaurant_name: next.restaurant_name } : row
     );
