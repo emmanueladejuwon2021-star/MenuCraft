@@ -12,6 +12,7 @@ export default function DishManager({
   onUpdate,
   onDelete,
   onCreateCategory,
+  onRemoveCategory,
   showForm,
   setShowForm,
 }) {
@@ -20,7 +21,8 @@ export default function DishManager({
   const [newCategory, setNewCategory] = useState("");
 
   const filtered = useMemo(() => {
-    return items.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()));
+    const needle = query.toLowerCase();
+    return items.filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(needle));
   }, [items, query]);
 
   function startAdd() {
@@ -29,20 +31,19 @@ export default function DishManager({
   }
 
   return (
-    <section className="space-y-4">
-      <KitchenNav />
+    <section className="page-enter space-y-4">
+      <KitchenNav title="Kitchen dishes" hint="Add, edit, or remove dishes guests will see." />
       <div className="flex flex-col gap-2">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Find a dish fast"
+          placeholder="Find a dish or description"
           className="tap w-full rounded-2xl border border-line bg-card px-3 text-ink shadow-soft placeholder:text-muted"
         />
         <button type="button" onClick={startAdd} className="tap w-full rounded-2xl bg-ink px-4 text-sm font-semibold text-invert">
           Add dish
         </button>
       </div>
-
       <form
         className="flex flex-col gap-2 sm:flex-row"
         onSubmit={(event) => {
@@ -58,11 +59,16 @@ export default function DishManager({
           placeholder="New category name"
           className="tap w-full rounded-2xl border border-line bg-card px-3 text-ink placeholder:text-muted sm:flex-1"
         />
-        <button className="tap rounded-2xl border border-line bg-card px-4 text-sm font-medium text-ink sm:shrink-0">
-          Add category
-        </button>
+        <button className="tap rounded-2xl border border-line bg-card px-4 text-sm font-medium text-ink sm:shrink-0">Add category</button>
       </form>
-
+      <div className="flex flex-wrap gap-2">
+        {categories.map((category) => (
+          <span key={category.id} className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-3 py-2 text-sm">
+            {category.name}
+            <button type="button" className="text-red-600" onClick={() => onRemoveCategory && onRemoveCategory(category)}>Remove</button>
+          </span>
+        ))}
+      </div>
       {(showForm || editing) && (
         <DishForm
           categories={categories}
@@ -79,7 +85,6 @@ export default function DishManager({
           }}
         />
       )}
-
       {filtered.length === 0 ? (
         <EmptyCard title="No dishes match that search." buttonLabel="Add First Dish" onClick={startAdd} />
       ) : (
@@ -87,37 +92,23 @@ export default function DishManager({
           {filtered.map((item) => {
             const category = categories.find((row) => Number(row.id) === Number(item.category_id));
             return (
-              <article key={item.id} className="rounded-2xl border border-line bg-card p-4 text-ink shadow-soft">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="font-semibold leading-snug">{item.name}</h3>
-                    <p className="mt-1 text-sm text-muted">{category?.name || "No category"}</p>
+              <article key={item.id} className="overflow-hidden rounded-2xl border border-line bg-card text-ink shadow-soft">
+                {item.image_url ? <img src={item.image_url} alt="" className="h-36 w-full object-cover" /> : null}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold leading-snug">{item.name}</h3>
+                      <p className="mt-1 text-sm text-muted">{category?.name || "No category"}</p>
+                    </div>
+                    <p className="shrink-0 font-semibold">{money(settings.currency_symbol, item.price)}</p>
                   </div>
-                  <p className="shrink-0 font-semibold">{money(settings.currency_symbol, item.price)}</p>
-                </div>
-                <p className={`mt-2 text-xs font-medium ${item.is_available ? "text-pine" : "text-muted"}`}>
-                  {item.is_available ? "In Stock" : "Sold Out"}
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditing(item);
-                    }}
-                    className="tap rounded-full border border-line bg-paper text-sm font-medium text-ink"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm(`Remove ${item.name} from the menu?`)) onDelete(item.id);
-                    }}
-                    className="tap rounded-full border border-red-300 bg-paper text-sm font-medium text-red-600"
-                  >
-                    Remove
-                  </button>
+                  <p className={`mt-2 text-xs font-medium ${item.is_available ? "text-pine" : "text-muted"}`}>
+                    {item.is_available ? "In Stock" : "Sold Out"}
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => { setShowForm(false); setEditing(item); }} className="tap rounded-full border border-line bg-paper text-sm font-medium text-ink">Edit</button>
+                    <button type="button" onClick={() => onDelete(item)} className="tap rounded-full border border-red-300 bg-paper text-sm font-medium text-red-600">Remove</button>
+                  </div>
                 </div>
               </article>
             );
