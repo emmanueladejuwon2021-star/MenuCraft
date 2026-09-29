@@ -42,7 +42,7 @@ export default function App() {
   const [user, setUser] = useState(readSession());
   const [menu, setMenu] = useState({
     source: "local",
-    settings: { restaurant_name: "Iya Bisi Kitchen", currency_symbol: "₦" },
+    settings: { restaurant_name: "Iya Bisi Kitchen", currency_symbol: "\u20a6" },
     categories: [],
     items: [],
   });
@@ -188,7 +188,7 @@ export default function App() {
     try {
       const nextUser = await createAccount(form);
       setUser(nextUser);
-      await saveSettings({ restaurant_name: nextUser.restaurant_name, currency_symbol: menu.settings.currency_symbol || "₦" });
+      await saveSettings({ restaurant_name: nextUser.restaurant_name, currency_symbol: menu.settings.currency_symbol || "\u20a6" });
       await refresh();
       notify("Kitchen account created.");
       navigate("/dishes");
@@ -208,7 +208,7 @@ export default function App() {
     }
   }
 
-  async function handleSignIn(form, asGuest) {
+  async function handleSignIn(form) {
     try {
       const nextUser = await signIn(form);
       setUser(nextUser);
@@ -224,7 +224,7 @@ export default function App() {
     try {
       setUser(await updateAccount(form));
       if (form.restaurant_name) {
-        await saveSettings({ restaurant_name: form.restaurant_name, currency_symbol: menu.settings.currency_symbol || "₦" });
+        await saveSettings({ restaurant_name: form.restaurant_name, currency_symbol: menu.settings.currency_symbol || "\u20a6" });
         await refresh();
       }
       notify("Saved!");
@@ -246,12 +246,11 @@ export default function App() {
   }
 
   function handlePaid({ note, payRef }) {
-    const order = placeOrder({ guest: user, items: plate, note, payRef });
+    placeOrder({ guest: user, items: plate, note, payRef });
     setPlate(readPlate());
     setOrders(readOrders());
     notify("Paid! The kitchen can see your order.");
     navigate("/my-orders");
-    return order;
   }
 
   function handleOrderStatus(id, status) {
@@ -271,20 +270,20 @@ export default function App() {
         <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
           <div>
             <h1 className="text-lg font-semibold">{menu.settings.restaurant_name}</h1>
-            <p className="text-xs text-muted">{user ? `${user.role === "staff" ? "Kitchen" : "Guest"} · ${user.name}` : "Guest menu"}</p>
+            <p className="text-xs text-muted">{user ? `${user.role === "staff" ? "Kitchen" : "Guest"} \u00b7 ${user.name}` : "Guest menu"}</p>
           </div>
           <ThemeToggle theme={theme} onToggle={handleTheme} />
         </div>
         {loading && location.pathname !== "/" ? (
-          <p className="text-sm text-muted">Loading menu…</p>
+          <p className="text-sm text-muted">Loading menu\u2026</p>
         ) : (
           <Routes>
-            <Route path="/" element={<HomePage settings={menu.settings} user={user} />} />
+            <Route path="/" element={<HomePage settings={menu.settings} items={menu.items} />} />
             <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddToPlate={handleAddToPlate} />} />
             <Route path="/plate" element={<PlatePage settings={menu.settings} user={user} plate={plate} onQty={(id, qty) => setPlate(setPlateQty(id, qty))} onClear={() => setPlate(writePlate([]))} />} />
             <Route path="/pay" element={<PayPage settings={menu.settings} user={user} plate={plate} onPaid={handlePaid} />} />
             <Route path="/my-orders" element={<MyOrders settings={menu.settings} orders={guestOrders} />} />
-            <Route path="/guest-account" element={<GuestAccount user={user?.role === "guest" ? user : null} onCreate={handleGuestSignup} onSignIn={(form) => handleSignIn(form, true)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
+            <Route path="/guest-account" element={<GuestAccount user={user?.role === "guest" ? user : null} onCreate={handleGuestSignup} onSignIn={(form) => handleSignIn(form)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
             <Route path="/dishes" element={<StaffGuard user={user}><DishManager settings={menu.settings} categories={menu.categories} items={menu.items} showForm={showForm} setShowForm={setShowForm} onCreate={handleCreate} onUpdate={handleUpdate} onDelete={requestDelete} onCreateCategory={handleCategory} onRemoveCategory={requestRemoveCategory} /></StaffGuard>} />
             <Route path="/stock" element={<StaffGuard user={user}><StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} /></StaffGuard>} />
             <Route path="/pricing" element={<StaffGuard user={user}><QuickPricing settings={menu.settings} categories={menu.categories} items={menu.items} onApply={requestPrices} /></StaffGuard>} />
