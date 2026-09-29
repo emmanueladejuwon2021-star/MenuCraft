@@ -9,6 +9,11 @@ import StockToggle from "./pages/StockToggle.jsx";
 import QuickPricing from "./pages/QuickPricing.jsx";
 import SharePage from "./pages/SharePage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
+import GuestAccount from "./pages/GuestAccount.jsx";
+import PlatePage from "./pages/PlatePage.jsx";
+import PayPage from "./pages/PayPage.jsx";
+import MyOrders from "./pages/MyOrders.jsx";
+import OrdersBoard from "./pages/OrdersBoard.jsx";
 import {
   bulkUpdatePrices,
   createCategory,
@@ -20,13 +25,14 @@ import {
   setItemStatus,
   updateItem,
 } from "./lib/store.js";
-import { createAccount, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
+import { createAccount, createGuestAccount, isStaff, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
+import { addToPlate, myOrders, placeOrder, plateCount, readOrders, readPlate, setOrderStatus, setPlateQty, writePlate } from "./lib/orders.js";
 import { readTheme, toggleTheme } from "./lib/theme.js";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import ConfirmDialog from "./components/ConfirmDialog.jsx";
 
-function Guard({ user, children }) {
-  if (!user) return <Navigate to="/account" replace />;
+function StaffGuard({ user, children }) {
+  if (!isStaff(user)) return <Navigate to="/account" replace />;
   return children;
 }
 
@@ -40,6 +46,8 @@ export default function App() {
     categories: [],
     items: [],
   });
+  const [plate, setPlate] = useState(readPlate);
+  const [orders, setOrders] = useState(readOrders);
   const [toast, setToast] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -92,36 +100,24 @@ export default function App() {
       title: `Remove ${dish.name}?`,
       body: "It will leave the live menu. You can tap Undo for a few seconds after that.",
       yesLabel: "Remove dish",
-      onYes: () => handleDelete(dish),
-    });
-  }
-
-  async function handleDelete(item) {
-    try {
-      const snapshot = { ...item };
-      const result = await removeItem(item.id);
-      await refresh();
-      notify(result.message, "ok", {
-        actionLabel: "Undo",
-        onAction: async () => {
-          setToast(null);
-          await createItem({
-            name: snapshot.name,
-            description: snapshot.description,
-            price: snapshot.price,
-            category_id: snapshot.category_id,
-            tags: snapshot.tags,
-            prep_time: snapshot.prep_time,
-            image_url: snapshot.image_url,
-            is_available: snapshot.is_available,
+      onYes: async () => {
+        try {
+          const snapshot = { ...dish };
+          notify((await removeItem(dish.id)).message, "ok", {
+            actionLabel: "Undo",
+            onAction: async () => {
+              setToast(null);
+              await createItem(snapshot);
+              await refresh();
+              notify("Dish put back on the menu");
+            },
           });
           await refresh();
-          notify("Dish put back on the menu");
-        },
-      });
-    } catch (error) {
-      notify(error.message || "Something went wrong. Changes were not saved.", "error");
-    }
+        } catch (error) {
+          notify(error.message || "Something went wrong. Changes were not saved.", "error");
+        }
+      },
+    });
   }
 
   function requestRemoveCategory(category) {
@@ -129,17 +125,15 @@ export default function App() {
       title: `Remove ${category.name}?`,
       body: "This also removes every dish in that category.",
       yesLabel: "Remove category",
-      onYes: () => handleRemoveCategory(category.id),
+      onYes: async () => {
+        try {
+          notify((await removeCategory(category.id)).message);
+          await refresh();
+        } catch (error) {
+          notify(error.message || "Something went wrong. Changes were not saved.", "error");
+        }
+      },
     });
-  }
-
-  async function handleRemoveCategory(id) {
-    try {
-      notify((await removeCategory(id)).message);
-      await refresh();
-    } catch (error) {
-      notify(error.message || "Something went wrong. Changes were not saved.", "error");
-    }
   }
 
   async function handleToggle(id, isAvailable) {
@@ -159,32 +153,17 @@ export default function App() {
   function requestPrices(payload) {
     setConfirmBox({
       title: "Update these prices?",
-      body: "Every dish in this category will change. You can still edit one dish later.",
+      body: "Every dish in this category will change.",
       yesLabel: "Update prices",
-      onYes: () => handlePrices(payload),
+      onYes: async () => {
+        try {
+          notify((await bulkUpdatePrices(payload)).message);
+          await refresh();
+        } catch {
+          notify("Something went wrong. Changes were not saved.", "error");
+        }
+      },
     });
-  }
-
-  async function handlePrices(payload) {
-    const previous = menu.items;
-    setMenu((current) => ({
-      ...current,
-      items: current.items.map((row) => {
-        if (Number(row.category_id) !== Number(payload.categoryId)) return row;
-        const next =
-          payload.mode === "amount"
-            ? Math.max(0, Number((row.price + payload.amount).toFixed(2)))
-            : Math.max(0, Number((row.price * (1 + payload.amount / 100)).toFixed(2)));
-        return { ...row, price: next };
-      }),
-    }));
-    try {
-      notify((await bulkUpdatePrices(payload)).message);
-      await refresh();
-    } catch {
-      setMenu((current) => ({ ...current, items: previous }));
-      notify("Something went wrong. Changes were not saved.", "error");
-    }
   }
 
   async function handleSettings(settings) {
@@ -205,25 +184,37 @@ export default function App() {
     }
   }
 
-  async function handleSignup(form) {
+  async function handleStaffSignup(form) {
     try {
       const nextUser = await createAccount(form);
       setUser(nextUser);
       await saveSettings({ restaurant_name: nextUser.restaurant_name, currency_symbol: menu.settings.currency_symbol || "₦" });
       await refresh();
-      notify("Account created. Welcome!");
+      notify("Kitchen account created.");
       navigate("/dishes");
     } catch (error) {
       notify(error.message || "Could not create the account.", "error");
     }
   }
 
-  async function handleSignIn(form) {
+  async function handleGuestSignup(form) {
+    try {
+      const nextUser = await createGuestAccount(form);
+      setUser(nextUser);
+      notify("Guest account created. You can order now.");
+      navigate(plate.length ? "/plate" : "/menu");
+    } catch (error) {
+      notify(error.message || "Could not create the account.", "error");
+    }
+  }
+
+  async function handleSignIn(form, asGuest) {
     try {
       const nextUser = await signIn(form);
       setUser(nextUser);
       notify(`Welcome back, ${nextUser.name}`);
-      navigate("/dishes");
+      if (nextUser.role === "staff") navigate("/orders");
+      else navigate(plate.length ? "/plate" : "/menu");
     } catch (error) {
       notify(error.message || "Could not sign you in.", "error");
     }
@@ -231,10 +222,11 @@ export default function App() {
 
   async function handleAccountUpdate(form) {
     try {
-      const nextUser = await updateAccount(form);
-      setUser(nextUser);
-      await saveSettings({ restaurant_name: nextUser.restaurant_name, currency_symbol: menu.settings.currency_symbol || "₦" });
-      await refresh();
+      setUser(await updateAccount(form));
+      if (form.restaurant_name) {
+        await saveSettings({ restaurant_name: form.restaurant_name, currency_symbol: menu.settings.currency_symbol || "₦" });
+        await refresh();
+      }
       notify("Saved!");
     } catch (error) {
       notify(error.message || "Could not save account details.", "error");
@@ -248,16 +240,38 @@ export default function App() {
     navigate("/");
   }
 
+  function handleAddToPlate(dish) {
+    setPlate(addToPlate(dish));
+    notify(`${dish.name} added to your plate`);
+  }
+
+  function handlePaid({ note, payRef }) {
+    const order = placeOrder({ guest: user, items: plate, note, payRef });
+    setPlate(readPlate());
+    setOrders(readOrders());
+    notify("Paid! The kitchen can see your order.");
+    navigate("/my-orders");
+    return order;
+  }
+
+  function handleOrderStatus(id, status) {
+    setOrderStatus(id, status);
+    setOrders(readOrders());
+    notify(status === "Cooking" ? "Kitchen has started this order" : status === "Ready" ? "Order is ready" : "Order marked served");
+  }
+
+  const guestOrders = user?.email ? myOrders(user.email) : [];
+
   return (
     <div className="min-h-screen bg-paper pb-24 md:pb-8">
-      <NavBar settings={menu.settings} source={menu.source} user={user} theme={theme} onToggleTheme={handleTheme} />
+      <NavBar settings={menu.settings} user={user} theme={theme} onToggleTheme={handleTheme} plateCount={plateCount(plate)} />
       <Toast toast={toast} />
       <ConfirmDialog box={confirmBox} onClose={() => setConfirmBox(null)} />
       <main className="mx-auto max-w-6xl px-4 py-4">
         <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
           <div>
             <h1 className="text-lg font-semibold">{menu.settings.restaurant_name}</h1>
-            <p className="text-xs text-muted">{user ? `Kitchen · ${user.name}` : "Guest menu"}</p>
+            <p className="text-xs text-muted">{user ? `${user.role === "staff" ? "Kitchen" : "Guest"} · ${user.name}` : "Guest menu"}</p>
           </div>
           <ThemeToggle theme={theme} onToggle={handleTheme} />
         </div>
@@ -266,12 +280,17 @@ export default function App() {
         ) : (
           <Routes>
             <Route path="/" element={<HomePage settings={menu.settings} user={user} />} />
-            <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddDish={null} />} />
-            <Route path="/dishes" element={<Guard user={user}><DishManager settings={menu.settings} categories={menu.categories} items={menu.items} showForm={showForm} setShowForm={setShowForm} onCreate={handleCreate} onUpdate={handleUpdate} onDelete={requestDelete} onCreateCategory={handleCategory} onRemoveCategory={requestRemoveCategory} /></Guard>} />
-            <Route path="/stock" element={<Guard user={user}><StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} /></Guard>} />
-            <Route path="/pricing" element={<Guard user={user}><QuickPricing settings={menu.settings} categories={menu.categories} items={menu.items} onApply={requestPrices} /></Guard>} />
-            <Route path="/share" element={<Guard user={user}><SharePage settings={menu.settings} onSaveSettings={handleSettings} user={user} /></Guard>} />
-            <Route path="/account" element={<AccountPage user={user} onCreate={handleSignup} onSignIn={handleSignIn} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
+            <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddToPlate={handleAddToPlate} />} />
+            <Route path="/plate" element={<PlatePage settings={menu.settings} user={user} plate={plate} onQty={(id, qty) => setPlate(setPlateQty(id, qty))} onClear={() => setPlate(writePlate([]))} />} />
+            <Route path="/pay" element={<PayPage settings={menu.settings} user={user} plate={plate} onPaid={handlePaid} />} />
+            <Route path="/my-orders" element={<MyOrders settings={menu.settings} orders={guestOrders} />} />
+            <Route path="/guest-account" element={<GuestAccount user={user?.role === "guest" ? user : null} onCreate={handleGuestSignup} onSignIn={(form) => handleSignIn(form, true)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
+            <Route path="/dishes" element={<StaffGuard user={user}><DishManager settings={menu.settings} categories={menu.categories} items={menu.items} showForm={showForm} setShowForm={setShowForm} onCreate={handleCreate} onUpdate={handleUpdate} onDelete={requestDelete} onCreateCategory={handleCategory} onRemoveCategory={requestRemoveCategory} /></StaffGuard>} />
+            <Route path="/stock" element={<StaffGuard user={user}><StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} /></StaffGuard>} />
+            <Route path="/pricing" element={<StaffGuard user={user}><QuickPricing settings={menu.settings} categories={menu.categories} items={menu.items} onApply={requestPrices} /></StaffGuard>} />
+            <Route path="/orders" element={<StaffGuard user={user}><OrdersBoard settings={menu.settings} orders={orders} onStatus={handleOrderStatus} /></StaffGuard>} />
+            <Route path="/share" element={<StaffGuard user={user}><SharePage settings={menu.settings} onSaveSettings={handleSettings} user={user} /></StaffGuard>} />
+            <Route path="/account" element={<AccountPage user={user?.role === "staff" ? user : null} onCreate={handleStaffSignup} onSignIn={(form) => handleSignIn(form)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
           </Routes>
         )}
       </main>
