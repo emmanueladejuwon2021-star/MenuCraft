@@ -2,9 +2,8 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { ALL_TAGS } from "../lib/seed";
 import { money } from "../lib/store";
-import EmptyCard from "../components/EmptyCard";
 
-export default function LiveMenu({ settings, categories, items, onAddDish }) {
+export default function LiveMenu({ settings, categories, items, onAddToPlate }) {
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState("all");
   const [tag, setTag] = useState("all");
@@ -24,7 +23,7 @@ export default function LiveMenu({ settings, categories, items, onAddDish }) {
     <section className="page-enter space-y-4">
       <div>
         <h1 className="text-xl font-semibold">Live menu</h1>
-        <p className="mt-1 text-sm text-muted">Prices and stock update as the kitchen makes changes.</p>
+        <p className="mt-1 text-sm text-muted">Pick in-stock dishes, add them to your plate, then pay.</p>
       </div>
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
@@ -50,11 +49,7 @@ export default function LiveMenu({ settings, categories, items, onAddDish }) {
           <div key={category.id} className="space-y-2">
             <h2 className="text-base font-semibold">{category.name}</h2>
             {dishes.length === 0 ? (
-              onAddDish ? (
-                <EmptyCard title="No dishes in this category yet." buttonLabel="Add First Dish" onClick={onAddDish} />
-              ) : (
-                <div className="rounded-2xl border border-dashed border-line bg-card px-4 py-8 text-center text-sm text-muted">Nothing in this list right now. Please check back soon.</div>
-              )
+              <div className="rounded-2xl border border-dashed border-line bg-card px-4 py-8 text-center text-sm text-muted">Nothing in this list right now.</div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {dishes.map((item) => (
@@ -74,6 +69,9 @@ export default function LiveMenu({ settings, categories, items, onAddDish }) {
                           <span key={itemTag} className="rounded-full bg-paper px-2 py-1 text-xs text-muted">{itemTag}</span>
                         ))}
                       </div>
+                      {item.is_available && onAddToPlate && (
+                        <button type="button" onClick={() => onAddToPlate(item)} className="tap mt-3 w-full rounded-full bg-ink text-sm font-semibold text-invert">Add to plate</button>
+                      )}
                     </div>
                   </article>
                 ))}
