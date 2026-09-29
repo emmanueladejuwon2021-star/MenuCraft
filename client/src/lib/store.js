@@ -1,7 +1,7 @@
 import { STARTER_DATA } from "./seed";
+import { request, shouldUseLocal } from "./api";
 
 const STORAGE_KEY = "menucraft-local-menu-v2";
-const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "") || "";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -44,27 +44,6 @@ function normalizeItem(item) {
   };
 }
 
-async function request(path, options = {}) {
-  const url = `${API_BASE}${path}`;
-  const response = await fetch(url, {
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    ...options,
-  });
-  let payload = null;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
-  }
-  if (!response.ok) {
-    const error = new Error(payload?.message || "Could not connect—please try again");
-    error.status = response.status;
-    throw error;
-  }
-  return payload;
-}
-
 export async function loadMenu() {
   try {
     const payload = await request("/api/menu");
@@ -93,7 +72,7 @@ export async function createCategory(name) {
     });
     return { source: "live", category: payload.category, message: payload.message || "Added to category" };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     if (data.categories.some((row) => row.name.toLowerCase() === name.toLowerCase())) {
       throw new Error("That category already exists.");
@@ -110,7 +89,7 @@ export async function removeCategory(id) {
     const payload = await request(`/api/categories/${id}`, { method: "DELETE" });
     return { source: "live", message: payload.message || "Category removed" };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500 && error.status !== 404) throw error;
+    if (!shouldUseLocal(error) && error.status !== 404) throw error;
     const data = readLocal();
     data.categories = data.categories.filter((row) => Number(row.id) !== Number(id));
     data.items = data.items.filter((row) => Number(row.category_id) !== Number(id));
@@ -127,7 +106,7 @@ export async function createItem(input) {
     });
     return { source: "live", item: normalizeItem(payload.item), message: payload.message || "Added to category" };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     const item = normalizeItem({
       ...input,
@@ -149,7 +128,7 @@ export async function updateItem(id, input) {
     });
     return { source: "live", item: normalizeItem(payload.item), message: payload.message || "Saved!" };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     const index = data.items.findIndex((row) => Number(row.id) === Number(id));
     if (index < 0) throw new Error("That dish could not be found.");
@@ -167,7 +146,7 @@ export async function setItemStatus(id, isAvailable) {
     });
     return { source: "live", item: normalizeItem(payload.item), message: payload.message };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     const index = data.items.findIndex((row) => Number(row.id) === Number(id));
     if (index < 0) throw new Error("That dish could not be found.");
@@ -193,7 +172,7 @@ export async function bulkUpdatePrices({ categoryId, mode, amount }) {
       message: payload.message || "Price updated successfully",
     };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     data.items = data.items.map((item) => {
       if (Number(item.category_id) !== Number(categoryId)) return item;
@@ -217,7 +196,7 @@ export async function removeItem(id) {
     const payload = await request(`/api/items/${id}`, { method: "DELETE" });
     return { source: "live", message: payload.message || "Dish removed" };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500 && error.status !== 404) throw error;
+    if (!shouldUseLocal(error) && error.status !== 404) throw error;
     const data = readLocal();
     data.items = data.items.filter((row) => Number(row.id) !== Number(id));
     writeLocal(data);
@@ -233,7 +212,7 @@ export async function saveSettings(settings) {
     });
     return { source: "live", settings: payload.settings, message: payload.message || "Saved!" };
   } catch (error) {
-    if (error.status >= 400 && error.status < 500) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     data.settings = {
       restaurant_name: settings.restaurant_name,
