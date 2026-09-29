@@ -6,106 +6,61 @@
   color-scheme: light;
   --ink: #1c1917;
   --invert: #fffdf9;
-  --paper: #f7f3ee;
+  --paper: #f4eee6;
   --card: #fffdf9;
-  --line: #e7dfd4;
+  --line: #e4d9cc;
   --pine: #167a4a;
   --clay: #b45309;
-  --muted: #57534e;
-  --soft: 0 8px 24px rgba(28, 25, 23, 0.06);
+  --muted: #6b645d;
+  --soft: 0 10px 30px rgba(28, 25, 23, 0.07);
 }
 
 html.dark {
   color-scheme: dark;
-  --ink: #f4ece3;
+  --ink: #f6eee4;
   --invert: #161310;
-  --paper: #0f0d0b;
-  --card: #1a1613;
+  --paper: #0e0c0a;
+  --card: #1b1714;
   --line: #4a4036;
   --pine: #86efac;
   --clay: #fdba74;
-  --muted: #d6d3d1;
-  --soft: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --muted: #d0c8bf;
+  --soft: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
-}
+html, body, #root { min-height: 100%; }
 
 body {
   margin: 0;
-  background: var(--paper);
+  background: radial-gradient(circle at top left, rgba(180, 83, 9, 0.08), transparent 28%), var(--paper);
   color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-button,
-input,
-select,
-textarea {
+button, input, select, textarea {
   font: inherit;
   color: var(--ink);
   background-color: var(--card);
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: var(--muted);
-  opacity: 1;
+input, select, textarea { outline: none; }
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(22, 122, 74, 0.25);
 }
-
-option {
-  color: var(--ink);
-  background: var(--card);
-}
-
-.tap {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-.bg-ink {
-  background-color: var(--ink) !important;
-  color: var(--invert) !important;
-}
-
-.bg-pine {
-  background-color: var(--pine) !important;
-  color: var(--invert) !important;
-}
-
-.bg-clay {
-  background-color: var(--clay) !important;
-  color: var(--invert) !important;
-}
-
-.text-ink {
-  color: var(--ink) !important;
-}
-
-.text-invert {
-  color: var(--invert) !important;
-}
-
-.text-muted {
-  color: var(--muted) !important;
-}
-
-.text-pine {
-  color: var(--pine) !important;
-}
-
-.text-clay {
-  color: var(--clay) !important;
-}
-
-html.dark .bg-emerald-100 {
-  background-color: #14532d !important;
-}
-
-html.dark .bg-stone-200 {
-  background-color: #3f3f46 !important;
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+option { color: var(--ink); background: var(--card); }
+.tap { min-height: 44px; min-width: 44px; }
+.bg-ink { background-color: var(--ink) !important; color: var(--invert) !important; }
+.bg-pine { background-color: var(--pine) !important; color: var(--invert) !important; }
+.bg-clay { background-color: var(--clay) !important; color: var(--invert) !important; }
+.text-ink { color: var(--ink) !important; }
+.text-invert { color: var(--invert) !important; }
+.text-muted { color: var(--muted) !important; }
+.text-pine { color: var(--pine) !important; }
+.text-clay { color: var(--clay) !important; }
+.page-enter { animation: rise 0.28s ease; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
