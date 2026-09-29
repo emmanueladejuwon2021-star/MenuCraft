@@ -4,6 +4,7 @@ const LINKS = [
   { to: "/dishes", label: "Dishes" },
   { to: "/stock", label: "Stock" },
   { to: "/pricing", label: "Prices" },
+  { to: "/orders", label: "Orders" },
 ];
 
 export default function KitchenNav({ title, hint }) {
@@ -21,7 +22,7 @@ export default function KitchenNav({ title, hint }) {
             key={link.to}
             to={link.to}
             className={({ isActive }) =>
-              `tap shrink-0 rounded-full px-4 text-sm font-medium ${
+              `tap h-10 shrink-0 rounded-full px-4 text-sm font-medium ${
                 isActive ? "bg-ink text-invert" : "border border-line bg-card text-ink"
               }`
             }
