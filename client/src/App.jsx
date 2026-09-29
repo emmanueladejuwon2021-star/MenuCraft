@@ -14,6 +14,7 @@ import {
   createCategory,
   createItem,
   loadMenu,
+  removeCategory,
   removeItem,
   saveSettings,
   setItemStatus,
@@ -22,6 +23,7 @@ import {
 import { createAccount, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
 import { readTheme, toggleTheme } from "./lib/theme.js";
 import ThemeToggle from "./components/ThemeToggle.jsx";
+import ConfirmDialog from "./components/ConfirmDialog.jsx";
 
 function Guard({ user, children }) {
   if (!user) return <Navigate to="/account" replace />;
@@ -42,10 +44,14 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(readTheme);
+  const [confirmBox, setConfirmBox] = useState(null);
+  const [toastTimer, setToastTimer] = useState(null);
 
-  function notify(text, tone = "ok") {
-    setToast({ text, tone });
-    window.setTimeout(() => setToast(null), 2400);
+  function notify(text, tone = "ok", extra = {}) {
+    if (toastTimer) window.clearTimeout(toastTimer);
+    setToast({ text, tone, ...extra });
+    const timer = window.setTimeout(() => setToast(null), extra.onAction ? 6000 : 2400);
+    setToastTimer(timer);
   }
 
   function handleTheme() {
@@ -82,9 +88,57 @@ export default function App() {
     }
   }
 
-  async function handleDelete(id) {
+  function requestDelete(item) {
+    const dish = item && item.id ? item : menu.items.find((row) => Number(row.id) === Number(item));
+    if (!dish) return;
+    setConfirmBox({
+      title: `Remove ${dish.name}?`,
+      body: "It will leave the live menu. You can tap Undo for a few seconds after that.",
+      yesLabel: "Remove dish",
+      onYes: () => handleDelete(dish),
+    });
+  }
+
+  async function handleDelete(item) {
     try {
-      const result = await removeItem(id);
+      const snapshot = { ...item };
+      const result = await removeItem(item.id);
+      await refresh();
+      notify(result.message, "ok", {
+        actionLabel: "Undo",
+        onAction: async () => {
+          setToast(null);
+          await createItem({
+            name: snapshot.name,
+            description: snapshot.description,
+            price: snapshot.price,
+            category_id: snapshot.category_id,
+            tags: snapshot.tags,
+            prep_time: snapshot.prep_time,
+            image_url: snapshot.image_url,
+            is_available: snapshot.is_available,
+          });
+          await refresh();
+          notify("Dish put back on the menu");
+        },
+      });
+    } catch (error) {
+      notify(error.message || "Something went wrong. Changes were not saved.", "error");
+    }
+  }
+
+  function requestRemoveCategory(category) {
+    setConfirmBox({
+      title: `Remove ${category.name}?`,
+      body: "This also removes every dish in that category.",
+      yesLabel: "Remove category",
+      onYes: () => handleRemoveCategory(category.id),
+    });
+  }
+
+  async function handleRemoveCategory(id) {
+    try {
+      const result = await removeCategory(id);
       notify(result.message);
       await refresh();
     } catch (error) {
@@ -96,7 +150,7 @@ export default function App() {
     const previous = menu.items;
     setMenu((current) => ({
       ...current,
-      items: current.items.map((item) => (Number(item.id) === Number(id) ? { ...item, is_available: isAvailable } : item)),
+      items: current.items.map((row) => (Number(row.id) === Number(id) ? { ...row, is_available: isAvailable } : row)),
     }));
     try {
       const result = await setItemStatus(id, isAvailable);
@@ -107,18 +161,26 @@ export default function App() {
     }
   }
 
+  function requestPrices(payload) {
+    setConfirmBox({
+      title: "Update these prices?",
+      body: "Every dish in this category will change. You can still edit one dish later.",
+      yesLabel: "Update prices",
+      onYes: () => handlePrices(payload),
+    });
+  }
+
   async function handlePrices(payload) {
-    if (!window.confirm("Update prices for this whole category?")) return;
     const previous = menu.items;
     setMenu((current) => ({
       ...current,
-      items: current.items.map((item) => {
-        if (Number(item.category_id) !== Number(payload.categoryId)) return item;
+      items: current.items.map((row) => {
+        if (Number(row.category_id) !== Number(payload.categoryId)) return row;
         const next =
           payload.mode === "amount"
-            ? Math.max(0, Number((item.price + payload.amount).toFixed(2)))
-            : Math.max(0, Number((item.price * (1 + payload.amount / 100)).toFixed(2)));
-        return { ...item, price: next };
+            ? Math.max(0, Number((row.price + payload.amount).toFixed(2)))
+            : Math.max(0, Number((row.price * (1 + payload.amount / 100)).toFixed(2)));
+        return { ...row, price: next };
       }),
     }));
     try {
@@ -198,6 +260,7 @@ export default function App() {
     <div className="min-h-screen bg-paper pb-24 md:pb-8">
       <NavBar settings={menu.settings} source={menu.source} user={user} theme={theme} onToggleTheme={handleTheme} />
       <Toast toast={toast} />
+      <ConfirmDialog box={confirmBox} onClose={() => setConfirmBox(null)} />
       <main className="mx-auto max-w-6xl px-4 py-4">
         <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
           <div>
@@ -211,76 +274,12 @@ export default function App() {
         ) : (
           <Routes>
             <Route path="/" element={<HomePage settings={menu.settings} user={user} />} />
-            <Route
-              path="/menu"
-              element={
-                <LiveMenu
-                  settings={menu.settings}
-                  categories={menu.categories}
-                  items={menu.items}
-                  onAddDish={
-                    user
-                      ? () => {
-                          setShowForm(true);
-                          navigate("/dishes");
-                        }
-                      : null
-                  }
-                />
-              }
-            />
-            <Route
-              path="/dishes"
-              element={
-                <Guard user={user}>
-                  <DishManager
-                    settings={menu.settings}
-                    categories={menu.categories}
-                    items={menu.items}
-                    showForm={showForm}
-                    setShowForm={setShowForm}
-                    onCreate={handleCreate}
-                    onUpdate={handleUpdate}
-                    onDelete={handleDelete}
-                    onCreateCategory={handleCategory}
-                  />
-                </Guard>
-              }
-            />
-            <Route
-              path="/stock"
-              element={
-                <Guard user={user}>
-                  <StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} />
-                </Guard>
-              }
-            />
-            <Route
-              path="/pricing"
-              element={
-                <Guard user={user}>
-                  <QuickPricing
-                    settings={menu.settings}
-                    categories={menu.categories}
-                    items={menu.items}
-                    onApply={handlePrices}
-                  />
-                </Guard>
-              }
-            />
+            <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddDish={user ? () => { setShowForm(true); navigate("/dishes"); } : null} />} />
+            <Route path="/dishes" element={<Guard user={user}><DishManager settings={menu.settings} categories={menu.categories} items={menu.items} showForm={showForm} setShowForm={setShowForm} onCreate={handleCreate} onUpdate={handleUpdate} onDelete={requestDelete} onCreateCategory={handleCategory} onRemoveCategory={requestRemoveCategory} /></Guard>} />
+            <Route path="/stock" element={<Guard user={user}><StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} /></Guard>} />
+            <Route path="/pricing" element={<Guard user={user}><QuickPricing settings={menu.settings} categories={menu.categories} items={menu.items} onApply={requestPrices} /></Guard>} />
             <Route path="/share" element={<SharePage settings={menu.settings} onSaveSettings={handleSettings} user={user} />} />
-            <Route
-              path="/account"
-              element={
-                <AccountPage
-                  user={user}
-                  onCreate={handleSignup}
-                  onSignIn={handleSignIn}
-                  onUpdate={handleAccountUpdate}
-                  onSignOut={handleSignOut}
-                />
-              }
-            />
+            <Route path="/account" element={<AccountPage user={user} onCreate={handleSignup} onSignIn={handleSignIn} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
           </Routes>
         )}
       </main>
