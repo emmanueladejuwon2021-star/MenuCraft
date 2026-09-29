@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import NavBar from "./components/NavBar.jsx";
 import Toast from "./components/Toast.jsx";
+import HomePage from "./pages/HomePage.jsx";
 import LiveMenu from "./pages/LiveMenu.jsx";
 import DishManager from "./pages/DishManager.jsx";
 import StockToggle from "./pages/StockToggle.jsx";
 import QuickPricing from "./pages/QuickPricing.jsx";
 import SharePage from "./pages/SharePage.jsx";
+import AccountPage from "./pages/AccountPage.jsx";
 import {
   bulkUpdatePrices,
   createCategory,
@@ -17,12 +19,20 @@ import {
   setItemStatus,
   updateItem,
 } from "./lib/store.js";
+import { createAccount, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
+
+function Guard({ user, children }) {
+  if (!user) return <Navigate to="/account" replace />;
+  return children;
+}
 
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [user, setUser] = useState(readSession());
   const [menu, setMenu] = useState({
     source: "local",
-    settings: { restaurant_name: "My Restaurant", currency_symbol: "$" },
+    settings: { restaurant_name: "Iya Bisi Kitchen", currency_symbol: "₦" },
     categories: [],
     items: [],
   });
@@ -91,6 +101,7 @@ export default function App() {
   }
 
   async function handlePrices(payload) {
+    if (!window.confirm("Update prices for this whole category?")) return;
     const previous = menu.items;
     setMenu((current) => ({
       ...current,
@@ -133,20 +144,63 @@ export default function App() {
     }
   }
 
+  async function handleSignup(form) {
+    try {
+      const nextUser = await createAccount(form);
+      setUser(nextUser);
+      await saveSettings({ restaurant_name: nextUser.restaurant_name, currency_symbol: menu.settings.currency_symbol || "₦" });
+      await refresh();
+      notify("Account created. Welcome!");
+      navigate("/dishes");
+    } catch (error) {
+      notify(error.message || "Could not create the account.", "error");
+    }
+  }
+
+  async function handleSignIn(form) {
+    try {
+      const nextUser = await signIn(form);
+      setUser(nextUser);
+      notify(`Welcome back, ${nextUser.name}`);
+      navigate("/dishes");
+    } catch (error) {
+      notify(error.message || "Could not sign you in.", "error");
+    }
+  }
+
+  async function handleAccountUpdate(form) {
+    try {
+      const nextUser = await updateAccount(form);
+      setUser(nextUser);
+      await saveSettings({ restaurant_name: nextUser.restaurant_name, currency_symbol: menu.settings.currency_symbol || "₦" });
+      await refresh();
+      notify("Saved!");
+    } catch (error) {
+      notify(error.message || "Could not save account details.", "error");
+    }
+  }
+
+  function handleSignOut() {
+    signOut();
+    setUser(null);
+    notify("Signed out");
+    navigate("/");
+  }
+
   return (
     <div className="min-h-screen bg-paper pb-24 md:pb-8">
-      <NavBar settings={menu.settings} source={menu.source} />
+      <NavBar settings={menu.settings} source={menu.source} user={user} />
       <Toast toast={toast} />
       <main className="mx-auto max-w-6xl px-4 py-4">
         <div className="mb-4 md:hidden">
           <h1 className="text-lg font-semibold">{menu.settings.restaurant_name}</h1>
-          <p className="text-xs text-stone-500">{menu.source === "live" ? "Live shared menu" : "Saved on this device"}</p>
+          <p className="text-xs text-stone-500">{user ? `Hi, ${user.name}` : "Guest view"}</p>
         </div>
-        {loading ? (
+        {loading && location.pathname !== "/" ? (
           <p className="text-sm text-stone-500">Loading menu…</p>
         ) : (
           <Routes>
-            <Route path="/" element={<Navigate to="/menu" replace />} />
+            <Route path="/" element={<HomePage settings={menu.settings} user={user} />} />
             <Route
               path="/menu"
               element={
@@ -154,47 +208,68 @@ export default function App() {
                   settings={menu.settings}
                   categories={menu.categories}
                   items={menu.items}
-                  onAddDish={() => {
-                    setShowForm(true);
-                    navigate("/dishes");
-                  }}
+                  onAddDish={
+                    user
+                      ? () => {
+                          setShowForm(true);
+                          navigate("/dishes");
+                        }
+                      : null
+                  }
                 />
               }
             />
             <Route
               path="/dishes"
               element={
-                <DishManager
-                  settings={menu.settings}
-                  categories={menu.categories}
-                  items={menu.items}
-                  showForm={showForm}
-                  setShowForm={setShowForm}
-                  onCreate={handleCreate}
-                  onUpdate={handleUpdate}
-                  onDelete={handleDelete}
-                  onCreateCategory={handleCategory}
-                />
+                <Guard user={user}>
+                  <DishManager
+                    settings={menu.settings}
+                    categories={menu.categories}
+                    items={menu.items}
+                    showForm={showForm}
+                    setShowForm={setShowForm}
+                    onCreate={handleCreate}
+                    onUpdate={handleUpdate}
+                    onDelete={handleDelete}
+                    onCreateCategory={handleCategory}
+                  />
+                </Guard>
               }
             />
             <Route
               path="/stock"
-              element={<StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} />}
+              element={
+                <Guard user={user}>
+                  <StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} />
+                </Guard>
+              }
             />
             <Route
               path="/pricing"
               element={
-                <QuickPricing
-                  settings={menu.settings}
-                  categories={menu.categories}
-                  items={menu.items}
-                  onApply={handlePrices}
-                />
+                <Guard user={user}>
+                  <QuickPricing
+                    settings={menu.settings}
+                    categories={menu.categories}
+                    items={menu.items}
+                    onApply={handlePrices}
+                  />
+                </Guard>
               }
             />
+            <Route path="/share" element={<SharePage settings={menu.settings} onSaveSettings={handleSettings} />} />
             <Route
-              path="/share"
-              element={<SharePage settings={menu.settings} onSaveSettings={handleSettings} />}
+              path="/account"
+              element={
+                <AccountPage
+                  user={user}
+                  onCreate={handleSignup}
+                  onSignIn={handleSignIn}
+                  onUpdate={handleAccountUpdate}
+                  onSignOut={handleSignOut}
+                />
+              }
             />
           </Routes>
         )}
