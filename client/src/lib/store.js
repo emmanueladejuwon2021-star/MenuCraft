@@ -1,7 +1,7 @@
 import { STARTER_DATA } from "./seed";
 import { request, shouldUseLocal } from "./api";
 
-const STORAGE_KEY = "menucraft-local-menu-v2";
+const STORAGE_KEY = "menucraft-local-menu-v3";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
