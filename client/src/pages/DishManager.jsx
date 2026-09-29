@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import DishForm from "../components/DishForm";
 import EmptyCard from "../components/EmptyCard";
+import KitchenNav from "../components/KitchenNav";
 import { money } from "../lib/store";
 
 export default function DishManager({
@@ -24,6 +25,7 @@ export default function DishManager({
 
   return (
     <section className="space-y-4">
+      <KitchenNav />
       <div className="flex flex-col gap-2 sm:flex-row">
         <input
           value={query}
@@ -79,11 +81,7 @@ export default function DishManager({
       )}
 
       {filtered.length === 0 ? (
-        <EmptyCard
-          title="No dishes match that search."
-          buttonLabel="Add First Dish"
-          onClick={() => setShowForm(true)}
-        />
+        <EmptyCard title="No dishes match that search." buttonLabel="Add First Dish" onClick={() => setShowForm(true)} />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-line bg-card shadow-soft">
           <div className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr] gap-2 border-b border-line bg-paper px-3 py-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
@@ -103,19 +101,14 @@ export default function DishManager({
                 <span>{category?.name || "—"}</span>
                 <span>{money(settings.currency_symbol, item.price)}</span>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditing(item);
-                    }}
-                    className="tap rounded-full border border-line px-3 text-xs"
-                  >
+                  <button type="button" onClick={() => { setShowForm(false); setEditing(item); }} className="tap rounded-full border border-line px-3 text-xs">
                     Edit
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete(item.id)}
+                    onClick={() => {
+                      if (window.confirm(`Remove ${item.name} from the menu?`)) onDelete(item.id);
+                    }}
                     className="tap rounded-full border border-red-200 px-3 text-xs text-red-700"
                   >
                     Remove
