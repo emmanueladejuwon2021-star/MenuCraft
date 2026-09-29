@@ -1,22 +1,32 @@
-export const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "") || "";
+export const ENV_API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
+function onGitHubPages() {
+  return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
+}
+
+export function apiBase() {
+  if (ENV_API) return ENV_API;
+  if (onGitHubPages()) return "";
+  return "";
+}
 
 export function remoteApiOn() {
-  return Boolean(API_BASE);
+  return Boolean(ENV_API) || (typeof window !== "undefined" && !onGitHubPages());
 }
 
 export function shouldUseLocal(error) {
   const status = Number(error?.status || 0);
-  return status === 0 || status === 404 || status >= 500;
+  return status === 0 || status === 404 || status === 503 || status >= 500;
 }
 
 export async function request(path, options = {}) {
-  if (!API_BASE) {
+  if (onGitHubPages() && !ENV_API) {
     const error = new Error("offline");
     error.status = 0;
     throw error;
   }
   try {
-    const response = await fetch(`${API_BASE}${path}`, {
+    const response = await fetch(`${apiBase()}${path}`, {
       credentials: "include",
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
       ...options,
