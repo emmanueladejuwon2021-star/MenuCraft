@@ -1,0 +1,11 @@
+{
+  "name": "menucraft",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Real-time digital restaurant menu and price manager",
+  "scripts": {
+    "dev": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "install:all": "npm install --prefix client && npm install --prefix api"
+  }
+}
