@@ -10,6 +10,13 @@ function getDb() {
 let ready = false;
 
 async function ensureSchema(db) {
+  await db.execute(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    restaurant_name TEXT NOT NULL
+  )`);
   await db.execute(`CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
@@ -30,31 +37,36 @@ async function ensureSchema(db) {
   await db.execute(`CREATE TABLE IF NOT EXISTS restaurant_settings (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     restaurant_name TEXT NOT NULL DEFAULT 'My Restaurant',
-    currency_symbol TEXT DEFAULT '$'
+    currency_symbol TEXT DEFAULT '₦'
   )`);
 
   const settings = await db.execute("SELECT id FROM restaurant_settings WHERE id = 1");
   if (!settings.rows.length) {
     await db.execute({
       sql: "INSERT INTO restaurant_settings (id, restaurant_name, currency_symbol) VALUES (1, ?, ?)",
-      args: ["Harbor Table", "$"],
+      args: ["Iya Bisi Kitchen", "₦"],
     });
   }
 
   const cats = await db.execute("SELECT COUNT(*) AS count FROM categories");
   if (Number(cats.rows[0].count) === 0) {
-    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Starters', 1)");
-    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Mains', 2)");
-    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Drinks', 3)");
+    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Small Chops', 1)");
+    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Soups & Swallow', 2)");
+    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Rice & Mains', 3)");
+    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Drinks', 4)");
     const seeded = await db.execute("SELECT id, name FROM categories ORDER BY display_order");
     const byName = Object.fromEntries(seeded.rows.map((row) => [row.name, row.id]));
     const dishes = [
-      [byName.Starters, "Crispy Calamari", "Lightly fried squid with lemon aioli.", 12.5, "", 1, "Spicy", 12],
-      [byName.Starters, "Garden Hummus Plate", "Chickpea spread, warm pita, and raw vegetables.", 9.0, "", 1, "Vegetarian,Gluten-Free", 8],
-      [byName.Mains, "Herb Roast Chicken", "Half chicken, pan juices, roasted potatoes.", 22.0, "", 1, "Gluten-Free", 25],
-      [byName.Mains, "Mushroom Risotto", "Arborio rice, wild mushrooms, parmesan.", 18.5, "", 1, "Vegetarian", 20],
-      [byName.Drinks, "House Lemonade", "Fresh lemon, mint, sparkling water.", 4.5, "", 1, "Vegetarian,Gluten-Free", 3],
-      [byName.Drinks, "Chili Mango Cooler", "Mango puree with a gentle chili rim.", 6.0, "", 1, "Spicy,Vegetarian", 4],
+      [byName["Small Chops"], "Beef Suya", "Spiced grilled beef with onion, tomato, and extra yaji.", 2500, "", 1, "Spicy", 15],
+      [byName["Small Chops"], "Puff Puff", "Soft fried dough balls, lightly sweet and warm.", 800, "", 1, "Vegetarian", 10],
+      [byName["Small Chops"], "Asun", "Peppered goat meat, smoky and hot.", 3500, "", 1, "Spicy", 18],
+      [byName["Soups & Swallow"], "Egusi with Pounded Yam", "Melon seed soup, assorted meat, and smooth pounded yam.", 4500, "", 1, "Gluten-Free", 25],
+      [byName["Soups & Swallow"], "Catfish Pepper Soup", "Fresh catfish in a hot, fragrant broth.", 4000, "", 1, "Spicy,Gluten-Free", 20],
+      [byName["Rice & Mains"], "Party Jollof Rice", "Smoky party jollof with fried plantain and coleslaw.", 3200, "", 1, "Spicy", 20],
+      [byName["Rice & Mains"], "Ofada Rice and Ayamase", "Local ofada rice with green pepper stew and boiled egg.", 3800, "", 1, "Spicy", 22],
+      [byName["Rice & Mains"], "Moi Moi", "Steamed beans pudding with egg and fish.", 1500, "", 1, "Gluten-Free", 30],
+      [byName.Drinks, "Zobo", "Cold hibiscus drink with ginger and pineapple.", 700, "", 1, "Vegetarian,Gluten-Free", 5],
+      [byName.Drinks, "Chapman", "House Chapman with cucumber, orange, and a light fizz.", 1200, "", 1, "Vegetarian", 4],
     ];
     for (const dish of dishes) {
       await db.execute({
