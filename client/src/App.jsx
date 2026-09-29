@@ -268,7 +268,7 @@ export default function App() {
                 </Guard>
               }
             />
-            <Route path="/share" element={<SharePage settings={menu.settings} onSaveSettings={handleSettings} />} />
+            <Route path="/share" element={<SharePage settings={menu.settings} onSaveSettings={handleSettings} user={user} />} />
             <Route
               path="/account"
               element={
