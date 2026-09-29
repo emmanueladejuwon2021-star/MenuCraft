@@ -4,35 +4,38 @@
 
 :root {
   color-scheme: light;
-  --ink: #1c1917;
-  --invert: #fffdf9;
-  --paper: #f4eee6;
-  --card: #fffdf9;
-  --line: #e4d9cc;
-  --pine: #167a4a;
-  --clay: #b45309;
-  --muted: #6b645d;
-  --soft: 0 10px 30px rgba(28, 25, 23, 0.07);
+  --ink: #0f2744;
+  --invert: #f5f9ff;
+  --paper: #e8f0fb;
+  --card: #ffffff;
+  --line: #c5d6ec;
+  --pine: #0b63ce;
+  --clay: #2563eb;
+  --muted: #5b6f88;
+  --soft: 0 12px 32px rgba(15, 39, 68, 0.08);
 }
 
 html.dark {
   color-scheme: dark;
-  --ink: #f6eee4;
-  --invert: #161310;
-  --paper: #0e0c0a;
-  --card: #1b1714;
-  --line: #4a4036;
-  --pine: #86efac;
-  --clay: #fdba74;
-  --muted: #d0c8bf;
-  --soft: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --ink: #e8f1ff;
+  --invert: #071018;
+  --paper: #07111d;
+  --card: #0e1a2b;
+  --line: #2a4060;
+  --pine: #7dd3fc;
+  --clay: #93c5fd;
+  --muted: #b7c7dc;
+  --soft: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 html, body, #root { min-height: 100%; }
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top left, rgba(180, 83, 9, 0.08), transparent 28%), var(--paper);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 28%),
+    var(--paper);
   color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -46,7 +49,7 @@ button, input, select, textarea {
 
 input, select, textarea { outline: none; }
 input:focus, select:focus, textarea:focus, button:focus-visible {
-  box-shadow: 0 0 0 3px rgba(22, 122, 74, 0.25);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28);
 }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 option { color: var(--ink); background: var(--card); }
