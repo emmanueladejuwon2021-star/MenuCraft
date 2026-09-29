@@ -28,12 +28,7 @@ export default function LiveMenu({ settings, categories, items, onAddDish }) {
       </div>
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search dishes"
-          className="tap w-full rounded-2xl border border-line bg-card pl-9 pr-3 text-ink shadow-soft"
-        />
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search dishes" className="tap w-full rounded-2xl border border-line bg-card pl-9 pr-3 text-ink shadow-soft" />
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         <button className={`tap shrink-0 rounded-full px-3 text-sm ${categoryId === "all" ? "bg-ink text-invert" : "border border-line bg-card text-ink"}`} onClick={() => setCategoryId("all")}>All</button>
@@ -63,19 +58,22 @@ export default function LiveMenu({ settings, categories, items, onAddDish }) {
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {dishes.map((item) => (
-                  <article key={item.id} className={`rounded-2xl border border-line bg-card p-4 shadow-soft ${item.is_available ? "" : "opacity-60"}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-semibold leading-snug">{item.name}</h3>
-                        <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p>
+                  <article key={item.id} className={`overflow-hidden rounded-2xl border border-line bg-card shadow-soft ${item.is_available ? "" : "opacity-60"}`}>
+                    {item.image_url ? <img src={item.image_url} alt="" className="h-40 w-full object-cover" /> : null}
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-semibold leading-snug">{item.name}</h3>
+                          <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p>
+                        </div>
+                        <p className="shrink-0 font-semibold">{money(settings.currency_symbol, item.price)}</p>
                       </div>
-                      <p className="shrink-0 font-semibold">{money(settings.currency_symbol, item.price)}</p>
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${item.is_available ? "bg-paper text-pine" : "bg-paper text-muted"}`}>{item.is_available ? "In Stock" : "Sold Out"}</span>
-                      {item.tags.map((itemTag) => (
-                        <span key={itemTag} className="rounded-full bg-paper px-2 py-1 text-xs text-muted">{itemTag}</span>
-                      ))}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className={`rounded-full px-2 py-1 text-xs font-semibold ${item.is_available ? "bg-paper text-pine" : "bg-paper text-muted"}`}>{item.is_available ? "In Stock" : "Sold Out"}</span>
+                        {item.tags.map((itemTag) => (
+                          <span key={itemTag} className="rounded-full bg-paper px-2 py-1 text-xs text-muted">{itemTag}</span>
+                        ))}
+                      </div>
                     </div>
                   </article>
                 ))}
