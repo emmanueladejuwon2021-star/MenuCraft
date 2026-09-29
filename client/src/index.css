@@ -9,23 +9,23 @@
   --paper: #f7f3ee;
   --card: #fffdf9;
   --line: #e7dfd4;
-  --pine: #1f6b4a;
+  --pine: #167a4a;
   --clay: #b45309;
-  --muted: #78716c;
+  --muted: #57534e;
   --soft: 0 8px 24px rgba(28, 25, 23, 0.06);
 }
 
 html.dark {
   color-scheme: dark;
-  --ink: #f5ede3;
-  --invert: #1c1917;
-  --paper: #12100e;
-  --card: #1c1917;
-  --line: #3f362e;
-  --pine: #4ade80;
-  --clay: #fb923c;
-  --muted: #a8a29e;
-  --soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --ink: #f4ece3;
+  --invert: #161310;
+  --paper: #0f0d0b;
+  --card: #1a1613;
+  --line: #4a4036;
+  --pine: #86efac;
+  --clay: #fdba74;
+  --muted: #d6d3d1;
+  --soft: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 html,
@@ -47,7 +47,19 @@ input,
 select,
 textarea {
   font: inherit;
-  color: inherit;
+  color: var(--ink);
+  background-color: var(--card);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+option {
+  color: var(--ink);
+  background: var(--card);
 }
 
 .tap {
@@ -55,7 +67,45 @@ textarea {
   min-width: 44px;
 }
 
-html.dark .bg-ink.text-white,
-html.dark .bg-pine.text-white {
-  color: var(--invert);
+.bg-ink {
+  background-color: var(--ink) !important;
+  color: var(--invert) !important;
+}
+
+.bg-pine {
+  background-color: var(--pine) !important;
+  color: var(--invert) !important;
+}
+
+.bg-clay {
+  background-color: var(--clay) !important;
+  color: var(--invert) !important;
+}
+
+.text-ink {
+  color: var(--ink) !important;
+}
+
+.text-invert {
+  color: var(--invert) !important;
+}
+
+.text-muted {
+  color: var(--muted) !important;
+}
+
+.text-pine {
+  color: var(--pine) !important;
+}
+
+.text-clay {
+  color: var(--clay) !important;
+}
+
+html.dark .bg-emerald-100 {
+  background-color: #14532d !important;
+}
+
+html.dark .bg-stone-200 {
+  background-color: #3f3f46 !important;
 }

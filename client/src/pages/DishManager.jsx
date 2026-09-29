@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import DishForm from "../components/DishForm";
 import EmptyCard from "../components/EmptyCard";
-import KitchenNav from "../components/KitchenNav";
 import { money } from "../lib/store";
+import KitchenNav from "../components/KitchenNav";
 
 export default function DishManager({
   settings,
@@ -23,30 +23,28 @@ export default function DishManager({
     return items.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()));
   }, [items, query]);
 
+  function startAdd() {
+    setEditing(null);
+    setShowForm(true);
+  }
+
   return (
     <section className="space-y-4">
       <KitchenNav />
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Find a dish fast"
-          className="tap flex-1 rounded-2xl border border-line bg-card px-3 shadow-soft"
+          className="tap w-full rounded-2xl border border-line bg-card px-3 text-ink shadow-soft placeholder:text-muted"
         />
-        <button
-          type="button"
-          onClick={() => {
-            setEditing(null);
-            setShowForm(true);
-          }}
-          className="tap rounded-2xl bg-ink px-4 text-sm font-semibold text-white"
-        >
+        <button type="button" onClick={startAdd} className="tap w-full rounded-2xl bg-ink px-4 text-sm font-semibold text-invert">
           Add dish
         </button>
       </div>
 
       <form
-        className="flex gap-2"
+        className="flex flex-col gap-2 sm:flex-row"
         onSubmit={(event) => {
           event.preventDefault();
           if (!newCategory.trim()) return;
@@ -58,9 +56,11 @@ export default function DishManager({
           value={newCategory}
           onChange={(event) => setNewCategory(event.target.value)}
           placeholder="New category name"
-          className="tap flex-1 rounded-2xl border border-line bg-card px-3"
+          className="tap w-full rounded-2xl border border-line bg-card px-3 text-ink placeholder:text-muted sm:flex-1"
         />
-        <button className="tap rounded-2xl border border-line bg-card px-4 text-sm font-medium">Add category</button>
+        <button className="tap rounded-2xl border border-line bg-card px-4 text-sm font-medium text-ink sm:shrink-0">
+          Add category
+        </button>
       </form>
 
       {(showForm || editing) && (
@@ -81,27 +81,32 @@ export default function DishManager({
       )}
 
       {filtered.length === 0 ? (
-        <EmptyCard title="No dishes match that search." buttonLabel="Add First Dish" onClick={() => setShowForm(true)} />
+        <EmptyCard title="No dishes match that search." buttonLabel="Add First Dish" onClick={startAdd} />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-line bg-card shadow-soft">
-          <div className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr] gap-2 border-b border-line bg-paper px-3 py-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
-            <span>Dish</span>
-            <span>Category</span>
-            <span>Price</span>
-            <span>Actions</span>
-          </div>
+        <div className="space-y-3">
           {filtered.map((item) => {
             const category = categories.find((row) => Number(row.id) === Number(item.category_id));
             return (
-              <div key={item.id} className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr] items-center gap-2 border-t border-line px-3 py-3 text-sm">
-                <div>
-                  <p className="font-medium">{item.name}</p>
-                  <p className="text-xs text-stone-500">{item.is_available ? "In Stock" : "Sold Out"}</p>
+              <article key={item.id} className="rounded-2xl border border-line bg-card p-4 text-ink shadow-soft">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold leading-snug">{item.name}</h3>
+                    <p className="mt-1 text-sm text-muted">{category?.name || "No category"}</p>
+                  </div>
+                  <p className="shrink-0 font-semibold">{money(settings.currency_symbol, item.price)}</p>
                 </div>
-                <span>{category?.name || "—"}</span>
-                <span>{money(settings.currency_symbol, item.price)}</span>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => { setShowForm(false); setEditing(item); }} className="tap rounded-full border border-line px-3 text-xs">
+                <p className={`mt-2 text-xs font-medium ${item.is_available ? "text-pine" : "text-muted"}`}>
+                  {item.is_available ? "In Stock" : "Sold Out"}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      setEditing(item);
+                    }}
+                    className="tap rounded-full border border-line bg-paper text-sm font-medium text-ink"
+                  >
                     Edit
                   </button>
                   <button
@@ -109,12 +114,12 @@ export default function DishManager({
                     onClick={() => {
                       if (window.confirm(`Remove ${item.name} from the menu?`)) onDelete(item.id);
                     }}
-                    className="tap rounded-full border border-red-200 px-3 text-xs text-red-700"
+                    className="tap rounded-full border border-red-300 bg-paper text-sm font-medium text-red-600"
                   >
                     Remove
                   </button>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
