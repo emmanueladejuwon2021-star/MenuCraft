@@ -20,6 +20,8 @@ import {
   updateItem,
 } from "./lib/store.js";
 import { createAccount, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
+import { readTheme, toggleTheme } from "./lib/theme.js";
+import ThemeToggle from "./components/ThemeToggle.jsx";
 
 function Guard({ user, children }) {
   if (!user) return <Navigate to="/account" replace />;
@@ -39,10 +41,15 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(readTheme);
 
   function notify(text, tone = "ok") {
     setToast({ text, tone });
     window.setTimeout(() => setToast(null), 2400);
+  }
+
+  function handleTheme() {
+    setTheme((current) => toggleTheme(current));
   }
 
   async function refresh() {
@@ -189,15 +196,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-paper pb-24 md:pb-8">
-      <NavBar settings={menu.settings} source={menu.source} user={user} />
+      <NavBar settings={menu.settings} source={menu.source} user={user} theme={theme} onToggleTheme={handleTheme} />
       <Toast toast={toast} />
       <main className="mx-auto max-w-6xl px-4 py-4">
-        <div className="mb-4 md:hidden">
-          <h1 className="text-lg font-semibold">{menu.settings.restaurant_name}</h1>
-          <p className="text-xs text-stone-500">{user ? `Hi, ${user.name}` : "Guest view"}</p>
+        <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
+          <div>
+            <h1 className="text-lg font-semibold">{menu.settings.restaurant_name}</h1>
+            <p className="text-xs text-muted">{user ? `Hi, ${user.name}` : "Guest view"}</p>
+          </div>
+          <ThemeToggle theme={theme} onToggle={handleTheme} />
         </div>
         {loading && location.pathname !== "/" ? (
-          <p className="text-sm text-stone-500">Loading menu…</p>
+          <p className="text-sm text-muted">Loading menu…</p>
         ) : (
           <Routes>
             <Route path="/" element={<HomePage settings={menu.settings} user={user} />} />
