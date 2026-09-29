@@ -1,6 +1,6 @@
 import { STARTER_DATA } from "./seed";
 
-const STORAGE_KEY = "menucraft-local-menu-v1";
+const STORAGE_KEY = "menucraft-local-menu-v2";
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "") || "";
 
 function clone(value) {
@@ -237,7 +237,7 @@ export async function saveSettings(settings) {
     const data = readLocal();
     data.settings = {
       restaurant_name: settings.restaurant_name,
-      currency_symbol: settings.currency_symbol || "$",
+      currency_symbol: settings.currency_symbol || "₦",
     };
     writeLocal(data);
     return { source: "local", settings: data.settings, message: "Saved!" };
@@ -245,5 +245,9 @@ export async function saveSettings(settings) {
 }
 
 export function money(symbol, value) {
-  return `${symbol}${Number(value).toFixed(2)}`;
+  const amount = Number(value || 0).toLocaleString("en-NG", {
+    minimumFractionDigits: Number(value) % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+  return `${symbol}${amount}`;
 }
