@@ -4,6 +4,28 @@
 
 :root {
   color-scheme: light;
+  --ink: #1c1917;
+  --invert: #fffdf9;
+  --paper: #f7f3ee;
+  --card: #fffdf9;
+  --line: #e7dfd4;
+  --pine: #1f6b4a;
+  --clay: #b45309;
+  --muted: #78716c;
+  --soft: 0 8px 24px rgba(28, 25, 23, 0.06);
+}
+
+html.dark {
+  color-scheme: dark;
+  --ink: #f5ede3;
+  --invert: #1c1917;
+  --paper: #12100e;
+  --card: #1c1917;
+  --line: #3f362e;
+  --pine: #4ade80;
+  --clay: #fb923c;
+  --muted: #a8a29e;
+  --soft: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 html,
@@ -14,9 +36,10 @@ body,
 
 body {
   margin: 0;
-  background: #f7f3ee;
-  color: #1c1917;
+  background: var(--paper);
+  color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 button,
@@ -24,6 +47,7 @@ input,
 select,
 textarea {
   font: inherit;
+  color: inherit;
 }
 
 .tap {
