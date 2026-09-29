@@ -10,17 +10,17 @@ export default function HomePage({ settings, items = [] }) {
     <section className="page-enter space-y-6">
       <div className="relative overflow-hidden rounded-[2rem] border border-line shadow-soft">
         <img src={HERO} alt="" className="h-72 w-full object-cover sm:h-96" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-sky-950/85 via-sky-900/40 to-sky-900/10" />
         <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-200">Nigerian kitchen</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Nigerian kitchen</p>
           <h1 className="mt-2 max-w-xl text-3xl font-semibold leading-tight text-white sm:text-5xl">
             {settings.restaurant_name}
           </h1>
-          <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/85 sm:text-base">
+          <p className="mt-3 max-w-lg text-sm leading-relaxed text-sky-50/90 sm:text-base">
             Party jollof, pepper soup, suya, and cold zobo. See what is ready today and fill your plate.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/menu" className="tap inline-flex items-center rounded-full bg-white px-6 text-sm font-semibold text-stone-900">
+            <Link to="/menu" className="tap inline-flex items-center rounded-full bg-white px-6 text-sm font-semibold text-sky-950">
               Open the menu
             </Link>
             <Link to="/guest-account" className="tap inline-flex items-center rounded-full border border-white/50 bg-white/10 px-6 text-sm font-semibold text-white">
@@ -56,7 +56,7 @@ export default function HomePage({ settings, items = [] }) {
                 {item.image_url ? (
                   <img src={item.image_url} alt="" className="h-36 w-full object-cover" />
                 ) : (
-                  <div className="h-24 bg-gradient-to-br from-amber-100 to-orange-200 dark:from-amber-900/30 dark:to-stone-800" />
+                  <div className="h-24 bg-gradient-to-br from-sky-100 to-blue-200 dark:from-sky-900/40 dark:to-slate-900" />
                 )}
                 <div className="flex items-start justify-between gap-3 p-4">
                   <div>
