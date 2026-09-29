@@ -54,3 +54,8 @@ textarea {
   min-height: 44px;
   min-width: 44px;
 }
+
+html.dark .bg-ink.text-white,
+html.dark .bg-pine.text-white {
+  color: var(--invert);
+}
