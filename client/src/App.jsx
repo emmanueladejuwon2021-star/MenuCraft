@@ -59,8 +59,7 @@ export default function App() {
   }
 
   async function refresh() {
-    const next = await loadMenu();
-    setMenu(next);
+    setMenu(await loadMenu());
     setLoading(false);
   }
 
@@ -70,8 +69,7 @@ export default function App() {
 
   async function handleCreate(input) {
     try {
-      const result = await createItem(input);
-      notify(result.message);
+      notify((await createItem(input)).message);
       await refresh();
     } catch (error) {
       notify(error.message || "Something went wrong. Changes were not saved.", "error");
@@ -80,8 +78,7 @@ export default function App() {
 
   async function handleUpdate(id, input) {
     try {
-      const result = await updateItem(id, input);
-      notify(result.message);
+      notify((await updateItem(id, input)).message);
       await refresh();
     } catch (error) {
       notify(error.message || "Something went wrong. Changes were not saved.", "error");
@@ -138,8 +135,7 @@ export default function App() {
 
   async function handleRemoveCategory(id) {
     try {
-      const result = await removeCategory(id);
-      notify(result.message);
+      notify((await removeCategory(id)).message);
       await refresh();
     } catch (error) {
       notify(error.message || "Something went wrong. Changes were not saved.", "error");
@@ -153,9 +149,8 @@ export default function App() {
       items: current.items.map((row) => (Number(row.id) === Number(id) ? { ...row, is_available: isAvailable } : row)),
     }));
     try {
-      const result = await setItemStatus(id, isAvailable);
-      notify(result.message);
-    } catch (error) {
+      notify((await setItemStatus(id, isAvailable)).message);
+    } catch {
       setMenu((current) => ({ ...current, items: previous }));
       notify("Something went wrong. Changes were not saved.", "error");
     }
@@ -184,10 +179,9 @@ export default function App() {
       }),
     }));
     try {
-      const result = await bulkUpdatePrices(payload);
-      notify(result.message);
+      notify((await bulkUpdatePrices(payload)).message);
       await refresh();
-    } catch (error) {
+    } catch {
       setMenu((current) => ({ ...current, items: previous }));
       notify("Something went wrong. Changes were not saved.", "error");
     }
@@ -195,8 +189,7 @@ export default function App() {
 
   async function handleSettings(settings) {
     try {
-      const result = await saveSettings(settings);
-      notify(result.message);
+      notify((await saveSettings(settings)).message);
       await refresh();
     } catch (error) {
       notify(error.message || "Something went wrong. Changes were not saved.", "error");
@@ -205,8 +198,7 @@ export default function App() {
 
   async function handleCategory(name) {
     try {
-      const result = await createCategory(name);
-      notify(result.message);
+      notify((await createCategory(name)).message);
       await refresh();
     } catch (error) {
       notify(error.message || "Something went wrong. Changes were not saved.", "error");
@@ -265,7 +257,7 @@ export default function App() {
         <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
           <div>
             <h1 className="text-lg font-semibold">{menu.settings.restaurant_name}</h1>
-            <p className="text-xs text-muted">{user ? `Hi, ${user.name}` : "Guest view"}</p>
+            <p className="text-xs text-muted">{user ? `Kitchen · ${user.name}` : "Guest menu"}</p>
           </div>
           <ThemeToggle theme={theme} onToggle={handleTheme} />
         </div>
@@ -274,11 +266,11 @@ export default function App() {
         ) : (
           <Routes>
             <Route path="/" element={<HomePage settings={menu.settings} user={user} />} />
-            <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddDish={user ? () => { setShowForm(true); navigate("/dishes"); } : null} />} />
+            <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddDish={null} />} />
             <Route path="/dishes" element={<Guard user={user}><DishManager settings={menu.settings} categories={menu.categories} items={menu.items} showForm={showForm} setShowForm={setShowForm} onCreate={handleCreate} onUpdate={handleUpdate} onDelete={requestDelete} onCreateCategory={handleCategory} onRemoveCategory={requestRemoveCategory} /></Guard>} />
             <Route path="/stock" element={<Guard user={user}><StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} /></Guard>} />
             <Route path="/pricing" element={<Guard user={user}><QuickPricing settings={menu.settings} categories={menu.categories} items={menu.items} onApply={requestPrices} /></Guard>} />
-            <Route path="/share" element={<SharePage settings={menu.settings} onSaveSettings={handleSettings} user={user} />} />
+            <Route path="/share" element={<Guard user={user}><SharePage settings={menu.settings} onSaveSettings={handleSettings} user={user} /></Guard>} />
             <Route path="/account" element={<AccountPage user={user} onCreate={handleSignup} onSignIn={handleSignIn} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
           </Routes>
         )}
