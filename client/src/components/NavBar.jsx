@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, BookOpen, ClipboardList, QrCode, UserRound, ShoppingBag, ConciergeBell } from "lucide-react";
+import { Home, BookOpen, ClipboardList, QrCode, UserRound, ShoppingBag, ConciergeBell, Warehouse, BadgeDollarSign } from "lucide-react";
 import ThemeToggle from "./ThemeToggle.jsx";
 
 export default function NavBar({ settings, user, theme, onToggleTheme, plateCount = 0 }) {
@@ -7,8 +7,9 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
   const guest = user?.role === "guest";
   const tabs = staff
     ? [
-        { to: "/", label: "Home", short: "Home", icon: Home, end: true },
-        { to: "/dishes", label: "Kitchen", short: "Kitchen", icon: ClipboardList },
+        { to: "/dishes", label: "Dishes", short: "Dishes", icon: ClipboardList },
+        { to: "/stock", label: "Stock", short: "Stock", icon: Warehouse },
+        { to: "/pricing", label: "Prices", short: "Prices", icon: BadgeDollarSign },
         { to: "/orders", label: "Orders", short: "Orders", icon: ConciergeBell },
         { to: "/share", label: "Share", short: "Share", icon: QrCode },
         { to: "/account", label: "Account", short: "Account", icon: UserRound },
@@ -27,6 +28,8 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
           { to: "/plate", label: plateCount ? `Plate (${plateCount})` : "Plate", short: plateCount ? `Plate ${plateCount}` : "Plate", icon: ShoppingBag },
           { to: "/guest-account", label: "Account", short: "Account", icon: UserRound },
         ];
+
+  const cols = tabs.length === 4 ? "grid-cols-4" : tabs.length === 6 ? "grid-cols-6" : "grid-cols-5";
 
   return (
     <>
@@ -48,9 +51,9 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
         </div>
       </header>
       <nav className="fixed inset-x-3 bottom-3 z-40 rounded-3xl border border-line bg-card/95 shadow-soft backdrop-blur md:hidden">
-        <div className={`grid ${tabs.length === 4 ? "grid-cols-4" : "grid-cols-5"}`}>
+        <div className={`grid ${cols}`}>
           {tabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex flex-col items-center justify-center gap-1 px-1 py-2.5 text-[11px] ${isActive ? "font-semibold text-pine" : "text-muted"}`}>
+            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex flex-col items-center justify-center gap-1 px-0.5 py-2.5 text-[10px] ${isActive ? "font-semibold text-pine" : "text-muted"}`}>
               <tab.icon size={18} />
               <span className="leading-none">{tab.short}</span>
             </NavLink>

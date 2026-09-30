@@ -23,7 +23,7 @@ export default function MyOrders({ settings, orders }) {
                 <span className="rounded-full bg-paper px-3 py-1 text-xs font-semibold text-pine">{order.status}</span>
               </div>
               <p className="mt-3 text-sm text-muted">{order.items.map((row) => `${row.qty} × ${row.name}`).join(", ")}</p>
-              <p className="mt-2 text-xs text-muted">{order.paid ? `Paid · ${order.pay_ref}` : "Not paid"}</p>
+              <p className="mt-2 text-xs text-muted">Pay at the counter{order.pay_ref ? ` · ${order.pay_ref}` : ""}</p>
             </article>
           ))}
         </div>
