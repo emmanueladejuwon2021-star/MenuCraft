@@ -28,11 +28,12 @@ import {
 import { createAccount, createGuestAccount, isStaff, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
 import { addToPlate, myOrders, placeOrder, plateCount, readOrders, readPlate, setOrderStatus, setPlateQty, writePlate } from "./lib/orders.js";
 import { readTheme, toggleTheme } from "./lib/theme.js";
+import { kitchenLockPath } from "./lib/kitchenGate.js";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import ConfirmDialog from "./components/ConfirmDialog.jsx";
 
 function StaffGuard({ user, children }) {
-  if (!isStaff(user)) return <Navigate to="/account" replace />;
+  if (!isStaff(user)) return <Navigate to={kitchenLockPath} replace />;
   return children;
 }
 
@@ -260,6 +261,7 @@ export default function App() {
   }
 
   const guestOrders = user?.email ? myOrders(user.email) : [];
+  const staffUser = isStaff(user) ? user : null;
 
   return (
     <div className="min-h-screen bg-paper pb-24 md:pb-8">
@@ -284,12 +286,31 @@ export default function App() {
             <Route path="/pay" element={<PayPage settings={menu.settings} user={user} plate={plate} onPaid={handlePaid} />} />
             <Route path="/my-orders" element={<MyOrders settings={menu.settings} orders={guestOrders} />} />
             <Route path="/guest-account" element={<GuestAccount user={user?.role === "guest" ? user : null} onCreate={handleGuestSignup} onSignIn={(form) => handleSignIn(form)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
+            <Route
+              path={kitchenLockPath}
+              element={
+                staffUser ? (
+                  <Navigate to="/orders" replace />
+                ) : (
+                  <AccountPage user={null} onCreate={handleStaffSignup} onSignIn={(form) => handleSignIn(form)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />
+                )
+              }
+            />
             <Route path="/dishes" element={<StaffGuard user={user}><DishManager settings={menu.settings} categories={menu.categories} items={menu.items} showForm={showForm} setShowForm={setShowForm} onCreate={handleCreate} onUpdate={handleUpdate} onDelete={requestDelete} onCreateCategory={handleCategory} onRemoveCategory={requestRemoveCategory} /></StaffGuard>} />
             <Route path="/stock" element={<StaffGuard user={user}><StockToggle items={menu.items} categories={menu.categories} onToggle={handleToggle} /></StaffGuard>} />
             <Route path="/pricing" element={<StaffGuard user={user}><QuickPricing settings={menu.settings} categories={menu.categories} items={menu.items} onApply={requestPrices} /></StaffGuard>} />
             <Route path="/orders" element={<StaffGuard user={user}><OrdersBoard settings={menu.settings} orders={orders} onStatus={handleOrderStatus} /></StaffGuard>} />
             <Route path="/share" element={<StaffGuard user={user}><SharePage settings={menu.settings} onSaveSettings={handleSettings} user={user} /></StaffGuard>} />
-            <Route path="/account" element={<AccountPage user={user?.role === "staff" ? user : null} onCreate={handleStaffSignup} onSignIn={(form) => handleSignIn(form)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />} />
+            <Route
+              path="/account"
+              element={
+                staffUser ? (
+                  <AccountPage user={staffUser} onCreate={handleStaffSignup} onSignIn={(form) => handleSignIn(form)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />
+                ) : (
+                  <Navigate to="/menu" replace />
+                )
+              }
+            />
           </Routes>
         )}
       </main>
