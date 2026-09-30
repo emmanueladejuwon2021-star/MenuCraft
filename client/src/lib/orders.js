@@ -1,3 +1,5 @@
+import { request, shouldUseLocal } from "./api";
+
 const PLATE_KEY = "menucraft-plate-v1";
 const ORDERS_KEY = "menucraft-orders-v1";
 
@@ -62,32 +64,60 @@ function writeOrders(orders) {
   return orders;
 }
 
-export function placeOrder({ guest, items, note, payRef }) {
-  const order = {
-    id: Date.now(),
-    guest_name: guest.name,
-    guest_email: guest.email,
-    phone: guest.phone || "",
-    note: note || "",
-    items: items.map((row) => ({ ...row })),
-    total: plateTotal(items),
-    paid: true,
-    pay_ref: payRef,
-    status: "New",
-    created_at: new Date().toISOString(),
-  };
-  const orders = [order, ...readOrders()];
-  writeOrders(orders);
-  clearPlate();
-  return order;
+export async function loadOrders() {
+  try {
+    const payload = await request("/api/orders");
+    return payload.orders || [];
+  } catch (error) {
+    if (!shouldUseLocal(error)) throw error;
+    return readOrders();
+  }
 }
 
-export function myOrders(email) {
-  return readOrders().filter((row) => row.guest_email === email);
+export async function placeOrder({ guest, items, note }) {
+  try {
+    const payload = await request("/api/orders", {
+      method: "POST",
+      body: JSON.stringify({ items, note }),
+    });
+    clearPlate();
+    return payload.order;
+  } catch (error) {
+    if (!shouldUseLocal(error)) throw error;
+    const order = {
+      id: Date.now(),
+      guest_name: guest.name,
+      guest_email: guest.email,
+      phone: guest.phone || "",
+      note: note || "",
+      items: items.map((row) => ({ ...row })),
+      total: plateTotal(items),
+      paid: true,
+      pay_ref: `TEST-${Date.now().toString().slice(-8)}`,
+      status: "New",
+      created_at: new Date().toISOString(),
+    };
+    writeOrders([order, ...readOrders()]);
+    clearPlate();
+    return order;
+  }
 }
 
-export function setOrderStatus(id, status) {
-  const orders = readOrders().map((row) => (Number(row.id) === Number(id) ? { ...row, status } : row));
-  writeOrders(orders);
-  return orders.find((row) => Number(row.id) === Number(id));
+export function myOrders(email, orders = readOrders()) {
+  return orders.filter((row) => row.guest_email === email);
+}
+
+export async function setOrderStatus(id, status) {
+  try {
+    const payload = await request(`/api/orders/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+    return payload.order;
+  } catch (error) {
+    if (!shouldUseLocal(error)) throw error;
+    const orders = readOrders().map((row) => (Number(row.id) === Number(id) ? { ...row, status } : row));
+    writeOrders(orders);
+    return orders.find((row) => Number(row.id) === Number(id));
+  }
 }
