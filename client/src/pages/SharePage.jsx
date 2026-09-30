@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { guestMenuLink } from "../lib/links";
+import { guestMenuLink, kitchenDoorLink } from "../lib/links";
 
 export default function SharePage({ settings, onSaveSettings, user }) {
   const [name, setName] = useState(settings.restaurant_name);
@@ -8,6 +8,7 @@ export default function SharePage({ settings, onSaveSettings, user }) {
   const [qr, setQr] = useState("");
   const [note, setNote] = useState("");
   const link = guestMenuLink();
+  const kitchenLink = kitchenDoorLink();
 
   useEffect(() => {
     setName(settings.restaurant_name);
@@ -33,19 +34,19 @@ export default function SharePage({ settings, onSaveSettings, user }) {
     };
   }, [link]);
 
-  async function copyLink() {
+  async function copyText(value, okNote) {
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(link);
+        await navigator.clipboard.writeText(value);
       } else {
         const box = document.createElement("textarea");
-        box.value = link;
+        box.value = value;
         document.body.appendChild(box);
         box.select();
         document.execCommand("copy");
         box.remove();
       }
-      setNote("Link copied. Guests can scan or paste it to open the live menu.");
+      setNote(okNote);
     } catch {
       setNote("Copy did not work. Select the link and copy it yourself.");
     }
@@ -75,7 +76,7 @@ export default function SharePage({ settings, onSaveSettings, user }) {
         }}
       >
         <h1 className="text-lg font-semibold text-ink">Share the live menu</h1>
-        <p className="text-sm text-muted">Guests scan the code or open the link. They only see the menu, not kitchen tools.</p>
+        <p className="text-sm text-muted">Guests scan the code or open the guest link. They only see the menu, not kitchen tools.</p>
         {user && (
           <>
             <label className="block text-sm text-ink">
@@ -99,8 +100,13 @@ export default function SharePage({ settings, onSaveSettings, user }) {
         )}
         <p className="text-sm text-muted">Guest link</p>
         <p className="break-all rounded-xl bg-paper px-3 py-2 text-sm text-ink">{link}</p>
-        <button type="button" onClick={copyLink} className="tap rounded-full border border-line px-4 text-sm text-ink">
-          Copy web link
+        <button type="button" onClick={() => copyText(link, "Link copied. Guests can scan or paste it to open the live menu.")} className="tap rounded-full border border-line px-4 text-sm text-ink">
+          Copy guest link
+        </button>
+        <p className="pt-2 text-sm text-muted">Kitchen door (staff only). Bookmark this. Do not print it on the guest QR.</p>
+        <p className="break-all rounded-xl bg-paper px-3 py-2 text-sm text-ink">{kitchenLink}</p>
+        <button type="button" onClick={() => copyText(kitchenLink, "Kitchen door copied. Save it on the kitchen tablet only.")} className="tap rounded-full border border-line px-4 text-sm text-ink">
+          Copy kitchen door
         </button>
         {note && <p className="text-sm text-pine">{note}</p>}
       </form>
