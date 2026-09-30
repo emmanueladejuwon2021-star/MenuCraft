@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { readyDb, mapItem } = require("./db");
+const { hashPassword, checkPassword, makeToken, publicUser, readToken, findUserByToken } = require("./auth");
 
 const app = express();
 
@@ -41,6 +42,75 @@ async function withDb(req, res, next) {
 app.get("/api/health", async (_req, res) => {
   const db = await readyDb();
   res.json({ ok: true, connected: Boolean(db) });
+});
+
+app.post("/api/signup", withDb, async (req, res) => {
+  const name = String(req.body?.name || "").trim();
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
+  const restaurantName = String(req.body?.restaurant_name || "").trim() || "Guest";
+  const phone = String(req.body?.phone || "").trim();
+  const role = req.body?.role === "guest" ? "guest" : "staff";
+  if (!name) return fail(res, 400, "Please enter your name.");
+  if (!email.includes("@")) return fail(res, 400, "Please enter a valid email.");
+  if (password.length < 6) return fail(res, 400, "Password should be at least 6 characters.");
+  try {
+    const existing = await req.db.execute({ sql: "SELECT id FROM users WHERE email = ?", args: [email] });
+    if (existing.rows.length) return fail(res, 409, "An account with that email already exists.");
+    const inserted = await req.db.execute({
+      sql: "INSERT INTO users (name, email, password_hash, restaurant_name, role, phone) VALUES (?, ?, ?, ?, ?, ?) RETURNING id, name, email, phone, restaurant_name, role",
+      args: [name, email, hashPassword(password), restaurantName, role, phone],
+    });
+    const token = makeToken();
+    await req.db.execute({ sql: "INSERT INTO sessions (token, user_id) VALUES (?, ?)", args: [token, inserted.rows[0].id] });
+    const user = { ...publicUser(inserted.rows[0]), token };
+    res.status(201).json({ ok: true, user, token });
+  } catch (error) {
+    if (String(error.message || "").includes("UNIQUE")) return fail(res, 409, "An account with that email already exists.");
+    console.error(error);
+    fail(res, 500, "Could not create the account. Please try again.");
+  }
+});
+
+app.post("/api/login", withDb, async (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
+  if (!email || !password) return fail(res, 400, "Please enter your email and password.");
+  try {
+    const found = await req.db.execute({
+      sql: "SELECT id, name, email, phone, restaurant_name, role, password_hash FROM users WHERE email = ?",
+      args: [email],
+    });
+    if (!found.rows.length || !checkPassword(password, found.rows[0].password_hash)) {
+      return fail(res, 401, "Email or password is not correct.");
+    }
+    const token = makeToken();
+    await req.db.execute({ sql: "INSERT INTO sessions (token, user_id) VALUES (?, ?)", args: [token, found.rows[0].id] });
+    const user = { ...publicUser(found.rows[0]), token };
+    res.json({ ok: true, user, token });
+  } catch (error) {
+    console.error(error);
+    fail(res, 500, "Could not sign in. Please try again.");
+  }
+});
+
+app.put("/api/account", withDb, async (req, res) => {
+  try {
+    const current = await findUserByToken(req.db, readToken(req));
+    if (!current) return fail(res, 401, "Please sign in first.");
+    const name = String(req.body?.name || current.name).trim();
+    const phone = String(req.body?.phone || current.phone || "").trim();
+    const restaurantName = String(req.body?.restaurant_name || current.restaurant_name || "").trim();
+    if (!name) return fail(res, 400, "Please enter your name.");
+    await req.db.execute({
+      sql: "UPDATE users SET name = ?, phone = ?, restaurant_name = ? WHERE id = ?",
+      args: [name, phone, restaurantName, current.id],
+    });
+    res.json({ ok: true, user: { ...current, name, phone, restaurant_name: restaurantName } });
+  } catch (error) {
+    console.error(error);
+    fail(res, 500, "Could not save your details. Please try again.");
+  }
 });
 
 app.get("/api/menu", withDb, async (req, res) => {
