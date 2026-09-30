@@ -4,7 +4,7 @@ import { money } from "../lib/store";
 const HERO =
   "https://images.unsplash.com/photo-1604329760661-e91dc7a3026b?auto=format&fit=crop&w=1600&q=80";
 
-export default function HomePage({ settings, items = [] }) {
+export default function HomePage({ settings, items = [], onAddToPlate }) {
   const featured = items.filter((row) => row.is_available).slice(0, 4);
   return (
     <section className="page-enter space-y-6">
@@ -24,17 +24,16 @@ export default function HomePage({ settings, items = [] }) {
               Open the menu
             </Link>
             <Link to="/guest-account" className="tap inline-flex items-center rounded-full border border-white/50 bg-white/10 px-6 text-sm font-semibold text-white">
-              Guest account
+              Create account
             </Link>
           </div>
         </div>
       </div>
-
       <div className="grid gap-3 sm:grid-cols-3">
         {[
           ["1", "Browse", "Pick soups, rice, small chops, and drinks."],
           ["2", "Fill a plate", "Add what you want and change the amount."],
-          ["3", "Pay", "Sign in as a guest and send the order to the kitchen."],
+          ["3", "Send order", "Create an account and send the plate to the kitchen."],
         ].map(([step, title, copy]) => (
           <article key={step} className="rounded-3xl border border-line bg-card p-5 shadow-soft">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-clay">Step {step}</p>
@@ -43,7 +42,6 @@ export default function HomePage({ settings, items = [] }) {
           </article>
         ))}
       </div>
-
       {featured.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-end justify-between gap-3 px-1">
@@ -52,7 +50,7 @@ export default function HomePage({ settings, items = [] }) {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {featured.map((item) => (
-              <Link key={item.id} to="/menu" className="overflow-hidden rounded-3xl border border-line bg-card shadow-soft">
+              <article key={item.id} className="overflow-hidden rounded-3xl border border-line bg-card shadow-soft">
                 {item.image_url ? (
                   <img src={item.image_url} alt="" className="h-36 w-full object-cover" />
                 ) : (
@@ -65,7 +63,12 @@ export default function HomePage({ settings, items = [] }) {
                   </div>
                   <p className="shrink-0 font-semibold text-ink">{money(settings.currency_symbol, item.price)}</p>
                 </div>
-              </Link>
+                {onAddToPlate && item.is_available ? (
+                  <div className="border-t border-line px-4 py-3">
+                    <button type="button" onClick={(event) => { event.preventDefault(); onAddToPlate(item); }} className="tap h-10 w-full rounded-full bg-ink text-sm font-semibold text-invert">Add to plate</button>
+                  </div>
+                ) : null}
+              </article>
             ))}
           </div>
         </div>
