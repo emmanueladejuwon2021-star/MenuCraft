@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { money } from "../lib/store";
+import { kitchenLockPath } from "../lib/kitchenGate";
+import DishPhoto from "../components/DishPhoto.jsx";
 
 export default function HomePage({ settings, items = [], onAddToPlate }) {
   const ready = items.filter((row) => row.is_available);
@@ -10,7 +12,9 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
     <section className="page-enter space-y-8">
       <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-[2rem] border border-line bg-card px-6 py-8 shadow-soft sm:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-clay">Open kitchen</p>
+          <Link to={kitchenLockPath} className="text-xs font-semibold uppercase tracking-[0.22em] text-clay underline-offset-4 hover:underline">
+            Open kitchen
+          </Link>
           <h1 className="mt-3 max-w-md text-4xl font-semibold leading-[1.05] text-ink sm:text-5xl">
             {settings.restaurant_name}
           </h1>
@@ -30,14 +34,16 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
         {spotlight ? (
           <article className="overflow-hidden rounded-[2rem] border border-line bg-card shadow-soft">
             {spotlight.image_url ? (
-              <img src={spotlight.image_url} alt="" className="h-52 w-full object-cover" />
+              <img src={spotlight.image_url} alt={spotlight.name} className="h-52 w-full object-cover" />
             ) : (
               <div className="flex h-52 items-end bg-gradient-to-br from-orange-200 to-amber-100 p-6 dark:from-orange-900/40 dark:to-stone-900">
                 <p className="text-sm font-medium text-ink">First dish on the board</p>
               </div>
             )}
             <div className="space-y-3 p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-clay">Start here</p>
+              <Link to="/menu" className="text-xs font-semibold uppercase tracking-[0.16em] text-clay underline-offset-4 hover:underline">
+                Start here
+              </Link>
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-2xl font-semibold leading-tight text-ink">{spotlight.name}</h2>
                 <p className="shrink-0 text-lg font-semibold text-ink">{money(settings.currency_symbol, spotlight.price)}</p>
@@ -58,41 +64,31 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
         )}
       </div>
 
-      {featuredExtras(items, settings, onAddToPlate)}
+      {extras.length ? (
+        <div className="space-y-3">
+          <h2 className="px-1 text-lg font-semibold text-ink">More from the board</h2>
+          <div className="grid gap-3">
+            {extras.map((item) => (
+              <article key={item.id} className="grid grid-cols-[96px_1fr] items-center gap-4 rounded-[1.6rem] border border-line bg-card p-3 shadow-soft sm:grid-cols-[120px_1fr_auto]">
+                <DishPhoto src={item.image_url} name={item.name} className="h-24 w-full" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-ink">{item.name}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted">{item.description}</p>
+                  <p className="mt-2 text-sm font-semibold text-ink sm:hidden">{money(settings.currency_symbol, item.price)}</p>
+                </div>
+                <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
+                  <p className="hidden text-base font-semibold text-ink sm:block">{money(settings.currency_symbol, item.price)}</p>
+                  {onAddToPlate && item.is_available ? (
+                    <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 rounded-full bg-ink px-4 text-sm font-semibold text-invert">
+                      Add to plate
+                    </button>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </section>
-  );
-}
-
-function featuredExtras(items, settings, onAddToPlate) {
-  const extras = items.filter((row) => row.is_available).slice(1, 5);
-  if (!extras.length) return null;
-  return (
-    <div className="space-y-3">
-      <h2 className="px-1 text-lg font-semibold text-ink">More from the board</h2>
-      <div className="grid gap-3">
-        {extras.map((item) => (
-          <article key={item.id} className="grid grid-cols-[96px_1fr] items-center gap-4 rounded-[1.6rem] border border-line bg-card p-3 shadow-soft sm:grid-cols-[120px_1fr_auto]">
-            {item.image_url ? (
-              <img src={item.image_url} alt="" className="h-24 w-full rounded-2xl object-cover" />
-            ) : (
-              <div className="h-24 rounded-2xl bg-paper" />
-            )}
-            <div className="min-w-0">
-              <p className="font-semibold text-ink">{item.name}</p>
-              <p className="mt-1 line-clamp-2 text-sm text-muted">{item.description}</p>
-              <p className="mt-2 text-sm font-semibold text-ink sm:hidden">{money(settings.currency_symbol, item.price)}</p>
-            </div>
-            <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
-              <p className="hidden text-base font-semibold text-ink sm:block">{money(settings.currency_symbol, item.price)}</p>
-              {onAddToPlate && item.is_available ? (
-                <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 rounded-full bg-ink px-4 text-sm font-semibold text-invert">
-                  Add
-                </button>
-              ) : null}
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
   );
 }
