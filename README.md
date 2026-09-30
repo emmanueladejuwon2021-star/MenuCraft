@@ -10,7 +10,7 @@ The Pages site works right away with a built-in sample menu stored in the browse
 
 ## Guest site and kitchen door
 
-Guests only see Home, Menu, Plate, and Join. There is no kitchen login on those screens.
+Guests only see Home, Menu, Plate, and Account. There is no kitchen login on those screens.
 
 Staff open a hidden path:
 
@@ -21,43 +21,45 @@ Bookmark that link on the kitchen tablet. Do not print it on the guest QR code. 
 
 After staff sign in, kitchen tools appear: dishes, stock, prices, orders, and share.
 
+Checkout asks for a table note only. It does not collect card numbers.
+
+When the live database is connected, kitchen staff must sign in before they can change dishes, prices, or stock, and guest orders are stored in that database.
+
 ## Five screens
 
-1. **Live Menu** — guest view with search, categories, and stock badges
-2. **Dish Manager** — add, edit, and remove dishes
-3. **Stock Toggle** — large on/off switches for busy kitchens
-4. **Quick Pricing** — raise or lower a whole category in one tap
-5. **QR & Share** — download a QR code and copy the guest link
+1. Live Menu — guest view with search, categories, and stock badges
+2. Dish Manager — add, edit, and remove dishes
+3. Stock Toggle — large on/off switches for busy kitchens
+4. Quick Pricing — raise or lower a whole category in one tap
+5. QR and Share — download a QR code and copy the guest link
 
 ## Run on your computer
 
-```bash
 cd client
+
 npm install
+
 npm run dev
-```
 
 Open the printed local address. Changes stay in this browser until you add the cloud database.
 
 ## Connect Turso (shared live menu)
 
 1. Create a Turso database and copy the URL and token.
-2. Add these values in Vercel project settings:
-   - `TURSO_DATABASE_URL`
-   - `TURSO_AUTH_TOKEN`
-3. Optional client value: `VITE_API_URL` = your Vercel site, for example `https://your-app.vercel.app`
-4. Redeploy. After that, GitHub Pages can talk to the same live menu if `VITE_API_URL` is set in the Pages build.
+2. Add these values in Vercel project settings: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN.
+3. Optional client value: VITE_API_URL = your Vercel site.
+4. Redeploy. After that, GitHub Pages can talk to the same live menu if VITE_API_URL is set in the Pages build.
 
 ## Deploy
 
-- **GitHub Pages:** every push to `main` builds `/client` and publishes the `gh-pages` branch.
-- **Vercel:** import this repository. Build command and output folder are already set in `vercel.json`.
+GitHub Pages: every push to main builds /client and publishes the gh-pages branch.
 
-After the first Actions run, open the repository Settings → Pages and set the source to the `gh-pages` branch.
+Vercel: import this repository. Build command and output folder are already set in vercel.json.
+
+After the first Actions run, open the repository Settings, then Pages, and set the source to the gh-pages branch.
 
 ## Project layout
 
-```
-/client   Guest and staff screens (React + Vite)
-/api      Vercel serverless routes + Turso tables
-```
+/client   Guest and staff screens
+
+/api      Vercel routes and Turso tables
