@@ -26,7 +26,7 @@ import {
   updateItem,
 } from "./lib/store.js";
 import { createAccount, createGuestAccount, isStaff, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
-import { addToPlate, myOrders, placeOrder, plateCount, readOrders, readPlate, setOrderStatus, setPlateQty, writePlate } from "./lib/orders.js";
+import { addToPlate, loadOrders, myOrders, placeOrder, plateCount, readPlate, setOrderStatus, setPlateQty, writePlate } from "./lib/orders.js";
 import { readTheme, toggleTheme } from "./lib/theme.js";
 import { kitchenLockPath } from "./lib/kitchenGate.js";
 import ThemeToggle from "./components/ThemeToggle.jsx";
@@ -48,7 +48,7 @@ export default function App() {
     items: [],
   });
   const [plate, setPlate] = useState(readPlate);
-  const [orders, setOrders] = useState(readOrders);
+  const [orders, setOrders] = useState([]);
   const [toast, setToast] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -69,6 +69,11 @@ export default function App() {
 
   async function refresh() {
     setMenu(await loadMenu());
+    try {
+      setOrders(await loadOrders());
+    } catch {
+      setOrders([]);
+    }
     setLoading(false);
   }
 
@@ -246,21 +251,21 @@ export default function App() {
     notify(`${dish.name} added to your plate`);
   }
 
-  function handlePaid({ note, payRef }) {
-    placeOrder({ guest: user, items: plate, note, payRef });
+  async function handlePaid({ note }) {
+    await placeOrder({ guest: user, items: plate, note });
     setPlate(readPlate());
-    setOrders(readOrders());
-    notify("Paid! The kitchen can see your order.");
+    setOrders(await loadOrders());
+    notify("Order sent. Pay at the counter. The kitchen can see it.");
     navigate("/my-orders");
   }
 
-  function handleOrderStatus(id, status) {
-    setOrderStatus(id, status);
-    setOrders(readOrders());
+  async function handleOrderStatus(id, status) {
+    await setOrderStatus(id, status);
+    setOrders(await loadOrders());
     notify(status === "Cooking" ? "Kitchen has started this order" : status === "Ready" ? "Order is ready" : "Order marked served");
   }
 
-  const guestOrders = user?.email ? myOrders(user.email) : [];
+  const guestOrders = user?.email ? myOrders(user.email, orders) : [];
   const staffUser = isStaff(user) ? user : null;
 
   return (
@@ -280,7 +285,7 @@ export default function App() {
           <p className="text-sm text-muted">Loading menu\u2026</p>
         ) : (
           <Routes>
-            <Route path="/" element={<HomePage settings={menu.settings} items={menu.items} />} />
+            <Route path="/" element={<HomePage settings={menu.settings} items={menu.items} onAddToPlate={handleAddToPlate} />} />
             <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddToPlate={handleAddToPlate} />} />
             <Route path="/plate" element={<PlatePage settings={menu.settings} user={user} plate={plate} onQty={(id, qty) => setPlate(setPlateQty(id, qty))} onClear={() => setPlate(writePlate([]))} />} />
             <Route path="/pay" element={<PayPage settings={menu.settings} user={user} plate={plate} onPaid={handlePaid} />} />
