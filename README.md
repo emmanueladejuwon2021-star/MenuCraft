@@ -8,6 +8,19 @@ GitHub Pages: https://emmanueladejuwon2021-star.github.io/MenuCraft/
 
 The Pages site works right away with a built-in sample menu stored in the browser. Connect Turso and deploy on Vercel when you want a shared live kitchen menu.
 
+## Guest site and kitchen door
+
+Guests only see Home, Menu, Plate, and Join. There is no kitchen login on those screens.
+
+Staff open a hidden path:
+
+- Local: http://localhost:5173/#/iyabisi/kitchenlock
+- GitHub Pages: https://emmanueladejuwon2021-star.github.io/MenuCraft/#/iyabisi/kitchenlock
+
+Bookmark that link on the kitchen tablet. Do not print it on the guest QR code. If someone types `/account` on the guest site, they are sent back to the menu.
+
+After staff sign in, kitchen tools appear: dishes, stock, prices, orders, and share.
+
 ## Five screens
 
 1. **Live Menu** — guest view with search, categories, and stock badges

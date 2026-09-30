@@ -6,3 +6,12 @@ export function guestMenuLink() {
   if (!url.pathname.endsWith("/")) url.pathname += "/";
   return url.toString();
 }
+
+export function kitchenDoorLink() {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.hash = "/iyabisi/kitchenlock";
+  url.pathname = url.pathname.replace(/index\.html$/i, "");
+  if (!url.pathname.endsWith("/")) url.pathname += "/";
+  return url.toString();
+}
