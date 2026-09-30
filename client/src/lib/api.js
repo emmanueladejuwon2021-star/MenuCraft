@@ -1,4 +1,5 @@
 export const ENV_API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const SESSION_KEY = "menucraft-session-v1";
 
 function onGitHubPages() {
   return typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
@@ -6,7 +7,6 @@ function onGitHubPages() {
 
 export function apiBase() {
   if (ENV_API) return ENV_API;
-  if (onGitHubPages()) return "";
   return "";
 }
 
@@ -16,7 +16,16 @@ export function remoteApiOn() {
 
 export function shouldUseLocal(error) {
   const status = Number(error?.status || 0);
-  return status === 0 || status === 404 || status === 503 || status >= 500;
+  return status === 0 || status === 503;
+}
+
+function sessionToken() {
+  try {
+    const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+    return session?.token || "";
+  } catch {
+    return "";
+  }
 }
 
 export async function request(path, options = {}) {
@@ -26,10 +35,13 @@ export async function request(path, options = {}) {
     throw error;
   }
   try {
+    const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+    const token = sessionToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
     const response = await fetch(`${apiBase()}${path}`, {
       credentials: "include",
-      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
       ...options,
+      headers,
     });
     let payload = null;
     try {
