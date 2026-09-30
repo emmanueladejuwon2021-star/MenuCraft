@@ -12,7 +12,7 @@ export default function ThemeToggle({ theme, onToggle }) {
       className="tap inline-flex items-center gap-2 rounded-full border border-line bg-card px-3 text-sm font-medium text-ink shadow-soft"
     >
       {dark ? <Sun size={16} /> : <Moon size={16} />}
-      <span className="hidden sm:inline">{dark ? "Light" : "Dark"}</span>
+      <span className="hidden sm:inline">{dark ? "Light mode" : "Dark mode"}</span>
     </button>
   );
 }
