@@ -1,78 +1,98 @@
 import { Link } from "react-router-dom";
 import { money } from "../lib/store";
 
-const HERO =
-  "https://images.unsplash.com/photo-1604329760661-e91dc7a3026b?auto=format&fit=crop&w=1600&q=80";
-
 export default function HomePage({ settings, items = [], onAddToPlate }) {
-  const featured = items.filter((row) => row.is_available).slice(0, 4);
+  const ready = items.filter((row) => row.is_available);
+  const spotlight = ready[0];
+  const extras = ready.slice(1, 5);
+
   return (
-    <section className="page-enter space-y-6">
-      <div className="relative overflow-hidden rounded-[2rem] border border-line shadow-soft">
-        <img src={HERO} alt="" className="h-72 w-full object-cover sm:h-96" />
-        <div className="absolute inset-0 bg-gradient-to-t from-sky-950/85 via-sky-900/40 to-sky-900/10" />
-        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Nigerian kitchen</p>
-          <h1 className="mt-2 max-w-xl text-3xl font-semibold leading-tight text-white sm:text-5xl">
+    <section className="page-enter space-y-8">
+      <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-[2rem] border border-line bg-card px-6 py-8 shadow-soft sm:px-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-clay">Open kitchen</p>
+          <h1 className="mt-3 max-w-md text-4xl font-semibold leading-[1.05] text-ink sm:text-5xl">
             {settings.restaurant_name}
           </h1>
-          <p className="mt-3 max-w-lg text-sm leading-relaxed text-sky-50/90 sm:text-base">
-            Party jollof, pepper soup, suya, and cold zobo. See what is ready today and fill your plate.
+          <p className="mt-4 max-w-md text-base leading-relaxed text-muted">
+            Come for the rice, stay for the soup. Today’s board is short on purpose so you can pick fast and eat well.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/menu" className="tap inline-flex items-center rounded-full bg-white px-6 text-sm font-semibold text-sky-950">
-              Open the menu
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/menu" className="tap inline-flex items-center rounded-full bg-ink px-6 text-sm font-semibold text-invert">
+              See today’s board
             </Link>
-            <Link to="/guest-account" className="tap inline-flex items-center rounded-full border border-white/50 bg-white/10 px-6 text-sm font-semibold text-white">
-              Create account
+            <Link to="/plate" className="tap inline-flex items-center rounded-full border border-line bg-paper px-6 text-sm font-semibold text-ink">
+              Check your plate
             </Link>
           </div>
         </div>
+
+        {spotlight ? (
+          <article className="overflow-hidden rounded-[2rem] border border-line bg-card shadow-soft">
+            {spotlight.image_url ? (
+              <img src={spotlight.image_url} alt="" className="h-52 w-full object-cover" />
+            ) : (
+              <div className="flex h-52 items-end bg-gradient-to-br from-orange-200 to-amber-100 p-6 dark:from-orange-900/40 dark:to-stone-900">
+                <p className="text-sm font-medium text-ink">First dish on the board</p>
+              </div>
+            )}
+            <div className="space-y-3 p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-clay">Start here</p>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-2xl font-semibold leading-tight text-ink">{spotlight.name}</h2>
+                <p className="shrink-0 text-lg font-semibold text-ink">{money(settings.currency_symbol, spotlight.price)}</p>
+              </div>
+              <p className="text-sm leading-relaxed text-muted">{spotlight.description}</p>
+              {onAddToPlate ? (
+                <button type="button" onClick={() => onAddToPlate(spotlight)} className="tap h-12 w-full rounded-full bg-ink text-sm font-semibold text-invert">
+                  Add to plate
+                </button>
+              ) : null}
+            </div>
+          </article>
+        ) : (
+          <article className="rounded-[2rem] border border-dashed border-line bg-card px-6 py-10 shadow-soft">
+            <h2 className="text-xl font-semibold text-ink">The board is still being set</h2>
+            <p className="mt-2 text-sm text-muted">Check the menu in a moment, or create an account so you are ready when the food is.</p>
+          </article>
+        )}
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          ["1", "Browse", "Pick soups, rice, small chops, and drinks."],
-          ["2", "Fill a plate", "Add what you want and change the amount."],
-          ["3", "Send order", "Create an account and send the plate to the kitchen."],
-        ].map(([step, title, copy]) => (
-          <article key={step} className="rounded-3xl border border-line bg-card p-5 shadow-soft">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-clay">Step {step}</p>
-            <h2 className="mt-2 text-lg font-semibold text-ink">{title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted">{copy}</p>
+
+      {featuredExtras(items, settings, onAddToPlate)}
+    </section>
+  );
+}
+
+function featuredExtras(items, settings, onAddToPlate) {
+  const extras = items.filter((row) => row.is_available).slice(1, 5);
+  if (!extras.length) return null;
+  return (
+    <div className="space-y-3">
+      <h2 className="px-1 text-lg font-semibold text-ink">More from the board</h2>
+      <div className="grid gap-3">
+        {extras.map((item) => (
+          <article key={item.id} className="grid grid-cols-[96px_1fr] items-center gap-4 rounded-[1.6rem] border border-line bg-card p-3 shadow-soft sm:grid-cols-[120px_1fr_auto]">
+            {item.image_url ? (
+              <img src={item.image_url} alt="" className="h-24 w-full rounded-2xl object-cover" />
+            ) : (
+              <div className="h-24 rounded-2xl bg-paper" />
+            )}
+            <div className="min-w-0">
+              <p className="font-semibold text-ink">{item.name}</p>
+              <p className="mt-1 line-clamp-2 text-sm text-muted">{item.description}</p>
+              <p className="mt-2 text-sm font-semibold text-ink sm:hidden">{money(settings.currency_symbol, item.price)}</p>
+            </div>
+            <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
+              <p className="hidden text-base font-semibold text-ink sm:block">{money(settings.currency_symbol, item.price)}</p>
+              {onAddToPlate && item.is_available ? (
+                <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 rounded-full bg-ink px-4 text-sm font-semibold text-invert">
+                  Add
+                </button>
+              ) : null}
+            </div>
           </article>
         ))}
       </div>
-      {featured.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-end justify-between gap-3 px-1">
-            <h2 className="text-lg font-semibold text-ink">On the fire today</h2>
-            <Link to="/menu" className="text-sm font-medium text-clay">See all</Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {featured.map((item) => (
-              <article key={item.id} className="overflow-hidden rounded-3xl border border-line bg-card shadow-soft">
-                {item.image_url ? (
-                  <img src={item.image_url} alt="" className="h-36 w-full object-cover" />
-                ) : (
-                  <div className="h-24 bg-gradient-to-br from-sky-100 to-blue-200 dark:from-sky-900/40 dark:to-slate-900" />
-                )}
-                <div className="flex items-start justify-between gap-3 p-4">
-                  <div>
-                    <p className="font-semibold text-ink">{item.name}</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted">{item.description}</p>
-                  </div>
-                  <p className="shrink-0 font-semibold text-ink">{money(settings.currency_symbol, item.price)}</p>
-                </div>
-                {onAddToPlate && item.is_available ? (
-                  <div className="border-t border-line px-4 py-3">
-                    <button type="button" onClick={(event) => { event.preventDefault(); onAddToPlate(item); }} className="tap h-10 w-full rounded-full bg-ink text-sm font-semibold text-invert">Add to plate</button>
-                  </div>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        </div>
-      )}
-    </section>
+    </div>
   );
 }
