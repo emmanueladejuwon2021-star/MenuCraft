@@ -30,10 +30,10 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
 
   return (
     <>
-      <header className="sticky top-0 z-40 hidden border-b border-line bg-card/95 backdrop-blur md:block">
+      <header className="sticky top-0 z-40 hidden border-b border-line bg-card/90 backdrop-blur md:block">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
           <div className="min-w-0">
-            <p className="truncate text-lg font-semibold">{settings.restaurant_name}</p>
+            <p className="truncate text-lg font-semibold tracking-tight">{settings.restaurant_name}</p>
             <p className="text-xs text-muted">{staff ? `Kitchen \u00b7 ${user.name}` : guest ? `Guest \u00b7 ${user.name}` : "Guest menu"}</p>
           </div>
           <nav className="ml-auto flex flex-wrap items-center justify-end gap-1">
@@ -47,10 +47,10 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
           </nav>
         </div>
       </header>
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-3 bottom-3 z-40 rounded-3xl border border-line bg-card/95 shadow-soft backdrop-blur md:hidden">
         <div className={`grid ${tabs.length === 4 ? "grid-cols-4" : "grid-cols-5"}`}>
           {tabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex flex-col items-center justify-center gap-1 px-1 py-2 text-[11px] ${isActive ? "font-semibold text-pine" : "text-muted"}`}>
+            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex flex-col items-center justify-center gap-1 px-1 py-2.5 text-[11px] ${isActive ? "font-semibold text-pine" : "text-muted"}`}>
               <tab.icon size={18} />
               <span className="leading-none">{tab.short}</span>
             </NavLink>
