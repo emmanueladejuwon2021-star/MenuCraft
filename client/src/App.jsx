@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 import NavBar from "./components/NavBar.jsx";
 import Toast from "./components/Toast.jsx";
 import HomePage from "./pages/HomePage.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import LiveMenu from "./pages/LiveMenu.jsx";
 import DishManager from "./pages/DishManager.jsx";
 import StockToggle from "./pages/StockToggle.jsx";
@@ -105,6 +106,7 @@ export default function App() {
     setConfirmBox({
       title: `Remove ${dish.name}?`,
       body: "It will leave the live menu. You can tap Undo for a few seconds after that.",
+      noLabel: "Keep dish",
       yesLabel: "Remove dish",
       onYes: async () => {
         try {
@@ -130,6 +132,7 @@ export default function App() {
     setConfirmBox({
       title: `Remove ${category.name}?`,
       body: "This also removes every dish in that category.",
+      noLabel: "Keep list",
       yesLabel: "Remove category",
       onYes: async () => {
         try {
@@ -160,6 +163,7 @@ export default function App() {
     setConfirmBox({
       title: "Update these prices?",
       body: "Every dish in this category will change.",
+      noLabel: "Leave prices",
       yesLabel: "Update prices",
       onYes: async () => {
         try {
@@ -251,8 +255,19 @@ export default function App() {
     notify(`${dish.name} added to your plate`);
   }
 
-  async function handlePaid({ note }) {
-    await placeOrder({ guest: user, items: plate, note });
+  async function handlePaid({ note, guest }) {
+    const ticket = { ...(guest || user || {}) };
+    if (!ticket.name) throw new Error("Add your name so the kitchen can call the plate.");
+    if (!ticket.email) {
+      const walkin = "walkin:" + ticket.name.toLowerCase().replace(/\s+/g, "-");
+      ticket.email = walkin;
+      try {
+        window.localStorage.setItem("menucraft-walkin-email", walkin);
+      } catch {
+        /* ignore private-mode storage */
+      }
+    }
+    await placeOrder({ guest: ticket, items: plate, note });
     setPlate(readPlate());
     setOrders(await loadOrders());
     notify("Order sent. Pay at the counter. The kitchen can see it.");
@@ -265,7 +280,13 @@ export default function App() {
     notify(status === "Cooking" ? "Kitchen has started this order" : status === "Ready" ? "Order is ready" : "Order marked served");
   }
 
-  const guestOrders = user?.email ? myOrders(user.email, orders) : [];
+  let walkinEmail = "";
+  try {
+    walkinEmail = window.localStorage.getItem("menucraft-walkin-email") || "";
+  } catch {
+    walkinEmail = "";
+  }
+  const guestOrders = user?.email ? myOrders(user.email, orders) : myOrders(walkinEmail, orders);
   const staffUser = isStaff(user) ? user : null;
 
   return (
@@ -273,19 +294,15 @@ export default function App() {
       <NavBar settings={menu.settings} user={user} theme={theme} onToggleTheme={handleTheme} plateCount={plateCount(plate)} />
       <Toast toast={toast} />
       <ConfirmDialog box={confirmBox} onClose={() => setConfirmBox(null)} />
-      <main className="mx-auto max-w-6xl px-4 py-4">
-        <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
-          <div>
-            <h1 className="text-lg font-semibold">{menu.settings.restaurant_name}</h1>
-            <p className="text-xs text-muted">{user ? `${user.role === "staff" ? "Kitchen" : "Guest"} \u00b7 ${user.name}` : "Guest menu"}</p>
-          </div>
-          <ThemeToggle theme={theme} onToggle={handleTheme} />
-        </div>
+      <div className="fixed right-3 top-3 z-40 md:hidden">
+        <ThemeToggle theme={theme} onToggle={handleTheme} />
+      </div>
+      <main className="mx-auto max-w-6xl px-4 py-4 pt-14 md:pt-4">
         {loading && location.pathname !== "/" ? (
           <p className="text-sm text-muted">Loading menu\u2026</p>
         ) : (
           <Routes>
-            <Route path="/" element={<HomePage settings={menu.settings} items={menu.items} onAddToPlate={handleAddToPlate} />} />
+            <Route path="/" element={staffUser ? <Navigate to="/orders" replace /> : <HomePage settings={menu.settings} items={menu.items} onAddToPlate={handleAddToPlate} />} />
             <Route path="/menu" element={<LiveMenu settings={menu.settings} categories={menu.categories} items={menu.items} onAddToPlate={handleAddToPlate} />} />
             <Route path="/plate" element={<PlatePage settings={menu.settings} user={user} plate={plate} onQty={(id, qty) => setPlate(setPlateQty(id, qty))} onClear={() => setPlate(writePlate([]))} />} />
             <Route path="/pay" element={<PayPage settings={menu.settings} user={user} plate={plate} onPaid={handlePaid} />} />
@@ -316,6 +333,7 @@ export default function App() {
                 )
               }
             />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         )}
       </main>

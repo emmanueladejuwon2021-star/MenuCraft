@@ -7,7 +7,7 @@ export default function ConfirmDialog({ box, onClose }) {
         <p className="mt-2 text-sm leading-relaxed text-muted">{box.body}</p>
         <div className="mt-5 grid grid-cols-2 gap-2">
           <button type="button" onClick={onClose} className="tap rounded-full border border-line bg-paper text-sm font-medium">
-            Keep it
+            {box.noLabel || "Cancel"}
           </button>
           <button
             type="button"

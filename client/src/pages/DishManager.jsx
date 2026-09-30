@@ -3,6 +3,7 @@ import DishForm from "../components/DishForm";
 import EmptyCard from "../components/EmptyCard";
 import KitchenNav from "../components/KitchenNav";
 import { money } from "../lib/store";
+import DishPhoto from "../components/DishPhoto.jsx";
 
 export default function DishManager({
   settings,
@@ -40,12 +41,14 @@ export default function DishManager({
           <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="New category name" className="tap h-11 w-full rounded-2xl border border-line bg-paper px-3 text-ink sm:flex-1" />
           <button className="tap h-11 rounded-full border border-line bg-paper px-4 text-sm font-medium text-ink sm:shrink-0">Add category</button>
         </form>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 space-y-2">
           {categories.map((category) => (
-            <span key={category.id} className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-2 text-sm text-ink">
-              {category.name}
-              <button type="button" className="text-red-600" onClick={() => onRemoveCategory && onRemoveCategory(category)}>Remove</button>
-            </span>
+            <div key={category.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-paper px-3 py-2">
+              <p className="text-sm font-medium text-ink">{category.name}</p>
+              <button type="button" className="tap h-10 shrink-0 rounded-full border border-red-300 px-3 text-sm font-medium text-red-700" onClick={() => onRemoveCategory && onRemoveCategory(category)}>
+                Remove list
+              </button>
+            </div>
           ))}
         </div>
       </div>
@@ -71,7 +74,7 @@ export default function DishManager({
             return (
               <article key={item.id} className="overflow-hidden rounded-3xl border border-line bg-card shadow-soft">
                 <div className="flex gap-3 p-3 sm:p-4">
-                  {item.image_url ? <img src={item.image_url} alt="" className="h-24 w-24 shrink-0 rounded-2xl object-cover" /> : <div className="h-24 w-24 shrink-0 rounded-2xl bg-paper" />}
+                  <DishPhoto src={item.image_url} name={item.name} className="h-24 w-24 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div>

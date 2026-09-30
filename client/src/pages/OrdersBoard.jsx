@@ -32,7 +32,7 @@ export default function OrdersBoard({ settings, orders, onStatus }) {
                   ))}
                 </ul>
                 {order.note && <p className="mt-2 text-sm text-muted">{order.note}</p>}
-                <p className="mt-3 text-sm font-semibold text-ink">{money(settings.currency_symbol, order.total)} · Paid</p>
+                <p className="mt-3 text-sm font-semibold text-ink">{money(settings.currency_symbol, order.total)} · Pay at the counter</p>
                 {action && (
                   <button type="button" onClick={() => onStatus(order.id, action.status)} className="tap mt-3 h-11 w-full rounded-full bg-ink text-sm font-semibold text-invert">{action.label}</button>
                 )}
