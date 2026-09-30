@@ -5,7 +5,12 @@
   "description": "Real-time digital restaurant menu and price manager",
   "scripts": {
     "dev": "npm run dev --prefix client",
-    "build": "npm install --prefix api && npm run build --prefix client",
+    "build": "npm run build --prefix client",
     "install:all": "npm install --prefix client && npm install --prefix api"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
   }
 }
