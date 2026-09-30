@@ -39,6 +39,35 @@ async function ensureSchema(db) {
     restaurant_name TEXT NOT NULL DEFAULT 'My Restaurant',
     currency_symbol TEXT DEFAULT '₦'
   )`);
+  await db.execute(`CREATE TABLE IF NOT EXISTS sessions (
+    token TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await db.execute(`CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guest_name TEXT NOT NULL,
+    guest_email TEXT NOT NULL,
+    phone TEXT,
+    note TEXT,
+    items_json TEXT NOT NULL,
+    total REAL NOT NULL,
+    paid INTEGER DEFAULT 1,
+    pay_ref TEXT,
+    status TEXT DEFAULT 'New',
+    created_at TEXT
+  )`);
+  const extras = [
+    "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'staff'",
+    "ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''",
+  ];
+  for (const sql of extras) {
+    try {
+      await db.execute(sql);
+    } catch {
+      // column already exists
+    }
+  }
 
   const settings = await db.execute("SELECT id FROM restaurant_settings WHERE id = 1");
   if (!settings.rows.length) {
