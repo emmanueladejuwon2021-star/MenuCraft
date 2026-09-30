@@ -12,6 +12,7 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
     image_url: initial?.image_url || "",
     is_available: initial?.is_available !== false,
   });
+  const [error, setError] = useState("");
 
   function toggleTag(tag) {
     setForm((prev) => ({
@@ -22,11 +23,17 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
+    if (!categories.length || !form.category_id) {
+      setError("Add a category first, then save the dish.");
+      return;
+    }
     onSubmit({
       ...form,
       price: Number(form.price),
       category_id: Number(form.category_id),
       prep_time: Number(form.prep_time || 10),
+      is_available: Boolean(form.is_available),
     });
   }
 
@@ -43,11 +50,15 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
         </label>
         <label className="block text-sm text-ink">
           Category
-          <select value={form.category_id} onChange={(event) => setForm({ ...form, category_id: event.target.value })} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink">
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>{category.name}</option>
-            ))}
-          </select>
+          {categories.length ? (
+            <select required value={form.category_id} onChange={(event) => setForm({ ...form, category_id: event.target.value })} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink">
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
+          ) : (
+            <p className="mt-2 text-sm text-muted">No lists yet. Add a category above before you save a dish.</p>
+          )}
         </label>
         <label className="block text-sm text-ink">
           Prep minutes
@@ -62,6 +73,14 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
         Description
         <textarea rows={2} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2 text-ink" />
       </label>
+      <button
+        type="button"
+        aria-pressed={form.is_available}
+        onClick={() => setForm((prev) => ({ ...prev, is_available: !prev.is_available }))}
+        className={`tap h-11 w-full rounded-full px-4 text-sm font-medium ${form.is_available ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`}
+      >
+        {form.is_available ? "In stock \u00b7 tap to mark sold out" : "Sold out \u00b7 tap to put back on the board"}
+      </button>
       <div className="flex flex-wrap gap-2">
         {ALL_TAGS.map((tag) => (
           <button key={tag} type="button" onClick={() => toggleTag(tag)} className={`tap rounded-full px-3 text-sm ${form.tags.includes(tag) ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`}>
@@ -69,6 +88,7 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
           </button>
         ))}
       </div>
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <div className="flex gap-2">
         <button type="submit" className="tap rounded-full bg-pine px-5 text-sm font-semibold text-invert">Save dish</button>
         <button type="button" onClick={onCancel} className="tap rounded-full border border-line px-5 text-sm text-ink">Cancel</button>
