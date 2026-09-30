@@ -39,7 +39,6 @@ export async function request(path, options = {}) {
     const token = sessionToken();
     if (token) headers.Authorization = `Bearer ${token}`;
     const response = await fetch(`${apiBase()}${path}`, {
-      credentials: "include",
       ...options,
       headers,
     });
