@@ -21,7 +21,7 @@ export default function MyOrders({ settings, orders }) {
   return (
     <section className="page-enter space-y-5 pb-28 md:pb-8">
       <PageHeader kicker="Guest" title="Your orders" hint="Newest first. Pay at the counter when you pick the food up." />
-      <Link to="/menu" className="tap inline-flex h-12 w-full items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-invert sm:w-auto">
+      <Link to="/menu" className="tap inline-flex h-12 w-full items-center justify-center rounded-full bg-pine px-5 text-sm font-semibold text-invert sm:w-auto">
         Order food
       </Link>
       {list.length === 0 ? (

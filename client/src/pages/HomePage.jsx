@@ -19,7 +19,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
             Come for the rice, stay for the soup. Today’s board is short on purpose so you can pick fast and eat well.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/menu" className="tap inline-flex items-center rounded-full bg-ink px-6 text-sm font-semibold text-invert">
+            <Link to="/menu" className="tap inline-flex items-center rounded-full bg-pine px-6 text-sm font-semibold text-invert">
               See today’s board
             </Link>
             <Link to="/plate" className="tap inline-flex items-center rounded-full border border-line bg-paper px-6 text-sm font-semibold text-ink">
@@ -48,7 +48,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
               </div>
               <p className="text-sm leading-relaxed text-muted">{spotlight.description}</p>
               {onAddToPlate ? (
-                <button type="button" onClick={() => onAddToPlate(spotlight)} className="tap h-12 w-full rounded-full bg-ink text-sm font-semibold text-invert">
+                <button type="button" onClick={() => onAddToPlate(spotlight)} className="tap h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert">
                   Add to plate
                 </button>
               ) : null}
@@ -77,7 +77,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
                 <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
                   <p className="hidden text-base font-semibold text-ink sm:block">{money(settings.currency_symbol, item.price)}</p>
                   {onAddToPlate && item.is_available ? (
-                    <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 rounded-full bg-ink px-4 text-sm font-semibold text-invert">
+                    <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 rounded-full bg-pine px-4 text-sm font-semibold text-invert">
                       Add to plate
                     </button>
                   ) : null}

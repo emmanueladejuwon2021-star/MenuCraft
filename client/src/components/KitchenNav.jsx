@@ -23,7 +23,7 @@ export default function KitchenNav({ title, hint }) {
             to={link.to}
             className={({ isActive }) =>
               `tap h-10 shrink-0 rounded-full px-4 text-sm font-medium ${
-                isActive ? "bg-ink text-invert" : "border border-line bg-card text-ink"
+                isActive ? "bg-pine text-invert" : "border border-line bg-card text-ink"
               }`
             }
           >
