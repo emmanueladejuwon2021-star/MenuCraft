@@ -13,7 +13,7 @@
     "@libsql/client": "^0.14.0",
     "@vitejs/plugin-react": "^6.1.1",
     "cors": "^2.8.5",
-    "express": "^4.21.2",
+    "express": "^5.2.1",
     "vite": "^8.3.2"
   }
 }
