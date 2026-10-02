@@ -24,7 +24,7 @@ export default function PlatePage({ settings, user, plate, onQty, onClear }) {
         <div className="rounded-3xl border border-dashed border-line bg-card px-5 py-12 text-center">
           <p className="text-base font-semibold text-ink">Your plate is empty</p>
           <p className="mt-2 text-sm text-muted">Pick a dish from today’s board to start.</p>
-          <Link to="/menu" className="tap mt-5 inline-flex items-center justify-center rounded-full bg-ink px-6 text-sm font-semibold text-invert">Open the board</Link>
+          <Link to="/menu" className="tap mt-5 inline-flex items-center justify-center rounded-full bg-pine px-6 text-sm font-semibold text-invert">Open the board</Link>
         </div>
       ) : (
         <>
@@ -57,22 +57,20 @@ export default function PlatePage({ settings, user, plate, onQty, onClear }) {
               );
             })}
           </div>
-
           {askClear ? (
             <div className="rounded-3xl border border-line bg-card px-4 py-4 shadow-soft" role="alertdialog" aria-labelledby="clear-title">
               <p id="clear-title" className="font-semibold text-ink">Clear the whole plate?</p>
               <p className="mt-1 text-sm text-muted">Every dish comes off. You can add them again from the board.</p>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <button type="button" className="tap rounded-full border border-line text-sm font-medium text-ink" onClick={() => setAskClear(false)}>Keep plate</button>
-                <button type="button" className="tap rounded-full bg-ink text-sm font-semibold text-invert" onClick={() => { setAskClear(false); onClear(); }}>Clear plate</button>
+                <button type="button" className="tap rounded-full bg-pine text-sm font-semibold text-invert" onClick={() => { setAskClear(false); onClear(); }}>Clear plate</button>
               </div>
             </div>
           ) : null}
-
           <div className="fixed inset-x-3 bottom-[4.75rem] z-30 rounded-3xl border border-line bg-card/95 px-4 py-3 shadow-soft backdrop-blur md:sticky md:inset-auto md:bottom-4 md:z-10">
             <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs text-muted">{portions} {portions === 1 ? "portion" : "portions"}{guestName ? ` · ${guestName}` : ""}</p>
+                <p className="text-xs text-muted">{portions} {portions === 1 ? "portion" : "portions"}{guestName ? ` \u00b7 ${guestName}` : ""}</p>
                 <p className="text-lg font-semibold text-ink">{money(settings.currency_symbol, total)}</p>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:flex sm:w-auto">

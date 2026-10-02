@@ -25,8 +25,8 @@ export default function AccountPage({ user, onCreate, onSignIn, onUpdate, onSign
         </p>
         {!user && (
           <div className="mt-4 flex gap-2">
-            <button type="button" onClick={() => setMode("signin")} className={`tap rounded-full px-4 text-sm ${mode === "signin" ? "bg-ink text-invert" : "border border-line text-ink"}`}>Sign in</button>
-            <button type="button" onClick={() => setMode("signup")} className={`tap rounded-full px-4 text-sm ${mode === "signup" ? "bg-ink text-invert" : "border border-line text-ink"}`}>Create account</button>
+            <button type="button" onClick={() => setMode("signin")} className={`tap rounded-full px-4 text-sm ${mode === "signin" ? "bg-pine text-invert" : "border border-line text-ink"}`}>Sign in</button>
+            <button type="button" onClick={() => setMode("signup")} className={`tap rounded-full px-4 text-sm ${mode === "signup" ? "bg-pine text-invert" : "border border-line text-ink"}`}>Create account</button>
           </div>
         )}
         <form

@@ -16,7 +16,7 @@ export default function GuestAccount({ user, onCreate, onSignIn, onUpdate, onSig
   return (
     <section className="page-enter mx-auto max-w-lg space-y-5">
       <div className="overflow-hidden rounded-[2rem] border border-line bg-card shadow-soft">
-        <div className="bg-gradient-to-br from-orange-200/50 to-transparent px-6 py-6 dark:from-orange-500/10">
+        <div className="bg-gradient-to-br from-blue-200/70 to-transparent px-6 py-6 dark:from-blue-500/15">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-clay">Guest</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink">{user ? "Your account" : "Create your account"}</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted">
@@ -26,8 +26,8 @@ export default function GuestAccount({ user, onCreate, onSignIn, onUpdate, onSig
         <div className="px-6 pb-6">
           {!user && (
             <div className="mt-2 grid grid-cols-2 gap-2 rounded-full bg-paper p-1">
-              <button type="button" onClick={() => setMode("signup")} className={`tap rounded-full text-sm font-medium ${mode === "signup" ? "bg-ink text-invert" : "text-muted"}`}>Create account</button>
-              <button type="button" onClick={() => setMode("signin")} className={`tap rounded-full text-sm font-medium ${mode === "signin" ? "bg-ink text-invert" : "text-muted"}`}>Sign in</button>
+              <button type="button" onClick={() => setMode("signup")} className={`tap rounded-full text-sm font-medium ${mode === "signup" ? "bg-pine text-invert" : "text-muted"}`}>Create account</button>
+              <button type="button" onClick={() => setMode("signin")} className={`tap rounded-full text-sm font-medium ${mode === "signin" ? "bg-pine text-invert" : "text-muted"}`}>Sign in</button>
             </div>
           )}
           <form
