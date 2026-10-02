@@ -73,22 +73,17 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
         Description
         <textarea rows={2} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2 text-ink" />
       </label>
-      <button
-        type="button"
-        aria-pressed={form.is_available}
-        onClick={() => setForm((prev) => ({ ...prev, is_available: !prev.is_available }))}
-        className={`tap h-11 w-full rounded-full px-4 text-sm font-medium ${form.is_available ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`}
-      >
+      <button type="button" aria-pressed={form.is_available} onClick={() => setForm((prev) => ({ ...prev, is_available: !prev.is_available }))} className={`tap h-11 w-full rounded-full px-4 text-sm font-medium ${form.is_available ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`}>
         {form.is_available ? "In stock \u00b7 tap to mark sold out" : "Sold out \u00b7 tap to put back on the board"}
       </button>
       <div className="flex flex-wrap gap-2">
         {ALL_TAGS.map((tag) => (
-          <button key={tag} type="button" onClick={() => toggleTag(tag)} className={`tap rounded-full px-3 text-sm ${form.tags.includes(tag) ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`}>
+          <button key={tag} type="button" onClick={() => toggleTag(tag)} className={`tap h-11 rounded-full px-4 text-sm ${form.tags.includes(tag) ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`}>
             {tag}
           </button>
         ))}
       </div>
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       <div className="flex gap-2">
         <button type="submit" className="tap rounded-full bg-pine px-5 text-sm font-semibold text-invert">Save dish</button>
         <button type="button" onClick={onCancel} className="tap rounded-full border border-line px-5 text-sm text-ink">Cancel</button>
