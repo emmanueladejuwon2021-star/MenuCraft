@@ -23,7 +23,7 @@ After staff sign in, kitchen tools appear: dishes, stock, prices, orders, and sh
 
 Checkout asks for a table note only. It does not collect card numbers.
 
-When the live database is connected, kitchen staff must sign in before they can change dishes, prices, or stock, and guest orders are stored in that database.
+When the live database is connected, kitchen writes require a staff session. The first account created becomes staff so a new restaurant can open the kitchen. Later accounts are guests unless an existing staff member creates them. Guest orders stay readable; dish, price, stock, category, and settings changes return 401 without a staff token.
 
 ## Five screens
 
@@ -42,6 +42,8 @@ npm install
 npm run dev
 
 Open the printed local address. Changes stay in this browser until you add the cloud database.
+
+Price rules are covered by `npm test` from the repo root. CI runs those tests and a client build on every pull request.
 
 ## Connect Turso (shared live menu)
 

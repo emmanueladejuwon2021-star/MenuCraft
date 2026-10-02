@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { readyDb, mapItem } = require("./db");
 const { hashPassword, checkPassword, makeToken, publicUser, readToken, findUserByToken } = require("./auth");
+const { applyPrice } = require("./pricing");
 
 const app = express();
 
@@ -39,6 +40,20 @@ async function withDb(req, res, next) {
   }
 }
 
+async function requireStaff(req, res, next) {
+  try {
+    const user = await findUserByToken(req.db, readToken(req));
+    if (!user || user.role !== "staff") {
+      return fail(res, 401, "Kitchen staff must sign in before changing the menu.");
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error(error);
+    return fail(res, 500, "Could not check the kitchen session. Please try again.");
+  }
+}
+
 app.get("/api/health", async (_req, res) => {
   const db = await readyDb();
   res.json({ ok: true, connected: Boolean(db) });
@@ -50,13 +65,21 @@ app.post("/api/signup", withDb, async (req, res) => {
   const password = String(req.body?.password || "");
   const restaurantName = String(req.body?.restaurant_name || "").trim() || "Guest";
   const phone = String(req.body?.phone || "").trim();
-  const role = req.body?.role === "guest" ? "guest" : "staff";
   if (!name) return fail(res, 400, "Please enter your name.");
   if (!email.includes("@")) return fail(res, 400, "Please enter a valid email.");
   if (password.length < 6) return fail(res, 400, "Password should be at least 6 characters.");
   try {
     const existing = await req.db.execute({ sql: "SELECT id FROM users WHERE email = ?", args: [email] });
     if (existing.rows.length) return fail(res, 409, "An account with that email already exists.");
+    const staffCount = await req.db.execute("SELECT COUNT(*) AS n FROM users WHERE role = 'staff'");
+    const hasStaff = Number(staffCount.rows[0].n) > 0;
+    let role = "guest";
+    if (!hasStaff) {
+      role = "staff";
+    } else if (req.body?.role === "staff") {
+      const caller = await findUserByToken(req.db, readToken(req));
+      if (caller?.role === "staff") role = "staff";
+    }
     const inserted = await req.db.execute({
       sql: "INSERT INTO users (name, email, password_hash, restaurant_name, role, phone) VALUES (?, ?, ?, ?, ?, ?) RETURNING id, name, email, phone, restaurant_name, role",
       args: [name, email, hashPassword(password), restaurantName, role, phone],
@@ -147,7 +170,7 @@ app.get("/api/categories", withDb, async (req, res) => {
   }
 });
 
-app.post("/api/categories", withDb, async (req, res) => {
+app.post("/api/categories", withDb, requireStaff, async (req, res) => {
   const name = String(req.body?.name || "").trim();
   if (!name) return fail(res, 400, "Please enter a category name.");
   try {
@@ -164,7 +187,7 @@ app.post("/api/categories", withDb, async (req, res) => {
   }
 });
 
-app.delete("/api/categories/:id", withDb, async (req, res) => {
+app.delete("/api/categories/:id", withDb, requireStaff, async (req, res) => {
   try {
     await req.db.execute({ sql: "DELETE FROM menu_items WHERE category_id = ?", args: [req.params.id] });
     await req.db.execute({ sql: "DELETE FROM categories WHERE id = ?", args: [req.params.id] });
@@ -175,7 +198,7 @@ app.delete("/api/categories/:id", withDb, async (req, res) => {
   }
 });
 
-app.post("/api/items", withDb, async (req, res) => {
+app.post("/api/items", withDb, requireStaff, async (req, res) => {
   const body = req.body || {};
   const name = String(body.name || "").trim();
   const categoryId = Number(body.category_id);
@@ -196,7 +219,7 @@ app.post("/api/items", withDb, async (req, res) => {
   }
 });
 
-app.put("/api/items/:id", withDb, async (req, res) => {
+app.put("/api/items/:id", withDb, requireStaff, async (req, res) => {
   const body = req.body || {};
   const name = String(body.name || "").trim();
   const categoryId = Number(body.category_id);
@@ -218,7 +241,7 @@ app.put("/api/items/:id", withDb, async (req, res) => {
   }
 });
 
-app.patch("/api/items/:id/status", withDb, async (req, res) => {
+app.patch("/api/items/:id/status", withDb, requireStaff, async (req, res) => {
   const available = req.body?.is_available === false || req.body?.is_available === 0 ? 0 : 1;
   try {
     const updated = await req.db.execute({
@@ -234,17 +257,22 @@ app.patch("/api/items/:id/status", withDb, async (req, res) => {
   }
 });
 
-app.post("/api/items/bulk-price-update", withDb, async (req, res) => {
+app.post("/api/items/bulk-price-update", withDb, requireStaff, async (req, res) => {
   const categoryId = Number(req.body?.category_id);
   const mode = String(req.body?.mode || "percent");
   const amount = Number(req.body?.amount);
   if (!categoryId) return fail(res, 400, "Please choose a category.");
   if (Number.isNaN(amount)) return fail(res, 400, "Please enter an amount.");
   try {
-    if (mode === "amount") {
-      await req.db.execute({ sql: "UPDATE menu_items SET price = MAX(0, ROUND(price + ?, 2)) WHERE category_id = ?", args: [amount, categoryId] });
-    } else {
-      await req.db.execute({ sql: "UPDATE menu_items SET price = MAX(0, ROUND(price * (1 + ? / 100.0), 2)) WHERE category_id = ?", args: [amount, categoryId] });
+    const current = await req.db.execute({
+      sql: "SELECT id, price FROM menu_items WHERE category_id = ?",
+      args: [categoryId],
+    });
+    for (const row of current.rows) {
+      await req.db.execute({
+        sql: "UPDATE menu_items SET price = ? WHERE id = ?",
+        args: [applyPrice(row.price, mode, amount), row.id],
+      });
     }
     const items = await req.db.execute({ sql: "SELECT * FROM menu_items WHERE category_id = ? ORDER BY name", args: [categoryId] });
     res.json({ ok: true, message: "Price updated successfully", items: items.rows.map(mapItem) });
@@ -254,7 +282,7 @@ app.post("/api/items/bulk-price-update", withDb, async (req, res) => {
   }
 });
 
-app.delete("/api/items/:id", withDb, async (req, res) => {
+app.delete("/api/items/:id", withDb, requireStaff, async (req, res) => {
   try {
     await req.db.execute({ sql: "DELETE FROM menu_items WHERE id = ?", args: [req.params.id] });
     res.json({ ok: true, message: "Dish removed" });
@@ -274,7 +302,7 @@ app.get("/api/settings", withDb, async (req, res) => {
   }
 });
 
-app.put("/api/settings", withDb, async (req, res) => {
+app.put("/api/settings", withDb, requireStaff, async (req, res) => {
   const name = String(req.body?.restaurant_name || "").trim();
   const symbol = String(req.body?.currency_symbol || "").trim() || "$";
   if (!name) return fail(res, 400, "Please enter a restaurant name.");

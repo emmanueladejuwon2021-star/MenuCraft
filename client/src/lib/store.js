@@ -1,5 +1,6 @@
 import { STARTER_DATA } from "./seed";
 import { request, shouldUseLocal } from "./api";
+import { applyPrice } from "./pricing";
 
 const STORAGE_KEY = "menucraft-local-menu-v3";
 
@@ -176,11 +177,7 @@ export async function bulkUpdatePrices({ categoryId, mode, amount }) {
     const data = readLocal();
     data.items = data.items.map((item) => {
       if (Number(item.category_id) !== Number(categoryId)) return item;
-      const next =
-        mode === "amount"
-          ? Math.max(0, Number((Number(item.price) + Number(amount)).toFixed(2)))
-          : Math.max(0, Number((Number(item.price) * (1 + Number(amount) / 100)).toFixed(2)));
-      return { ...item, price: next };
+      return { ...item, price: applyPrice(item.price, mode, amount) };
     });
     writeLocal(data);
     return {
