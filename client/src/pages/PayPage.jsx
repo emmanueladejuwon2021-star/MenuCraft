@@ -72,10 +72,10 @@ export default function PayPage({ settings, user, plate, onPaid }) {
               </>
             )}
             <label className="block text-sm font-medium text-ink">Table or pickup note<input value={note} onChange={(event) => setNote(event.target.value)} placeholder="Table 4, or pickup" className="field mt-1" /></label>
-            {error ? <p className="rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">{error}</p> : null}
+            {error ? <p className="rounded-2xl border border-line bg-card px-3 py-3 text-sm text-danger">{error}</p> : null}
             <button disabled={busy} className="tap h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">{busy ? "Sending to the kitchen…" : `Send order · ${money(settings.currency_symbol, total)}`}</button>
+            <Link to="/plate" className="tap inline-flex h-11 w-full items-center justify-center rounded-full border border-line text-sm font-medium text-ink">Back to plate</Link>
           </form>
-          <Link to="/plate" className="tap inline-flex items-center text-sm font-medium text-muted">Back to plate</Link>
         </div>
       </div>
     </section>
