@@ -11,7 +11,11 @@ function checkPassword(password, stored) {
   const parts = value.split("$");
   if (parts[0] === "pbkdf2" && parts.length === 3) {
     const digest = crypto.pbkdf2Sync(String(password), parts[1], 120000, 32, "sha256").toString("hex");
-    return crypto.timingSafeEqual(Buffer.from(digest, "hex"), Buffer.from(parts[2], "hex"));
+    try {
+      return crypto.timingSafeEqual(Buffer.from(digest, "hex"), Buffer.from(parts[2], "hex"));
+    } catch {
+      return false;
+    }
   }
   return false;
 }
@@ -37,13 +41,20 @@ function readToken(req) {
   return String(req.headers["x-menucraft-token"] || "").trim();
 }
 
+const SESSION_DAYS = 14;
+
 async function findUserByToken(db, token) {
   if (!token) return null;
   const session = await db.execute({
-    sql: "SELECT user_id FROM sessions WHERE token = ?",
+    sql: "SELECT user_id, created_at FROM sessions WHERE token = ?",
     args: [token],
   });
   if (!session.rows.length) return null;
+  const created = new Date(session.rows[0].created_at || 0).getTime();
+  if (!Number.isFinite(created) || Date.now() - created > SESSION_DAYS * 24 * 60 * 60 * 1000) {
+    await db.execute({ sql: "DELETE FROM sessions WHERE token = ?", args: [token] });
+    return null;
+  }
   const user = await db.execute({
     sql: "SELECT id, name, email, phone, restaurant_name, role FROM users WHERE id = ?",
     args: [session.rows[0].user_id],
