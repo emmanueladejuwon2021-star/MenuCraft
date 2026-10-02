@@ -3,6 +3,10 @@ import { Search } from "lucide-react";
 import { ALL_TAGS } from "../lib/seed";
 import { money } from "../lib/store";
 
+function countLabel(count, one, many) {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
 export default function LiveMenu({ settings, categories, items, onAddToPlate }) {
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState("all");
@@ -22,70 +26,72 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
 
   const selectedCategory = categories.find((category) => Number(category.id) === Number(categoryId));
   const sections = categoryId === "all" ? categories : selectedCategory ? [selectedCategory] : [];
+  const chip = (on) => `tap h-11 shrink-0 rounded-full px-4 text-sm font-medium ${on ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`;
 
   return (
-    <section className="page-enter space-y-3">
+    <section className="page-enter space-y-4 pb-8">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-clay">{settings.restaurant_name}</p>
-          <h1 className="text-xl font-semibold tracking-tight text-ink">Menu</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-clay">{settings.restaurant_name}</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-ink">Today's board</h1>
         </div>
-        <p className="text-xs font-medium text-muted">{visible.length} dishes</p>
+        <p className="text-sm font-medium text-ink">{countLabel(visible.length, "dish", "dishes")}</p>
       </div>
 
-      <div className="sticky top-16 z-20 space-y-2 rounded-2xl border border-line bg-card/95 p-2 shadow-soft backdrop-blur">
+      <div className="sticky top-[4.6rem] z-20 space-y-3 rounded-[1.4rem] border border-line bg-card/95 p-3 shadow-soft backdrop-blur">
         <label className="relative block">
-          <span className="sr-only">Search the menu</span>
-          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search dishes" aria-label="Search dishes" className="h-9 w-full rounded-xl border border-line bg-paper pl-8 pr-3 text-sm text-ink" />
+          <span className="sr-only">Search the board</span>
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the board" aria-label="Search the board" className="tap h-12 w-full rounded-2xl border border-line bg-paper pl-9 pr-3 text-ink" />
         </label>
-        <div className="nav-scroll flex gap-1.5 overflow-x-auto">
-          <button type="button" className={`h-8 shrink-0 rounded-full px-3 text-xs font-medium ${categoryId === "all" ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setCategoryId("all")}>All</button>
+        <div className="nav-scroll flex gap-2 overflow-x-auto pb-1">
+          <button type="button" className={chip(categoryId === "all")} onClick={() => setCategoryId("all")}>Whole board</button>
           {categories.map((category) => (
-            <button type="button" key={category.id} className={`h-8 shrink-0 rounded-full px-3 text-xs font-medium ${Number(categoryId) === Number(category.id) ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setCategoryId(category.id)}>{category.name}</button>
+            <button type="button" key={category.id} className={chip(Number(categoryId) === Number(category.id))} onClick={() => setCategoryId(category.id)}>{category.name}</button>
           ))}
         </div>
-        <div className="nav-scroll flex gap-1.5 overflow-x-auto">
-          <button type="button" className={`h-8 shrink-0 rounded-full px-3 text-xs ${tag === "all" ? "bg-clay text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setTag("all")}>Any diet</button>
+        <div className="nav-scroll flex gap-2 overflow-x-auto pb-1">
+          <button type="button" className={chip(tag === "all")} onClick={() => setTag("all")}>Any diet</button>
           {ALL_TAGS.map((item) => (
-            <button type="button" key={item} className={`h-8 shrink-0 rounded-full px-3 text-xs ${tag === item ? "bg-clay text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setTag(item)}>{item}</button>
+            <button type="button" key={item} className={chip(tag === item)} onClick={() => setTag(item)}>{item}</button>
           ))}
-          <button type="button" className={`h-8 shrink-0 rounded-full px-3 text-xs ${showSoldOut ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setShowSoldOut((value) => !value)}>{showSoldOut ? "Hide sold out" : "Sold out"}</button>
+          <button type="button" className={chip(showSoldOut)} onClick={() => setShowSoldOut((value) => !value)}>{showSoldOut ? "Hide sold out" : "Show sold out"}</button>
         </div>
       </div>
 
       {visible.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line bg-card px-4 py-8 text-center">
-          <p className="text-sm font-semibold text-ink">Nothing matches that search</p>
-          <button type="button" className="tap mt-3 h-9 rounded-full bg-ink px-4 text-xs font-semibold text-invert" onClick={() => { setQuery(""); setCategoryId("all"); setTag("all"); setShowSoldOut(false); }}>Show everything</button>
+        <div className="rounded-[2rem] border border-dashed border-line bg-card px-5 py-12 text-center">
+          <p className="text-lg font-semibold text-ink">Nothing matches that search</p>
+          <p className="mt-2 text-sm text-muted">Clear the search or pick another list.</p>
+          <button type="button" className="tap mt-5 rounded-full bg-pine px-5 text-sm font-semibold text-invert" onClick={() => { setQuery(""); setCategoryId("all"); setTag("all"); setShowSoldOut(false); }}>Show the whole board</button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-5">
           {sections.map((category) => {
             const dishes = visible.filter((item) => Number(item.category_id) === Number(category.id));
             if (!dishes.length) return null;
             return (
-              <section key={category.id} className="overflow-hidden rounded-2xl border border-line bg-card">
-                <div className="flex items-center justify-between border-b border-line px-3 py-2">
-                  <h2 className="text-sm font-semibold text-ink">{category.name}</h2>
-                  <p className="text-[11px] text-muted">{dishes.length}</p>
+              <section key={category.id} className="overflow-hidden rounded-[1.6rem] border border-line bg-card shadow-soft">
+                <div className="flex items-center justify-between border-b border-line px-4 py-3">
+                  <h2 className="text-lg font-semibold text-ink">{category.name}</h2>
+                  <p className="text-xs text-muted">{countLabel(dishes.length, "dish", "dishes")}</p>
                 </div>
                 {dishes.map((item) => {
                   const tags = item.tags || [];
                   return (
-                    <article key={item.id} className={`flex items-center gap-3 border-b border-line px-3 py-2 last:border-b-0 ${item.is_available ? "" : "opacity-60"}`}>
+                    <article key={item.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <h3 className="truncate text-sm font-semibold text-ink">{item.name}</h3>
-                          <p className="shrink-0 text-sm font-semibold text-ink">{money(settings.currency_symbol, item.price)}</p>
+                        <div className="flex items-baseline justify-between gap-3">
+                          <h3 className="text-base font-semibold text-ink">{item.name}</h3>
+                          <p className="shrink-0 text-base font-semibold text-ink">{money(settings.currency_symbol, item.price)}</p>
                         </div>
-                        {item.description ? <p className="truncate text-xs text-muted">{item.description}</p> : null}
-                        <p className="mt-0.5 truncate text-[11px] text-muted">{item.is_available ? "Ready" : "Sold out"}{tags.length ? ` · ${tags.join(", ")}` : ""}</p>
+                        {item.description ? <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p> : null}
+                        <p className="mt-2 text-xs font-semibold text-ink">{item.is_available ? "Ready" : "Sold out"}{tags.length ? <span className="font-normal text-muted">{` \u00b7 ${tags.join(", ")}`}</span> : null}</p>
                       </div>
                       {item.is_available && onAddToPlate ? (
-                        <button type="button" onClick={() => onAddToPlate(item)} className="h-8 shrink-0 rounded-full bg-ink px-3 text-xs font-semibold text-invert">Add</button>
+                        <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 shrink-0 rounded-full bg-pine px-4 text-sm font-semibold text-invert">Add</button>
                       ) : (
-                        <span className="shrink-0 text-[11px] text-muted">Out</span>
+                        <span className="shrink-0 rounded-full bg-paper px-3 py-2 text-xs font-semibold text-ink">Sold out</span>
                       )}
                     </article>
                   );
