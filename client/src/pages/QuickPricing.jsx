@@ -7,6 +7,7 @@ export default function QuickPricing({ settings, categories, items, onApply }) {
   const [categoryId, setCategoryId] = useState(categories[0]?.id || "");
   const [mode, setMode] = useState("percent");
   const [amount, setAmount] = useState("10");
+  const [ask, setAsk] = useState(false);
 
   useEffect(() => {
     if (!categories.length) return;
@@ -29,8 +30,8 @@ export default function QuickPricing({ settings, categories, items, onApply }) {
         className="space-y-3 rounded-2xl border border-line bg-card p-3 shadow-soft"
         onSubmit={(event) => {
           event.preventDefault();
-          if (!ready) return;
-          onApply({ categoryId: Number(categoryId), mode, amount: number });
+          if (!ready || !preview.length) return;
+          setAsk(true);
         }}
       >
         <label className="block text-sm font-medium text-ink">
@@ -55,7 +56,17 @@ export default function QuickPricing({ settings, categories, items, onApply }) {
           </label>
         </div>
         <p className="text-xs text-muted">{hint}</p>
-        <button disabled={!ready} className="tap h-11 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">Update prices</button>
+        <button disabled={!ready || !preview.length} className="tap h-11 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">Review price change</button>
+        {ask ? (
+          <div className="rounded-2xl border border-line bg-paper p-3" role="alertdialog" aria-labelledby="price-title">
+            <p id="price-title" className="font-semibold text-ink">Change {preview.length} {preview.length === 1 ? "dish" : "dishes"}?</p>
+            <p className="mt-1 text-sm text-muted">This updates every price in the list. You can change them back the same way.</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button type="button" className="tap rounded-full border border-line text-sm font-medium text-ink" onClick={() => setAsk(false)}>Keep prices</button>
+              <button type="button" className="tap rounded-full bg-pine text-sm font-semibold text-invert" onClick={() => { setAsk(false); onApply({ categoryId: Number(categoryId), mode, amount: number }); }}>Update prices</button>
+            </div>
+          </div>
+        ) : null}
       </form>
       <div className="space-y-2">
         {preview.length === 0 ? (
