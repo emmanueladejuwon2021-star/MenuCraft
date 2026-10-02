@@ -3,13 +3,28 @@ import { request, shouldUseLocal } from "./api";
 const ACCOUNTS_KEY = "menucraft-accounts-v1";
 const SESSION_KEY = "menucraft-session-v1";
 
-function hashSecret(email, password) {
+function legacySecret(email, password) {
   const raw = `${email.trim().toLowerCase()}::${password}`;
   try {
     return btoa(unescape(encodeURIComponent(raw)));
   } catch {
     return raw;
   }
+}
+
+async function hashSecret(email, password) {
+  const raw = `${email.trim().toLowerCase()}::${password}`;
+  const bytes = new TextEncoder().encode(raw);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const hex = Array.from(new Uint8Array(digest)).map((part) => part.toString(16).padStart(2, "0")).join("");
+  return `sha256:${hex}`;
+}
+
+async function passwordMatches(account, email, password) {
+  const next = await hashSecret(email, password);
+  if (account.password_hash === next) return next;
+  if (account.password_hash === legacySecret(email, password)) return next;
+  return "";
 }
 
 function readAccounts() {
@@ -99,7 +114,7 @@ export async function createAccount({ name, email, password, restaurant_name }) 
       email: cleanEmail,
       restaurant_name: cleanRestaurant,
       role: "staff",
-      password_hash: hashSecret(cleanEmail, password),
+      password_hash: await hashSecret(cleanEmail, password),
     };
     accounts.push(account);
     writeAccounts(accounts);
@@ -134,7 +149,7 @@ export async function createGuestAccount({ name, email, password, phone }) {
       phone: cleanPhone,
       restaurant_name: "",
       role: "guest",
-      password_hash: hashSecret(cleanEmail, password),
+      password_hash: await hashSecret(cleanEmail, password),
     };
     accounts.push(account);
     writeAccounts(accounts);
@@ -155,9 +170,13 @@ export async function signIn({ email, password }) {
     return writeSession(keepToken(user, { ...user, token: user.token || payload.token, role }));
   } catch (error) {
     if (!shouldUseLocal(error)) throw error;
-    const account = readAccounts().find((row) => row.email === cleanEmail);
-    if (!account || account.password_hash !== hashSecret(cleanEmail, password)) {
-      throw new Error("Email or password is not correct.");
+    const accounts = readAccounts();
+    const account = accounts.find((row) => row.email === cleanEmail);
+    const nextHash = account ? await passwordMatches(account, cleanEmail, password) : "";
+    if (!account || !nextHash) throw new Error("Email or password is not correct.");
+    if (account.password_hash !== nextHash) {
+      account.password_hash = nextHash;
+      writeAccounts(accounts);
     }
     return writeSession(publicUser(account));
   }
