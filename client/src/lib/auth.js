@@ -45,7 +45,8 @@ function publicUser(account) {
     email: account.email,
     phone: account.phone || "",
     restaurant_name: account.restaurant_name || "",
-    role: account.role || (account.restaurant_name ? "staff" : "guest"),
+    role: account.role === "guest" ? "guest" : "staff",
+    token: account.token || "",
   };
 }
 
@@ -57,9 +58,19 @@ export function isGuest(user) {
   return user?.role === "guest";
 }
 
+function keepToken(session, user) {
+  return {
+    ...session,
+    ...user,
+    token: user?.token || session?.token || "",
+    role: user?.role || session?.role || "guest",
+  };
+}
+
 async function saveRemote(path, body) {
   const payload = await request(path, { method: "POST", body: JSON.stringify(body) });
-  return writeSession({ ...payload.user, role: body.role || payload.user.role || "staff" });
+  const user = payload.user || {};
+  return writeSession(keepToken(user, { ...user, token: user.token || payload.token, role: user.role || body.role || "staff" }));
 }
 
 export async function createAccount({ name, email, password, restaurant_name }) {
@@ -139,8 +150,9 @@ export async function signIn({ email, password }) {
       method: "POST",
       body: JSON.stringify({ email: cleanEmail, password }),
     });
-    const role = payload.user.role || (payload.user.restaurant_name && payload.user.restaurant_name !== "Guest" ? "staff" : "guest");
-    return writeSession({ ...payload.user, role });
+    const user = payload.user || {};
+    const role = user.role === "guest" ? "guest" : "staff";
+    return writeSession(keepToken(user, { ...user, token: user.token || payload.token, role }));
   } catch (error) {
     if (!shouldUseLocal(error)) throw error;
     const account = readAccounts().find((row) => row.email === cleanEmail);
@@ -153,20 +165,20 @@ export async function signIn({ email, password }) {
 
 export async function updateAccount(updates) {
   const session = readSession();
-  if (!session) throw new Error("Please sign in first.");
+  if (!session?.token && !session?.email) throw new Error("Please sign in first.");
   const next = {
     ...session,
     name: String(updates.name || session.name).trim(),
-    phone: String(updates.phone || session.phone || "").trim(),
+    phone: String(updates.phone ?? session.phone ?? "").trim(),
     restaurant_name: String(updates.restaurant_name || session.restaurant_name || "").trim(),
   };
   if (!next.name) throw new Error("Please enter your name.");
   try {
     const payload = await request("/api/account", {
       method: "PUT",
-      body: JSON.stringify({ ...next, email: session.email }),
+      body: JSON.stringify({ name: next.name, phone: next.phone, restaurant_name: next.restaurant_name }),
     });
-    return writeSession({ ...(payload.user || next), role: session.role });
+    return writeSession(keepToken(session, { ...(payload.user || next), token: session.token, role: session.role }));
   } catch (error) {
     if (!shouldUseLocal(error)) throw error;
     const accounts = readAccounts().map((row) =>
@@ -177,6 +189,19 @@ export async function updateAccount(updates) {
   }
 }
 
-export function signOut() {
+export async function signOut() {
+  const session = readSession();
   writeSession(null);
+  if (!session?.token) return;
+  try {
+    await fetch("/api/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.token}`,
+      },
+    });
+  } catch {
+    /* the browser session is already cleared */
+  }
 }

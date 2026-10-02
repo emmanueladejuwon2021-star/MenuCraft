@@ -232,10 +232,11 @@ export default function App() {
   async function handleAccountUpdate(form) {
     try {
       setUser(await updateAccount(form));
-      if (form.restaurant_name) {
-        await saveSettings({ restaurant_name: form.restaurant_name, currency_symbol: menu.settings.currency_symbol || "\u20a6" });
-        await refresh();
-      }
+      await saveSettings({
+        restaurant_name: form.restaurant_name || menu.settings.restaurant_name,
+        currency_symbol: form.currency_symbol || menu.settings.currency_symbol || "\u20a6",
+      });
+      await refresh();
       notify("Saved!");
     } catch (error) {
       notify(error.message || "Could not save account details.", "error");
@@ -323,7 +324,7 @@ export default function App() {
               path="/account"
               element={
                 staffUser ? (
-                  <AccountPage user={staffUser} onCreate={handleStaffSignup} onSignIn={(form) => handleSignIn(form)} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />
+                  <AccountPage user={staffUser} settings={menu.settings} onUpdate={handleAccountUpdate} onSignOut={handleSignOut} />
                 ) : (
                   <Navigate to="/menu" replace />
                 )

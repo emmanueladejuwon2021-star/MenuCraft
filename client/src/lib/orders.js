@@ -78,7 +78,7 @@ export async function placeOrder({ guest, items, note }) {
   try {
     const payload = await request("/api/orders", {
       method: "POST",
-      body: JSON.stringify({ items, note }),
+      body: JSON.stringify({ items, note, guest }),
     });
     clearPlate();
     return payload.order;
@@ -92,8 +92,8 @@ export async function placeOrder({ guest, items, note }) {
       note: note || "",
       items: items.map((row) => ({ ...row })),
       total: plateTotal(items),
-      paid: true,
-      pay_ref: `TEST-${Date.now().toString().slice(-8)}`,
+      paid: false,
+      pay_ref: `COUNTER-${Date.now().toString().slice(-8)}`,
       status: "New",
       created_at: new Date().toISOString(),
     };
@@ -109,9 +109,9 @@ export function myOrders(email, orders = readOrders()) {
 
 export async function setOrderStatus(id, status) {
   try {
-    const payload = await request(`/api/orders/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ status }),
+    const payload = await request("/api/order-status", {
+      method: "POST",
+      body: JSON.stringify({ id, status }),
     });
     return payload.order;
   } catch (error) {

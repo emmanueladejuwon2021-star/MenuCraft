@@ -41,7 +41,7 @@ export default function PayPage({ settings, user, plate, onPaid }) {
   return (
     <section className="page-enter mx-auto max-w-lg space-y-5 pb-8">
       <div className="overflow-hidden rounded-[2rem] border border-line bg-card shadow-soft">
-        <div className="bg-gradient-to-br from-orange-200/55 to-transparent px-6 py-6 dark:from-orange-500/10">
+        <div className="bg-gradient-to-br from-blue-200/70 to-transparent px-6 py-6 dark:from-blue-500/15">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-clay">Checkout</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink">Send this plate</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted">No card is needed. The kitchen gets the order now. You pay at the counter when you pick it up.</p>
@@ -73,9 +73,9 @@ export default function PayPage({ settings, user, plate, onPaid }) {
             )}
             <label className="block text-sm font-medium text-ink">Table or pickup note<input value={note} onChange={(event) => setNote(event.target.value)} placeholder="Table 4, or pickup" className="field mt-1" /></label>
             {error ? <p className="rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">{error}</p> : null}
-            <button disabled={busy} className="tap h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">{busy ? "Sending to the kitchen…" : `Send order \u00b7 ${money(settings.currency_symbol, total)}`}</button>
+            <button disabled={busy} className="tap h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">{busy ? "Sending to the kitchen…" : `Send order · ${money(settings.currency_symbol, total)}`}</button>
           </form>
-          <Link to="/plate" className="inline-block text-sm font-medium text-muted">Back to plate</Link>
+          <Link to="/plate" className="tap inline-flex items-center text-sm font-medium text-muted">Back to plate</Link>
         </div>
       </div>
     </section>

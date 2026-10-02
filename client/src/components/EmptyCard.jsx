@@ -6,7 +6,7 @@ export default function EmptyCard({ title, buttonLabel, onClick }) {
       <button
         type="button"
         onClick={onClick}
-        className="tap rounded-full bg-ink px-5 text-sm font-semibold text-invert"
+        className="tap rounded-full bg-pine px-5 text-sm font-semibold text-invert"
       >
         {buttonLabel}
       </button>

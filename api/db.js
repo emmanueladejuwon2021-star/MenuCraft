@@ -1,9 +1,8 @@
 const { createClient } = require("@libsql/client");
 
 function getDb() {
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
-  if (!url || !authToken) return null;
+  const url = process.env.TURSO_DATABASE_URL || "file:menu.db";
+  const authToken = process.env.TURSO_AUTH_TOKEN || undefined;
   return createClient({ url, authToken });
 }
 

@@ -35,12 +35,12 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-base font-semibold tracking-tight sm:text-lg">{settings.restaurant_name}</p>
-            <p className="truncate text-xs text-muted">{staff ? `Kitchen · ${user.name}` : guest ? `Guest · ${user.name}` : "Guest menu"}</p>
+            <p className="truncate text-xs text-muted">{staff ? `Kitchen \u00b7 ${user.name}` : guest ? `Guest \u00b7 ${user.name}` : "Guest menu"}</p>
           </div>
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <nav className="hidden items-center justify-end gap-1 md:flex">
             {tabs.map((tab) => (
-              <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap inline-flex items-center gap-2 rounded-full px-3 text-sm font-medium ${isActive ? "bg-ink text-invert" : "text-muted hover:bg-paper"}`}>
+              <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap inline-flex items-center gap-2 rounded-full px-3 text-sm font-medium ${isActive ? "bg-pine text-invert" : "text-muted hover:bg-paper"}`}>
                 <tab.icon size={16} />
                 {tab.label}
               </NavLink>

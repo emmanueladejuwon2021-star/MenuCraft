@@ -4,28 +4,28 @@
 
 :root {
   color-scheme: light;
-  --ink: #2a1810;
-  --invert: #fff8f1;
-  --paper: #f4ebe0;
-  --card: #fffaf4;
-  --line: #e4d2bf;
-  --pine: #9a3412;
-  --clay: #9a3412;
-  --muted: #5c463c;
+  --ink: #0f2744;
+  --invert: #f4f8ff;
+  --paper: #e7f2fc;
+  --card: #f7fbff;
+  --line: #c5daf0;
+  --pine: #1d4ed8;
+  --clay: #1e40af;
+  --muted: #3d5a78;
   --danger: #9f1239;
-  --soft: 0 18px 40px rgba(42, 24, 16, 0.08);
+  --soft: 0 18px 40px rgba(15, 39, 68, 0.08);
 }
 
 html.dark {
   color-scheme: dark;
-  --ink: #f6eadc;
-  --invert: #140c08;
-  --paper: #120c09;
-  --card: #1c1410;
-  --line: #3b2b22;
-  --pine: #f0b090;
-  --clay: #f0b090;
-  --muted: #d4c2b4;
+  --ink: #e8f2ff;
+  --invert: #071426;
+  --paper: #071426;
+  --card: #0e2340;
+  --line: #1e3f66;
+  --pine: #93c5fd;
+  --clay: #60a5fa;
+  --muted: #b7cce4;
   --danger: #fda4af;
   --soft: 0 18px 40px rgba(0, 0, 0, 0.4);
 }
@@ -35,8 +35,8 @@ html, body, #root { min-height: 100%; }
 body {
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(180, 83, 42, 0.14), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(154, 52, 18, 0.1), transparent 30%),
+    radial-gradient(circle at top left, rgba(29, 78, 216, 0.16), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(125, 186, 255, 0.28), transparent 32%),
     var(--paper);
   color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
@@ -51,7 +51,7 @@ button, input, select, textarea {
 
 input, select, textarea { outline: none; }
 input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible {
-  box-shadow: 0 0 0 3px rgba(180, 83, 42, 0.35);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.32);
   outline: none;
 }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
