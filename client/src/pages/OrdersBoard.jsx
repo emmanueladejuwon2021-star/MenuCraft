@@ -66,7 +66,7 @@ export default function OrdersBoard({ settings, orders, onStatus }) {
           ["served", "Served"],
           ["all", "All"],
         ].map(([key, label]) => (
-          <button key={key} type="button" onClick={() => setFilter(key)} className={`tap h-11 rounded-full px-4 text-sm font-medium ${filter === key ? "bg-ink text-invert" : "border border-line bg-card text-ink"}`}>
+          <button key={key} type="button" onClick={() => setFilter(key)} className={`tap h-11 rounded-full px-4 text-sm font-medium ${filter === key ? "bg-pine text-invert" : "border border-line bg-card text-ink"}`}>
             {label}
           </button>
         ))}
@@ -76,7 +76,7 @@ export default function OrdersBoard({ settings, orders, onStatus }) {
         <div className="rounded-3xl border border-dashed border-line bg-card px-5 py-12 text-center">
           <p className="font-semibold text-ink">{filter === "served" ? "Nothing served yet" : "No open orders"}</p>
           <p className="mt-2 text-sm text-muted">Tickets show up here after a guest sends a plate.</p>
-          <Link to="/share" className="tap mt-5 inline-flex items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-invert">Share the menu</Link>
+          <Link to="/share" className="tap mt-5 inline-flex items-center justify-center rounded-full bg-pine px-5 text-sm font-semibold text-invert">Share the menu</Link>
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -90,19 +90,17 @@ export default function OrdersBoard({ settings, orders, onStatus }) {
                     <p className="truncate font-semibold text-ink">{order.guest_name || "Guest"}</p>
                     <p className="truncate text-xs text-muted">{contact(order)} · {when(order.created_at)}</p>
                   </div>
-                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${order.status === "Ready" ? "bg-ink text-invert" : "bg-paper text-clay"}`}>{order.status || "New"}</span>
+                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${order.status === "Ready" ? "bg-pine text-invert" : "bg-paper text-clay"}`}>{order.status || "New"}</span>
                 </div>
                 {order.note ? <p className="mt-3 rounded-2xl bg-paper px-3 py-2 text-sm font-medium text-ink">Note: {order.note}</p> : null}
                 <ul className="mt-3 space-y-1 text-sm text-ink">
                   {(order.items || []).map((row, index) => (
-                    <li key={`${row.id}-${index}`} className="flex justify-between gap-3">
-                      <span className="min-w-0">{row.qty} × {row.name}</span>
-                    </li>
+                    <li key={`${row.id}-${index}`}>{row.qty} × {row.name}</li>
                   ))}
                 </ul>
                 <p className="mt-3 text-sm font-semibold text-ink">{money(settings.currency_symbol, order.total)} · Pay at the counter</p>
                 {action ? (
-                  <button type="button" disabled={busy || pendingId} onClick={() => advance(order, action.status)} className="tap mt-3 h-12 w-full rounded-full bg-ink text-sm font-semibold text-invert disabled:opacity-60">
+                  <button type="button" disabled={busy || pendingId} onClick={() => advance(order, action.status)} className="tap mt-3 h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">
                     {busy ? "Saving…" : action.label}
                   </button>
                 ) : (
