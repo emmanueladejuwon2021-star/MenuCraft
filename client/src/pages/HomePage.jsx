@@ -12,10 +12,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
     <section className="page-enter space-y-8">
       <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-[2rem] border border-line bg-card px-6 py-8 shadow-soft sm:px-8">
-          <Link to={kitchenLockPath} className="text-xs font-semibold uppercase tracking-[0.22em] text-clay underline-offset-4 hover:underline">
-            Open kitchen
-          </Link>
-          <h1 className="mt-3 max-w-md text-4xl font-semibold leading-[1.05] text-ink sm:text-5xl">
+          <h1 className="max-w-md text-4xl font-semibold leading-[1.05] text-ink sm:text-5xl">
             {settings.restaurant_name}
           </h1>
           <p className="mt-4 max-w-md text-base leading-relaxed text-muted">
@@ -29,6 +26,9 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
               Check your plate
             </Link>
           </div>
+          <Link to={kitchenLockPath} className="tap mt-6 inline-flex items-center text-sm font-medium text-muted underline-offset-4 hover:text-ink hover:underline">
+            Kitchen sign in
+          </Link>
         </div>
 
         {spotlight ? (
@@ -41,9 +41,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
               </div>
             )}
             <div className="space-y-3 p-6">
-              <Link to="/menu" className="text-xs font-semibold uppercase tracking-[0.16em] text-clay underline-offset-4 hover:underline">
-                Start here
-              </Link>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-clay">Start here</p>
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-2xl font-semibold leading-tight text-ink">{spotlight.name}</h2>
                 <p className="shrink-0 text-lg font-semibold text-ink">{money(settings.currency_symbol, spotlight.price)}</p>

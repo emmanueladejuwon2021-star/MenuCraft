@@ -7,7 +7,7 @@ import DishPhoto from "../components/DishPhoto.jsx";
 export default function PlatePage({ settings, user, plate, onQty, onClear }) {
   const total = plateTotal(plate);
   return (
-    <section className="page-enter space-y-5 pb-40 md:pb-8">
+    <section className="page-enter space-y-5 pb-36 md:pb-8">
       <PageHeader kicker="Guest" title="Your plate" hint="Check the dishes, change amounts, then send the order. Pay at the counter later." />
       {plate.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-line bg-card px-5 py-12 text-center">
@@ -32,11 +32,11 @@ export default function PlatePage({ settings, user, plate, onQty, onClear }) {
                       <p className="mt-1 text-sm text-muted">{money(settings.currency_symbol, row.price)} each</p>
                       <div className="mt-3 flex items-center justify-between gap-2">
                         <div className="inline-flex items-center rounded-full border border-line bg-paper">
-                          <button type="button" className="tap w-11 text-lg text-ink" onClick={() => onQty(row.id, row.qty - 1)} aria-label={`Fewer ${row.name}`}>−</button>
+                          <button type="button" className="tap w-11 text-lg text-ink" onClick={() => onQty(row.id, row.qty - 1)} aria-label={`Fewer ${row.name}`}>\u2212</button>
                           <span className="w-8 text-center text-sm font-semibold text-ink">{row.qty}</span>
                           <button type="button" className="tap w-11 text-lg text-ink" onClick={() => onQty(row.id, row.qty + 1)} aria-label={`More ${row.name}`}>+</button>
                         </div>
-                        <button type="button" className="text-sm font-medium text-red-700" onClick={() => onQty(row.id, 0)}>Remove</button>
+                        <button type="button" className="tap rounded-full px-3 text-sm font-medium text-danger" onClick={() => onQty(row.id, 0)}>Remove</button>
                       </div>
                     </div>
                   </div>

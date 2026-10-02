@@ -30,7 +30,6 @@ import { createAccount, createGuestAccount, isStaff, readSession, signIn, signOu
 import { addToPlate, loadOrders, myOrders, placeOrder, plateCount, readPlate, setOrderStatus, setPlateQty, writePlate } from "./lib/orders.js";
 import { readTheme, toggleTheme } from "./lib/theme.js";
 import { kitchenLockPath } from "./lib/kitchenGate.js";
-import ThemeToggle from "./components/ThemeToggle.jsx";
 import ConfirmDialog from "./components/ConfirmDialog.jsx";
 
 function StaffGuard({ user, children }) {
@@ -290,14 +289,11 @@ export default function App() {
   const staffUser = isStaff(user) ? user : null;
 
   return (
-    <div className="min-h-screen bg-paper pb-24 md:pb-8">
+    <div className="min-h-screen bg-paper pb-28 md:pb-8">
       <NavBar settings={menu.settings} user={user} theme={theme} onToggleTheme={handleTheme} plateCount={plateCount(plate)} />
       <Toast toast={toast} />
       <ConfirmDialog box={confirmBox} onClose={() => setConfirmBox(null)} />
-      <div className="fixed right-3 top-3 z-40 md:hidden">
-        <ThemeToggle theme={theme} onToggle={handleTheme} />
-      </div>
-      <main className="mx-auto max-w-6xl px-4 py-4 pt-14 md:pt-4">
+      <main className="mx-auto max-w-6xl px-4 py-5">
         {loading && location.pathname !== "/" ? (
           <p className="text-sm text-muted">Loading menu\u2026</p>
         ) : (

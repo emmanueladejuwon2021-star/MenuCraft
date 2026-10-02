@@ -35,14 +35,15 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
-        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-[1.6rem] border border-line bg-card p-4 shadow-soft">
-            <div className="relative">
+            <label className="relative block">
+              <span className="sr-only">Search the board</span>
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the board" className="tap h-11 w-full rounded-2xl border border-line bg-paper pl-9 pr-3 text-ink" />
-            </div>
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the board" aria-label="Search the board" className="tap h-12 w-full rounded-2xl border border-line bg-paper pl-9 pr-3 text-ink" />
+            </label>
             <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-muted">Lists</p>
-            <div className="mt-2 flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+            <div className="nav-scroll mt-2 flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
               <button type="button" className={`tap h-11 shrink-0 rounded-2xl px-4 text-left text-sm ${categoryId === "all" ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setCategoryId("all")}>Whole board</button>
               {categories.map((category) => (
                 <button type="button" key={category.id} className={`tap h-11 shrink-0 rounded-2xl px-4 text-left text-sm ${Number(categoryId) === Number(category.id) ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setCategoryId(category.id)}>{category.name}</button>
@@ -52,12 +53,12 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
           <div className="rounded-[1.6rem] border border-line bg-card p-4 shadow-soft">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Diet</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              <button type="button" className={`tap h-10 rounded-full px-4 text-sm ${tag === "all" ? "bg-clay text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setTag("all")}>Any</button>
+              <button type="button" className={`tap h-11 rounded-full px-4 text-sm ${tag === "all" ? "bg-clay text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setTag("all")}>Any</button>
               {ALL_TAGS.map((item) => (
-                <button type="button" key={item} className={`tap h-10 rounded-full px-4 text-sm ${tag === item ? "bg-clay text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setTag(item)}>{item}</button>
+                <button type="button" key={item} className={`tap h-11 rounded-full px-4 text-sm ${tag === item ? "bg-clay text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setTag(item)}>{item}</button>
               ))}
             </div>
-            <button type="button" className={`tap mt-3 h-10 w-full rounded-full px-4 text-sm ${showSoldOut ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setShowSoldOut((value) => !value)}>{showSoldOut ? "Hide sold out" : "Show sold out"}</button>
+            <button type="button" className={`tap mt-3 h-11 w-full rounded-full px-4 text-sm ${showSoldOut ? "bg-ink text-invert" : "border border-line bg-paper text-ink"}`} onClick={() => setShowSoldOut((value) => !value)}>{showSoldOut ? "Hide sold out" : "Show sold out"}</button>
           </div>
         </aside>
 
