@@ -36,7 +36,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
             {spotlight.image_url ? (
               <img src={spotlight.image_url} alt={spotlight.name} className="h-52 w-full object-cover" />
             ) : (
-              <div className="flex h-52 items-end bg-gradient-to-br from-orange-200 to-amber-100 p-6 dark:from-orange-900/40 dark:to-stone-900">
+              <div className="flex h-52 items-end bg-gradient-to-br from-blue-200 to-sky-100 p-6 dark:from-blue-900/40 dark:to-slate-900">
                 <p className="text-sm font-medium text-ink">First dish on the board</p>
               </div>
             )}
