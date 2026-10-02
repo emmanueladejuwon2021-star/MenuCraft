@@ -26,8 +26,8 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
               Check your plate
             </Link>
           </div>
-          <Link to={kitchenLockPath} className="tap mt-6 inline-flex items-center text-sm font-medium text-muted underline-offset-4 hover:text-ink hover:underline">
-            Kitchen sign in
+          <Link to={kitchenLockPath} className="tap mt-6 inline-flex items-center rounded-full border border-line px-4 text-sm font-medium text-muted">
+            Staff sign in
           </Link>
         </div>
 
