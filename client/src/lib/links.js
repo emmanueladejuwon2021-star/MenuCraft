@@ -1,17 +1,12 @@
+function basePath() {
+  const path = window.location.pathname.replace(/index\.html$/i, "");
+  return path.endsWith("/") ? path : `${path}/`;
+}
+
 export function guestMenuLink() {
-  const url = new URL(window.location.href);
-  url.search = "";
-  url.hash = "/menu";
-  url.pathname = url.pathname.replace(/index\.html$/i, "");
-  if (!url.pathname.endsWith("/")) url.pathname += "/";
-  return url.toString();
+  return `${window.location.origin}${basePath()}#/menu`;
 }
 
 export function kitchenDoorLink() {
-  const url = new URL(window.location.href);
-  url.search = "";
-  url.hash = "/iyabisi/kitchenlock";
-  url.pathname = url.pathname.replace(/index\.html$/i, "");
-  if (!url.pathname.endsWith("/")) url.pathname += "/";
-  return url.toString();
+  return `${window.location.origin}${basePath()}#/iyabisi/kitchenlock`;
 }

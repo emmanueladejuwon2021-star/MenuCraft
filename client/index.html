@@ -6,6 +6,11 @@
     <title>MenuCraft</title>
     <script>
       (function () {
+        var path = window.location.pathname || "/";
+        if (path !== "/" && path.indexOf("/api/") !== 0 && !window.location.hash) {
+          window.location.replace("/#" + path + window.location.search);
+          return;
+        }
         try {
           var theme = localStorage.getItem("menucraft-theme");
           if (theme !== "dark" && theme !== "light") {

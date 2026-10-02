@@ -5,8 +5,8 @@
   "type": "commonjs",
   "main": "index.js",
   "dependencies": {
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "^0.18.0",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^5.2.1"
   }
 }

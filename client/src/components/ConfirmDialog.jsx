@@ -15,7 +15,7 @@ export default function ConfirmDialog({ box, onClose }) {
               box.onYes();
               onClose();
             }}
-            className="tap rounded-full bg-ink text-sm font-semibold text-invert"
+            className="tap rounded-full bg-pine text-sm font-semibold text-invert"
           >
             {box.yesLabel || "Yes, continue"}
           </button>
