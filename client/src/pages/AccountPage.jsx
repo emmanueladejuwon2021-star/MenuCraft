@@ -1,61 +1,64 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-export default function AccountPage({ user, onCreate, onSignIn, onUpdate, onSignOut }) {
-  const [mode, setMode] = useState("signin");
+export default function AccountPage({ user, settings, onUpdate, onSignOut }) {
   const [form, setForm] = useState({
     name: user?.name || "",
-    email: user?.email || "",
-    password: "",
-    restaurant_name: user?.restaurant_name || "",
+    phone: user?.phone || "",
+    restaurant_name: user?.restaurant_name || settings?.restaurant_name || "",
+    currency_symbol: settings?.currency_symbol || "₦",
   });
+
+  useEffect(() => {
+    setForm({
+      name: user?.name || "",
+      phone: user?.phone || "",
+      restaurant_name: user?.restaurant_name || settings?.restaurant_name || "",
+      currency_symbol: settings?.currency_symbol || "₦",
+    });
+  }, [user?.name, user?.phone, user?.restaurant_name, settings?.restaurant_name, settings?.currency_symbol]);
 
   function change(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   return (
-    <section className="page-enter mx-auto max-w-xl space-y-4">
-      <div className="rounded-2xl border border-line bg-card p-5 shadow-soft">
-        <h1 className="text-xl font-semibold text-ink">{user ? "Kitchen account" : "Staff sign in"}</h1>
-        <p className="mt-1 text-sm text-muted">
-          {user
-            ? "This page is for kitchen staff only. Guests use Home and Menu."
-            : "Guests do not need an account. This sign-in is only for people who change the menu."}
-        </p>
-        {!user && (
-          <div className="mt-4 flex gap-2">
-            <button type="button" onClick={() => setMode("signin")} className={`tap rounded-full px-4 text-sm ${mode === "signin" ? "bg-pine text-invert" : "border border-line text-ink"}`}>Sign in</button>
-            <button type="button" onClick={() => setMode("signup")} className={`tap rounded-full px-4 text-sm ${mode === "signup" ? "bg-pine text-invert" : "border border-line text-ink"}`}>Create account</button>
-          </div>
-        )}
-        <form
-          className="mt-4 space-y-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (user) onUpdate({ name: form.name, restaurant_name: form.restaurant_name });
-            else if (mode === "signup") onCreate(form);
-            else onSignIn({ email: form.email, password: form.password });
-          }}
-        >
-          {(user || mode === "signup") && (
-            <label className="block text-sm text-ink">Your name<input className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" value={form.name} onChange={(event) => change("name", event.target.value)} /></label>
-          )}
-          <label className="block text-sm text-ink">Email<input type="email" disabled={Boolean(user)} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink disabled:opacity-70" value={form.email} onChange={(event) => change("email", event.target.value)} /></label>
-          {!user && (
-            <label className="block text-sm text-ink">Password<input type="password" className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" value={form.password} onChange={(event) => change("password", event.target.value)} /></label>
-          )}
-          {(user || mode === "signup") && (
-            <label className="block text-sm text-ink">Restaurant name<input className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" value={form.restaurant_name} onChange={(event) => change("restaurant_name", event.target.value)} /></label>
-          )}
-          <button className="tap rounded-full bg-pine px-5 text-sm font-semibold text-invert">{user ? "Save account" : mode === "signup" ? "Create kitchen account" : "Sign in to kitchen"}</button>
-        </form>
-        {user ? (
-          <button type="button" onClick={onSignOut} className="tap mt-3 rounded-full border border-line px-4 text-sm text-ink">Sign out</button>
-        ) : (
-          <Link to="/menu" className="mt-4 inline-block text-sm text-muted">Just want food? Open the guest menu</Link>
-        )}
-      </div>
+    <section className="page-enter mx-auto max-w-lg space-y-4">
+      <form
+        className="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onUpdate(form);
+        }}
+      >
+        <div>
+          <h1 className="text-lg font-semibold text-ink">Account settings</h1>
+          <p className="mt-1 text-sm text-muted">Your name, phone, and the name guests see on the menu.</p>
+        </div>
+        <label className="block text-sm font-medium text-ink">
+          Your name
+          <input className="field mt-1" value={form.name} onChange={(event) => change("name", event.target.value)} />
+        </label>
+        <label className="block text-sm font-medium text-ink">
+          Email
+          <input className="field mt-1" value={user?.email || ""} disabled />
+        </label>
+        <label className="block text-sm font-medium text-ink">
+          Phone
+          <input className="field mt-1" value={form.phone} onChange={(event) => change("phone", event.target.value)} placeholder="Kitchen contact" />
+        </label>
+        <label className="block text-sm font-medium text-ink">
+          Restaurant name
+          <input className="field mt-1" value={form.restaurant_name} onChange={(event) => change("restaurant_name", event.target.value)} />
+        </label>
+        <label className="block text-sm font-medium text-ink">
+          Money symbol
+          <input className="field mt-1" value={form.currency_symbol} onChange={(event) => change("currency_symbol", event.target.value)} placeholder="₦" />
+        </label>
+        <button className="tap h-11 w-full rounded-full bg-pine text-sm font-semibold text-invert">Save settings</button>
+      </form>
+      <button type="button" onClick={onSignOut} className="tap h-11 w-full rounded-full border border-line bg-card text-sm font-medium text-ink">
+        Sign out
+      </button>
     </section>
   );
 }
