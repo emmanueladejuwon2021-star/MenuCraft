@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { ALL_TAGS } from "../lib/seed";
 import { money } from "../lib/store";
+import DishPhoto from "../components/DishPhoto.jsx";
 
 function countLabel(count, one, many) {
   return `${count} ${count === 1 ? one : many}`;
@@ -80,6 +81,7 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
                   const tags = item.tags || [];
                   return (
                     <article key={item.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+                      <DishPhoto src={item.image_url} name={item.name} className="h-20 w-20 shrink-0" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-3">
                           <h3 className="text-base font-semibold text-ink">{item.name}</h3>
