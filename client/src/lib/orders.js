@@ -109,9 +109,9 @@ export function myOrders(email, orders = readOrders()) {
 
 export async function setOrderStatus(id, status) {
   try {
-    const payload = await request(`/api/orders/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ status }),
+    const payload = await request("/api/order-status", {
+      method: "POST",
+      body: JSON.stringify({ id, status }),
     });
     return payload.order;
   } catch (error) {
