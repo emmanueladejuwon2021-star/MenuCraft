@@ -21,7 +21,7 @@ export default function SharePage({ settings, onSaveSettings, user }) {
       width: 480,
       margin: 2,
       errorCorrectionLevel: "H",
-      color: { dark: "#1c1917", light: "#ffffff" },
+      color: { dark: "#1d4ed8", light: "#ffffff" },
     })
       .then((data) => {
         if (!cancelled) setQr(data);
@@ -81,33 +81,21 @@ export default function SharePage({ settings, onSaveSettings, user }) {
           <>
             <label className="block text-sm text-ink">
               Restaurant name
-              <input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink"
-              />
+              <input value={name} onChange={(event) => setName(event.target.value)} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
             </label>
             <label className="block text-sm text-ink">
               Money symbol
-              <input
-                value={symbol}
-                onChange={(event) => setSymbol(event.target.value)}
-                className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink"
-              />
+              <input value={symbol} onChange={(event) => setSymbol(event.target.value)} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
             </label>
-            <button className="tap rounded-full bg-ink px-5 text-sm font-semibold text-invert">Save details</button>
+            <button className="tap h-11 rounded-full bg-pine px-5 text-sm font-semibold text-invert">Save details</button>
           </>
         )}
         <p className="text-sm text-muted">Guest link</p>
         <p className="break-all rounded-xl bg-paper px-3 py-2 text-sm text-ink">{link}</p>
-        <button type="button" onClick={() => copyText(link, "Link copied. Guests can scan or paste it to open the live menu.")} className="tap rounded-full border border-line px-4 text-sm text-ink">
-          Copy guest link
-        </button>
+        <button type="button" onClick={() => copyText(link, "Link copied. Guests can scan or paste it to open the live menu.")} className="tap h-11 rounded-full border border-line px-4 text-sm text-ink">Copy guest link</button>
         <p className="pt-2 text-sm text-muted">Kitchen door (staff only). Bookmark this. Do not print it on the guest QR.</p>
         <p className="break-all rounded-xl bg-paper px-3 py-2 text-sm text-ink">{kitchenLink}</p>
-        <button type="button" onClick={() => copyText(kitchenLink, "Kitchen door copied. Save it on the kitchen tablet only.")} className="tap rounded-full border border-line px-4 text-sm text-ink">
-          Copy kitchen door
-        </button>
+        <button type="button" onClick={() => copyText(kitchenLink, "Kitchen door copied. Save it on the kitchen tablet only.")} className="tap h-11 rounded-full border border-line px-4 text-sm text-ink">Copy kitchen door</button>
         {note && <p className="text-sm text-pine">{note}</p>}
       </form>
       <div className="rounded-2xl border border-line bg-card p-4 text-center shadow-soft">
@@ -117,9 +105,7 @@ export default function SharePage({ settings, onSaveSettings, user }) {
           <p className="text-sm text-muted">Drawing the QR code…</p>
         )}
         <p className="mt-3 text-sm text-muted">Point a phone camera at this code to open the live menu.</p>
-        <button type="button" onClick={downloadQr} disabled={!qr} className="tap mt-3 rounded-full bg-pine px-4 text-sm font-semibold text-invert disabled:opacity-60">
-          Download QR image
-        </button>
+        <button type="button" onClick={downloadQr} disabled={!qr} className="tap mt-3 h-11 rounded-full bg-pine px-4 text-sm font-semibold text-invert disabled:opacity-60">Download QR image</button>
       </div>
     </section>
   );
