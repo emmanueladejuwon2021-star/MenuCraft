@@ -6,14 +6,16 @@
   "scripts": {
     "dev": "node server.js",
     "build": "npm run build --prefix client",
-    "test": "node --test api/pricing.test.js",
+    "test": "node --test api/pricing.test.js api/order-build.test.js",
     "start": "NODE_ENV=production node server.js"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
-    "@vitejs/plugin-react": "^6.1.1",
     "cors": "^2.8.5",
-    "express": "^5.2.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
     "vite": "^8.3.2"
   }
 }
