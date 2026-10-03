@@ -31,7 +31,7 @@ function publicUser(row) {
     email: row.email,
     phone: row.phone || "",
     restaurant_name: row.restaurant_name || "",
-    role: row.role === "guest" ? "guest" : "staff",
+    role: row.role === "staff" ? "staff" : "guest",
   };
 }
 
