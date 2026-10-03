@@ -1,12 +1,19 @@
 const { createClient } = require("@libsql/client");
 
 function getDb() {
-  const url = process.env.TURSO_DATABASE_URL || "file:menu.db";
-  const authToken = process.env.TURSO_AUTH_TOKEN || undefined;
-  return createClient({ url, authToken });
+  const url = process.env.TURSO_DATABASE_URL;
+  if (!url) {
+    if (process.env.VERCEL || process.env.NODE_ENV === "production") return null;
+    return createClient({ url: "file:menu.db" });
+  }
+  return createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN || undefined });
 }
 
 let ready = false;
+
+function shouldSeed() {
+  return process.env.MENUCRAFT_SEED === "1" || (!process.env.VERCEL && process.env.NODE_ENV !== "production");
+}
 
 async function ensureSchema(db) {
   await db.execute(`CREATE TABLE IF NOT EXISTS users (
@@ -51,14 +58,19 @@ async function ensureSchema(db) {
     note TEXT,
     items_json TEXT NOT NULL,
     total REAL NOT NULL,
-    paid INTEGER DEFAULT 1,
+    paid INTEGER DEFAULT 0,
     pay_ref TEXT,
     status TEXT DEFAULT 'New',
     created_at TEXT
   )`);
+  await db.execute(`CREATE TABLE IF NOT EXISTS staff_claim (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    user_id INTEGER NOT NULL DEFAULT 0
+  )`);
   const extras = [
-    "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'staff'",
+    "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'guest'",
     "ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''",
+    "ALTER TABLE orders ADD COLUMN view_token TEXT",
   ];
   for (const sql of extras) {
     try {
@@ -72,35 +84,45 @@ async function ensureSchema(db) {
   if (!settings.rows.length) {
     await db.execute({
       sql: "INSERT INTO restaurant_settings (id, restaurant_name, currency_symbol) VALUES (1, ?, ?)",
-      args: ["Iya Bisi Kitchen", "₦"],
+      args: ["My Restaurant", "₦"],
     });
   }
 
-  const cats = await db.execute("SELECT COUNT(*) AS count FROM categories");
-  if (Number(cats.rows[0].count) === 0) {
-    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Small Chops', 1)");
-    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Soups & Swallow', 2)");
-    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Rice & Mains', 3)");
-    await db.execute("INSERT INTO categories (name, display_order) VALUES ('Drinks', 4)");
-    const seeded = await db.execute("SELECT id, name FROM categories ORDER BY display_order");
-    const byName = Object.fromEntries(seeded.rows.map((row) => [row.name, row.id]));
-    const dishes = [
-      [byName["Small Chops"], "Beef Suya", "Spiced grilled beef with onion, tomato, and extra yaji.", 2500, "", 1, "Spicy", 15],
-      [byName["Small Chops"], "Puff Puff", "Soft fried dough balls, lightly sweet and warm.", 800, "", 1, "Vegetarian", 10],
-      [byName["Small Chops"], "Asun", "Peppered goat meat, smoky and hot.", 3500, "", 1, "Spicy", 18],
-      [byName["Soups & Swallow"], "Egusi with Pounded Yam", "Melon seed soup, assorted meat, and smooth pounded yam.", 4500, "", 1, "Gluten-Free", 25],
-      [byName["Soups & Swallow"], "Catfish Pepper Soup", "Fresh catfish in a hot, fragrant broth.", 4000, "", 1, "Spicy,Gluten-Free", 20],
-      [byName["Rice & Mains"], "Party Jollof Rice", "Smoky party jollof with fried plantain and coleslaw.", 3200, "", 1, "Spicy", 20],
-      [byName["Rice & Mains"], "Ofada Rice and Ayamase", "Local ofada rice with green pepper stew and boiled egg.", 3800, "", 1, "Spicy", 22],
-      [byName["Rice & Mains"], "Moi Moi", "Steamed beans pudding with egg and fish.", 1500, "", 1, "Gluten-Free", 30],
-      [byName.Drinks, "Zobo", "Cold hibiscus drink with ginger and pineapple.", 700, "", 1, "Vegetarian,Gluten-Free", 5],
-      [byName.Drinks, "Chapman", "House Chapman with cucumber, orange, and a light fizz.", 1200, "", 1, "Vegetarian", 4],
-    ];
-    for (const dish of dishes) {
-      await db.execute({
-        sql: "INSERT INTO menu_items (category_id, name, description, price, image_url, is_available, tags, prep_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        args: dish,
-      });
+  const staff = await db.execute("SELECT id FROM users WHERE role = 'staff' ORDER BY id LIMIT 1");
+  if (staff.rows.length) {
+    const claim = await db.execute("SELECT id FROM staff_claim WHERE id = 1");
+    if (!claim.rows.length) {
+      await db.execute({ sql: "INSERT INTO staff_claim (id, user_id) VALUES (1, ?)", args: [staff.rows[0].id] });
+    }
+  }
+
+  if (shouldSeed()) {
+    const cats = await db.execute("SELECT COUNT(*) AS count FROM categories");
+    if (Number(cats.rows[0].count) === 0) {
+      await db.execute("INSERT INTO categories (name, display_order) VALUES ('Small Chops', 1)");
+      await db.execute("INSERT INTO categories (name, display_order) VALUES ('Soups & Swallow', 2)");
+      await db.execute("INSERT INTO categories (name, display_order) VALUES ('Rice & Mains', 3)");
+      await db.execute("INSERT INTO categories (name, display_order) VALUES ('Drinks', 4)");
+      const seeded = await db.execute("SELECT id, name FROM categories ORDER BY display_order");
+      const byName = Object.fromEntries(seeded.rows.map((row) => [row.name, row.id]));
+      const dishes = [
+        [byName["Small Chops"], "Beef Suya", "Spiced grilled beef with onion, tomato, and extra yaji.", 2500, "", 1, "Spicy", 15],
+        [byName["Small Chops"], "Puff Puff", "Soft fried dough balls, lightly sweet and warm.", 800, "", 1, "Vegetarian", 10],
+        [byName["Small Chops"], "Asun", "Peppered goat meat, smoky and hot.", 3500, "", 1, "Spicy", 18],
+        [byName["Soups & Swallow"], "Egusi with Pounded Yam", "Melon seed soup, assorted meat, and smooth pounded yam.", 4500, "", 1, "Gluten-Free", 25],
+        [byName["Soups & Swallow"], "Catfish Pepper Soup", "Fresh catfish in a hot, fragrant broth.", 4000, "", 1, "Spicy,Gluten-Free", 20],
+        [byName["Rice & Mains"], "Party Jollof Rice", "Smoky party jollof with fried plantain and coleslaw.", 3200, "", 1, "Spicy", 20],
+        [byName["Rice & Mains"], "Ofada Rice and Ayamase", "Local ofada rice with green pepper stew and boiled egg.", 3800, "", 1, "Spicy", 22],
+        [byName["Rice & Mains"], "Moi Moi", "Steamed beans pudding with egg and fish.", 1500, "", 1, "Gluten-Free", 30],
+        [byName.Drinks, "Zobo", "Cold hibiscus drink with ginger and pineapple.", 700, "", 1, "Vegetarian,Gluten-Free", 5],
+        [byName.Drinks, "Chapman", "House Chapman with cucumber, orange, and a light fizz.", 1200, "", 1, "Vegetarian", 4],
+      ];
+      for (const dish of dishes) {
+        await db.execute({
+          sql: "INSERT INTO menu_items (category_id, name, description, price, image_url, is_available, tags, prep_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          args: dish,
+        });
+      }
     }
   }
   ready = true;

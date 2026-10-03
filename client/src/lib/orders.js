@@ -2,6 +2,7 @@ import { request, shouldUseLocal } from "./api";
 
 const PLATE_KEY = "menucraft-plate-v1";
 const ORDERS_KEY = "menucraft-orders-v1";
+const TICKETS_KEY = "menucraft-tickets-v1";
 
 function readJson(key, fallback) {
   try {
@@ -64,9 +65,18 @@ function writeOrders(orders) {
   return orders;
 }
 
+function rememberTicket(order) {
+  if (!order?.view_token) return;
+  const tickets = readJson(TICKETS_KEY, []).filter((token) => token !== order.view_token);
+  tickets.unshift(order.view_token);
+  localStorage.setItem(TICKETS_KEY, JSON.stringify(tickets.slice(0, 20)));
+}
+
 export async function loadOrders() {
   try {
-    const payload = await request("/api/orders");
+    const tickets = readJson(TICKETS_KEY, []).slice(0, 20).join(",");
+    const path = tickets ? `/api/orders?tickets=${encodeURIComponent(tickets)}` : "/api/orders";
+    const payload = await request(path);
     return payload.orders || [];
   } catch (error) {
     if (!shouldUseLocal(error)) throw error;
@@ -81,6 +91,7 @@ export async function placeOrder({ guest, items, note }) {
       body: JSON.stringify({ items, note, guest }),
     });
     clearPlate();
+    rememberTicket(payload.order);
     return payload.order;
   } catch (error) {
     if (!shouldUseLocal(error)) throw error;

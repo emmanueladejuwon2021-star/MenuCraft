@@ -21,9 +21,9 @@ Bookmark that link on the kitchen tablet. Do not print it on the guest QR code. 
 
 After staff sign in, kitchen tools appear: dishes, stock, prices, orders, and share.
 
-Checkout asks for a table note only. It does not collect card numbers.
+The kitchen path is only a bookmark. It is not a lock. Dish, price, stock, category, settings, and order-status changes need a staff session. The first account created from that kitchen form becomes staff. A guest form never becomes staff. Later staff accounts must be created by someone who is already signed in as staff. A blank email cannot read other orders. Order totals use the prices stored on the menu, not the numbers sent by the browser.
 
-When the live database is connected, kitchen writes require a staff session. The first account created becomes staff so a new restaurant can open the kitchen. Later accounts are guests unless an existing staff member creates them. Guest orders stay readable; dish, price, stock, category, and settings changes return 401 without a staff token.
+Checkout asks for a table note only. It does not collect card numbers.
 
 ## Five screens
 
@@ -50,7 +50,8 @@ Price rules are covered by `npm test` from the repo root. CI runs those tests an
 1. Create a Turso database and copy the URL and token.
 2. Add these values in Vercel project settings: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN.
 3. Optional client value: VITE_API_URL = your Vercel site.
-4. Redeploy. After that, GitHub Pages can talk to the same live menu if VITE_API_URL is set in the Pages build.
+4. Optional: MENUCRAFT_SEED = 1 only if you want the sample Nigerian menu on an empty database.
+5. Redeploy. After that, GitHub Pages can talk to the same live menu if VITE_API_URL is set in the Pages build.
 
 ## Deploy
 
