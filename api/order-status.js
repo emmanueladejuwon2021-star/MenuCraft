@@ -32,6 +32,7 @@ function mapOrder(row) {
     total: Number(row.total),
     paid: Number(row.paid) === 1,
     pay_ref: row.pay_ref || "",
+    view_token: row.view_token || "",
     status: row.status || "New",
     created_at: row.created_at,
   };
