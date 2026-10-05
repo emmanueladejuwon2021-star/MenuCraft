@@ -26,6 +26,7 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
           { to: "/", label: "Home", short: "Home", icon: Home, end: true },
           { to: "/menu", label: "Menu", short: "Menu", icon: BookOpen },
           { to: "/plate", label: plateCount ? `Plate (${plateCount})` : "Plate", short: plateCount ? `Plate ${plateCount}` : "Plate", icon: ShoppingBag },
+          { to: "/my-orders", label: "My orders", short: "Orders", icon: ConciergeBell },
           { to: "/guest-account", label: "Account", short: "Account", icon: UserRound },
         ];
 
