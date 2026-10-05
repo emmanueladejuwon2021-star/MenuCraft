@@ -101,10 +101,11 @@ export async function placeOrder({ guest, items, note }) {
       guest_email: guest.email,
       phone: guest.phone || "",
       note: note || "",
-      items: items.map((row) => ({ ...row })),
+      items: items.map((row) => ({ ...row, price: Number(row.price), qty: Math.min(20, Math.max(1, Math.floor(Number(row.qty) || 1))) })),
       total: plateTotal(items),
       paid: false,
       pay_ref: `COUNTER-${Date.now().toString().slice(-8)}`,
+      view_token: `local-${Date.now()}`,
       status: "New",
       created_at: new Date().toISOString(),
     };

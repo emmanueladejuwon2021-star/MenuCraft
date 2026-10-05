@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { money } from "../lib/store";
-import { kitchenLockPath } from "../lib/kitchenGate";
 import DishPhoto from "../components/DishPhoto.jsx";
 
 export default function HomePage({ settings, items = [], onAddToPlate }) {
@@ -26,9 +25,6 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
               Check your plate
             </Link>
           </div>
-          <Link to={kitchenLockPath} className="tap mt-6 inline-flex items-center rounded-full border border-line px-4 text-sm font-medium text-muted">
-            Staff sign in
-          </Link>
         </div>
 
         {spotlight ? (
