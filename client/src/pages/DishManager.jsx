@@ -55,11 +55,15 @@ export default function DishManager({
           categories={categories}
           initial={editing}
           onCancel={() => { setShowForm(false); setEditing(null); }}
-          onSubmit={(payload) => {
-            if (editing) onUpdate(editing.id, payload);
-            else onCreate(payload);
-            setShowForm(false);
-            setEditing(null);
+          onSubmit={async (payload) => {
+            try {
+              if (editing) await onUpdate(editing.id, payload);
+              else await onCreate(payload);
+              setShowForm(false);
+              setEditing(null);
+            } catch {
+              /* the toast already explains what failed; keep the form */
+            }
           }}
         />
       )}

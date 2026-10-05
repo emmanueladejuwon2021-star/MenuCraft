@@ -13,9 +13,21 @@ function buildOrderLines(requested, menuRows) {
     throw error;
   }
   const byId = new Map((menuRows || []).map((row) => [Number(row.id), row]));
-  const lines = [];
+  const merged = new Map();
   for (const row of requested) {
-    const item = byId.get(Number(row && row.id));
+    const id = Number(row && row.id);
+    const qty = Math.floor(Number(row && row.qty));
+    if (!Number.isFinite(id)) {
+      const error = new Error("A dish on this plate is not on the menu.");
+      error.status = 400;
+      throw error;
+    }
+    merged.set(id, (merged.get(id) || 0) + (Number.isFinite(qty) ? qty : 0));
+  }
+  const lines = [];
+  for (const [id, qty] of merged) {
+    const item = byId.get(id);
+    const row = { id, qty };
     if (!item) {
       const error = new Error("A dish on this plate is not on the menu.");
       error.status = 400;
@@ -27,7 +39,6 @@ function buildOrderLines(requested, menuRows) {
       error.status = 400;
       throw error;
     }
-    const qty = Math.floor(Number(row.qty));
     if (!Number.isFinite(qty) || qty < 1 || qty > MAX_QTY) {
       const error = new Error("Each dish can be ordered from 1 to 20.");
       error.status = 400;

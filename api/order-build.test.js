@@ -36,3 +36,10 @@ test("does not show blank-email orders to a stranger", () => {
   assert.deepEqual(visibleOrders(orders, { role: "guest", email: "ada@example.com" }, "").map((row) => row.id), [2]);
   assert.equal(visibleOrders(orders, { role: "staff" }, "").length, 2);
 });
+
+test("adds quantities when the same dish is sent twice", () => {
+  const built = buildOrderLines([{ id: 1, qty: 2, price: 1 }, { id: 1, qty: 3, price: 9 }], menu);
+  assert.equal(built.lines.length, 1);
+  assert.equal(built.lines[0].qty, 5);
+  assert.equal(built.total, 16000);
+});

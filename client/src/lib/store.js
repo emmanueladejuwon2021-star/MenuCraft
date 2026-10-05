@@ -90,7 +90,7 @@ export async function removeCategory(id) {
     const payload = await request(`/api/categories/${id}`, { method: "DELETE" });
     return { source: "live", message: payload.message || "Category removed" };
   } catch (error) {
-    if (!shouldUseLocal(error) && error.status !== 404) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     data.categories = data.categories.filter((row) => Number(row.id) !== Number(id));
     data.items = data.items.filter((row) => Number(row.category_id) !== Number(id));
@@ -193,7 +193,7 @@ export async function removeItem(id) {
     const payload = await request(`/api/items/${id}`, { method: "DELETE" });
     return { source: "live", message: payload.message || "Dish removed" };
   } catch (error) {
-    if (!shouldUseLocal(error) && error.status !== 404) throw error;
+    if (!shouldUseLocal(error)) throw error;
     const data = readLocal();
     data.items = data.items.filter((row) => Number(row.id) !== Number(id));
     writeLocal(data);

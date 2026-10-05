@@ -7,6 +7,7 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
   const guest = user?.role === "guest";
   const tabs = staff
     ? [
+        { to: "/menu", label: "Board", short: "Board", icon: BookOpen },
         { to: "/dishes", label: "Dishes", short: "Dishes", icon: ClipboardList },
         { to: "/stock", label: "Stock", short: "Stock", icon: Warehouse },
         { to: "/pricing", label: "Prices", short: "Prices", icon: BadgeDollarSign },

@@ -1,4 +1,4 @@
-import { request, shouldUseLocal } from "./api";
+import { apiBase, request, shouldUseLocal } from "./api";
 
 const ACCOUNTS_KEY = "menucraft-accounts-v1";
 const SESSION_KEY = "menucraft-session-v1";
@@ -60,7 +60,7 @@ function publicUser(account) {
     email: account.email,
     phone: account.phone || "",
     restaurant_name: account.restaurant_name || "",
-    role: account.role === "guest" ? "guest" : "staff",
+    role: account.role === "staff" ? "staff" : "guest",
     token: account.token || "",
   };
 }
@@ -108,6 +108,9 @@ export async function createAccount({ name, email, password, restaurant_name }) 
     if (!shouldUseLocal(error)) throw error;
     const accounts = readAccounts();
     if (accounts.some((row) => row.email === cleanEmail)) throw new Error("An account with that email already exists.");
+    if (accounts.some((row) => row.role === "staff") && readSession()?.role !== "staff") {
+      throw new Error("Ask someone already in the kitchen to create this account.");
+    }
     const account = {
       id: Date.now(),
       name: cleanName,
@@ -166,7 +169,7 @@ export async function signIn({ email, password }) {
       body: JSON.stringify({ email: cleanEmail, password }),
     });
     const user = payload.user || {};
-    const role = user.role === "guest" ? "guest" : "staff";
+    const role = user.role === "staff" ? "staff" : "guest";
     return writeSession(keepToken(user, { ...user, token: user.token || payload.token, role }));
   } catch (error) {
     if (!shouldUseLocal(error)) throw error;
@@ -213,7 +216,7 @@ export async function signOut() {
   writeSession(null);
   if (!session?.token) return;
   try {
-    await fetch("/api/logout", {
+    await fetch(`${apiBase()}/api/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

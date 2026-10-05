@@ -81,12 +81,20 @@ export default function App() {
     refresh();
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      loadOrders().then(setOrders).catch(() => {});
+    }, 12000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   async function handleCreate(input) {
     try {
       notify((await createItem(input)).message);
       await refresh();
     } catch (error) {
       notify(error.message || "Something went wrong. Changes were not saved.", "error");
+      throw error;
     }
   }
 
@@ -96,6 +104,7 @@ export default function App() {
       await refresh();
     } catch (error) {
       notify(error.message || "Something went wrong. Changes were not saved.", "error");
+      throw error;
     }
   }
 
@@ -158,21 +167,13 @@ export default function App() {
     }
   }
 
-  function requestPrices(payload) {
-    setConfirmBox({
-      title: "Update these prices?",
-      body: "Every dish in this category will change.",
-      noLabel: "Leave prices",
-      yesLabel: "Update prices",
-      onYes: async () => {
-        try {
-          notify((await bulkUpdatePrices(payload)).message);
-          await refresh();
-        } catch {
-          notify("Something went wrong. Changes were not saved.", "error");
-        }
-      },
-    });
+  async function requestPrices(payload) {
+    try {
+      notify((await bulkUpdatePrices(payload)).message);
+      await refresh();
+    } catch {
+      notify("Something went wrong. Changes were not saved.", "error");
+    }
   }
 
   async function handleSettings(settings) {
@@ -231,12 +232,15 @@ export default function App() {
 
   async function handleAccountUpdate(form) {
     try {
-      setUser(await updateAccount(form));
-      await saveSettings({
-        restaurant_name: form.restaurant_name || menu.settings.restaurant_name,
-        currency_symbol: form.currency_symbol || menu.settings.currency_symbol || "\u20a6",
-      });
-      await refresh();
+      const nextUser = await updateAccount(form);
+      setUser(nextUser);
+      if (isStaff(nextUser)) {
+        await saveSettings({
+          restaurant_name: form.restaurant_name || menu.settings.restaurant_name,
+          currency_symbol: form.currency_symbol || menu.settings.currency_symbol || "\u20a6",
+        });
+        await refresh();
+      }
       notify("Saved!");
     } catch (error) {
       notify(error.message || "Could not save account details.", "error");
@@ -280,13 +284,7 @@ export default function App() {
     notify(status === "Cooking" ? "Kitchen has started this order" : status === "Ready" ? "Order is ready" : "Order marked served");
   }
 
-  let walkinEmail = "";
-  try {
-    walkinEmail = window.localStorage.getItem("menucraft-walkin-email") || "";
-  } catch {
-    walkinEmail = "";
-  }
-  const guestOrders = user?.email ? myOrders(user.email, orders) : myOrders(walkinEmail, orders);
+  const guestOrders = user?.email ? myOrders(user.email, orders) : orders;
   const staffUser = isStaff(user) ? user : null;
 
   return (

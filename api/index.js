@@ -353,6 +353,32 @@ app.post("/api/orders", withDb, async (req, res) => {
   }
 });
 
+app.post("/api/logout", withDb, async (req, res) => {
+  const token = readToken(req);
+  if (token) {
+    await req.db.execute({ sql: "DELETE FROM sessions WHERE token = ?", args: [token] });
+  }
+  res.json({ ok: true });
+});
+
+app.post("/api/order-status", withDb, requireStaff, async (req, res) => {
+  const status = String(req.body?.status || "").trim();
+  const id = Number(req.body?.id);
+  if (!id) return fail(res, 400, "That order could not be found.");
+  if (!ORDER_STATUSES.includes(status)) return fail(res, 400, "That order status is not valid.");
+  try {
+    const updated = await req.db.execute({
+      sql: "UPDATE orders SET status = ? WHERE id = ? RETURNING *",
+      args: [status, id],
+    });
+    if (!updated.rows.length) return fail(res, 404, "That order could not be found.");
+    res.json({ ok: true, order: mapOrder(updated.rows[0]) });
+  } catch (error) {
+    console.error(error);
+    fail(res, 500, "Could not update the order. Please try again.");
+  }
+});
+
 app.patch("/api/orders/:id", withDb, requireStaff, async (req, res) => {
   const status = String(req.body?.status || "").trim();
   if (!ORDER_STATUSES.includes(status)) return fail(res, 400, "That order status is not valid.");
