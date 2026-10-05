@@ -51,4 +51,23 @@ function buildOrderLines(requested, menuRows) {
   return { lines, total };
 }
 
-module.exports = { buildOrderLines, MAX_QTY, MAX_LINES };
+
+function visibleOrders(orders, user, tickets) {
+  const list = Array.isArray(orders) ? orders : [];
+  if (user && user.role === "staff") return list;
+  const email = String((user && user.email) || "").trim().toLowerCase();
+  const allowed = new Set(
+    String(tickets || "")
+      .split(",")
+      .map((token) => token.trim())
+      .filter((token) => token && token.length <= 80)
+  );
+  return list.filter((order) => {
+    const token = String(order.view_token || "");
+    if (token && allowed.has(token)) return true;
+    return Boolean(email) && String(order.guest_email || "").toLowerCase() === email;
+  });
+}
+
+module.exports = { buildOrderLines, visibleOrders, MAX_QTY, MAX_LINES };
+

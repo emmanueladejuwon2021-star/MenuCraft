@@ -3,6 +3,10 @@ const cors = require("cors");
 const { readyDb, mapItem } = require("./db");
 const { hashPassword, checkPassword, makeToken, publicUser, readToken, findUserByToken } = require("./auth");
 const { applyPrice } = require("./pricing");
+const { buildOrderLines, visibleOrders } = require("./order-build");
+const { registerUser, loginUser } = require("./accounts");
+const { cleanImageUrl } = require("./http");
+const crypto = require("crypto");
 
 const app = express();
 const ORDER_STATUSES = ["New", "Cooking", "Ready", "Served"];
@@ -12,8 +16,8 @@ app.use(
     origin(origin, callback) {
       if (!origin) return callback(null, true);
       const allowed =
-        origin.includes("github.io") ||
-        origin.includes("vercel.app") ||
+        origin.endsWith(".github.io") ||
+        origin.endsWith(".vercel.app") ||
         origin.includes("localhost") ||
         origin.includes("127.0.0.1");
       callback(null, allowed);
@@ -44,6 +48,7 @@ function mapOrder(row) {
     total: Number(row.total),
     paid: Number(row.paid) === 1,
     pay_ref: row.pay_ref || "",
+    view_token: row.view_token || "",
     status: row.status || "New",
     created_at: row.created_at,
   };
@@ -83,60 +88,24 @@ app.get("/api/health", async (_req, res) => {
 });
 
 app.post("/api/signup", withDb, async (req, res) => {
-  const name = String(req.body?.name || "").trim();
-  const email = String(req.body?.email || "").trim().toLowerCase();
-  const password = String(req.body?.password || "");
-  const restaurantName = String(req.body?.restaurant_name || "").trim() || "Guest";
-  const phone = String(req.body?.phone || "").trim();
-  if (!name) return fail(res, 400, "Please enter your name.");
-  if (!email.includes("@")) return fail(res, 400, "Please enter a valid email.");
-  if (password.length < 6) return fail(res, 400, "Password should be at least 6 characters.");
   try {
-    const existing = await req.db.execute({ sql: "SELECT id FROM users WHERE email = ?", args: [email] });
-    if (existing.rows.length) return fail(res, 409, "An account with that email already exists.");
-    const staffCount = await req.db.execute("SELECT COUNT(*) AS n FROM users WHERE role = 'staff'");
-    const hasStaff = Number(staffCount.rows[0].n) > 0;
-    let role = "guest";
-    if (!hasStaff) {
-      role = "staff";
-    } else if (req.body?.role === "staff") {
-      const caller = await findUserByToken(req.db, readToken(req));
-      if (caller?.role === "staff") role = "staff";
-    }
-    const inserted = await req.db.execute({
-      sql: "INSERT INTO users (name, email, password_hash, restaurant_name, role, phone) VALUES (?, ?, ?, ?, ?, ?) RETURNING id, name, email, phone, restaurant_name, role",
-      args: [name, email, hashPassword(password), restaurantName, role, phone],
-    });
-    const token = makeToken();
-    await req.db.execute({ sql: "INSERT INTO sessions (token, user_id) VALUES (?, ?)", args: [token, inserted.rows[0].id] });
-    const user = { ...publicUser(inserted.rows[0]), token };
-    res.status(201).json({ ok: true, user, token });
+    const result = await registerUser(req.db, req.body || {}, readToken(req));
+    if (result.message) return fail(res, result.status, result.message);
+    return res.status(result.status).json(result.body);
   } catch (error) {
-    if (String(error.message || "").includes("UNIQUE")) return fail(res, 409, "An account with that email already exists.");
     console.error(error);
-    fail(res, 500, "Could not create the account. Please try again.");
+    return fail(res, 500, "Could not create the account. Please try again.");
   }
 });
 
 app.post("/api/login", withDb, async (req, res) => {
-  const email = String(req.body?.email || "").trim().toLowerCase();
-  const password = String(req.body?.password || "");
-  if (!email || !password) return fail(res, 400, "Please enter your email and password.");
   try {
-    const found = await req.db.execute({
-      sql: "SELECT id, name, email, phone, restaurant_name, role, password_hash FROM users WHERE email = ?",
-      args: [email],
-    });
-    if (!found.rows.length || !checkPassword(password, found.rows[0].password_hash)) {
-      return fail(res, 401, "Email or password is not correct.");
-    }
-    const token = makeToken();
-    await req.db.execute({ sql: "INSERT INTO sessions (token, user_id) VALUES (?, ?)", args: [token, found.rows[0].id] });
-    const user = { ...publicUser(found.rows[0]), token };
-    res.json({ ok: true, user, token });
+    const result = await loginUser(req.db, req.body || {}, req);
+    if (result.message) return fail(res, result.status, result.message);
+    return res.status(result.status).json(result.body);
   } catch (error) {
     console.error(error);
-    fail(res, 500, "Could not sign in. Please try again.");
+    return fail(res, 500, "Could not sign in. Please try again.");
   }
 });
 
@@ -233,7 +202,7 @@ app.post("/api/items", withDb, requireStaff, async (req, res) => {
   try {
     const inserted = await req.db.execute({
       sql: "INSERT INTO menu_items (category_id, name, description, price, image_url, is_available, tags, prep_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *",
-      args: [categoryId, name, String(body.description || ""), price, String(body.image_url || ""), body.is_available === false ? 0 : 1, tags, Number(body.prep_time || 10)],
+      args: [categoryId, name, String(body.description || ""), price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10)))],
     });
     res.status(201).json({ ok: true, message: "Added to category", item: mapItem(inserted.rows[0]) });
   } catch (error) {
@@ -254,7 +223,7 @@ app.put("/api/items/:id", withDb, requireStaff, async (req, res) => {
   try {
     const updated = await req.db.execute({
       sql: "UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, image_url = ?, is_available = ?, tags = ?, prep_time = ? WHERE id = ? RETURNING *",
-      args: [categoryId, name, String(body.description || ""), price, String(body.image_url || ""), body.is_available === false ? 0 : 1, tags, Number(body.prep_time || 10), req.params.id],
+      args: [categoryId, name, String(body.description || ""), price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10))), req.params.id],
     });
     if (!updated.rows.length) return fail(res, 404, "That dish could not be found.");
     res.json({ ok: true, message: "Saved!", item: mapItem(updated.rows[0]) });
@@ -344,13 +313,9 @@ app.put("/api/settings", withDb, requireStaff, async (req, res) => {
 app.get("/api/orders", withDb, async (req, res) => {
   try {
     const user = await findUserByToken(req.db, readToken(req));
-    const result = user?.role === "staff"
-      ? await req.db.execute("SELECT * FROM orders ORDER BY id DESC")
-      : await req.db.execute({
-          sql: "SELECT * FROM orders WHERE guest_email = ? ORDER BY id DESC",
-          args: [String(user?.email || "").toLowerCase()],
-        });
-    res.json({ ok: true, orders: result.rows.map(mapOrder) });
+    const result = await req.db.execute("SELECT * FROM orders ORDER BY id DESC");
+    const orders = visibleOrders(result.rows.map(mapOrder), user, req.query?.tickets);
+    res.json({ ok: true, orders });
   } catch (error) {
     console.error(error);
     fail(res, 500, "Could not load orders. Please try again.");
@@ -358,8 +323,7 @@ app.get("/api/orders", withDb, async (req, res) => {
 });
 
 app.post("/api/orders", withDb, async (req, res) => {
-  const items = Array.isArray(req.body?.items) ? req.body.items : [];
-  if (!items.length) return fail(res, 400, "Your plate is empty.");
+  const requested = Array.isArray(req.body?.items) ? req.body.items : [];
   const guest = req.body?.guest || {};
   let session = null;
   try {
@@ -367,20 +331,23 @@ app.post("/api/orders", withDb, async (req, res) => {
   } catch {
     session = null;
   }
-  const name = String(guest.name || session?.name || "").trim();
+  const name = String(guest.name || session?.name || "").trim().slice(0, 80);
   if (!name) return fail(res, 400, "Add your name so the kitchen can call the plate.");
-  const email = String(guest.email || session?.email || "").trim().toLowerCase();
-  const phone = String(guest.phone || session?.phone || "").trim();
-  const note = String(req.body?.note || "").trim();
-  const total = items.reduce((sum, row) => sum + Number(row.price || 0) * Number(row.qty || 0), 0);
-  const payRef = `COUNTER-${Date.now().toString().slice(-8)}`;
+  const email = String(guest.email || session?.email || "").trim().toLowerCase().slice(0, 120);
+  const phone = String(guest.phone || session?.phone || "").trim().slice(0, 30);
+  const note = String(req.body?.note || "").trim().slice(0, 240);
   try {
+    const menu = await req.db.execute("SELECT id, name, price, is_available, image_url FROM menu_items");
+    const built = buildOrderLines(requested, menu.rows);
+    const payRef = `COUNTER-${Date.now().toString().slice(-8)}`;
+    const viewToken = crypto.randomBytes(18).toString("hex");
     const inserted = await req.db.execute({
-      sql: "INSERT INTO orders (guest_name, guest_email, phone, note, items_json, total, paid, pay_ref, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, 'New', ?) RETURNING *",
-      args: [name, email, phone, note, JSON.stringify(items), total, payRef, new Date().toISOString()],
+      sql: "INSERT INTO orders (guest_name, guest_email, phone, note, items_json, total, paid, pay_ref, status, created_at, view_token) VALUES (?, ?, ?, ?, ?, ?, 0, ?, 'New', ?, ?) RETURNING *",
+      args: [name, email, phone, note, JSON.stringify(built.lines), built.total, payRef, new Date().toISOString(), viewToken],
     });
     res.status(201).json({ ok: true, order: mapOrder(inserted.rows[0]) });
   } catch (error) {
+    if (error.status) return fail(res, error.status, error.message);
     console.error(error);
     fail(res, 500, "Could not send the order. Please try again.");
   }
