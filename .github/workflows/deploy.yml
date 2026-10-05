@@ -21,7 +21,7 @@ jobs:
       - name: Install and build
         working-directory: client
         run: |
-          npm install
+          npm install --no-audit --no-fund
           npm run build
       - name: Prepare Pages folder
         run: |
