@@ -7,6 +7,10 @@ async function claimFirstStaff(db) {
   const claimed = await db.execute("SELECT user_id FROM staff_claim WHERE id = 1");
   if (claimed.rows.length && Number(claimed.rows[0].user_id) > 0) return false;
   try {
+    if (claimed.rows.length) {
+      await db.execute("UPDATE staff_claim SET user_id = 0 WHERE id = 1 AND user_id = 0");
+      return true;
+    }
     await db.execute("INSERT INTO staff_claim (id, user_id) VALUES (1, 0)");
     return true;
   } catch {
@@ -51,7 +55,7 @@ async function registerUser(db, body, token) {
       await db.execute({ sql: "UPDATE staff_claim SET user_id = ? WHERE id = 1", args: [inserted.rows[0].id] });
     }
     const sessionToken = makeToken();
-    await db.execute({ sql: "INSERT INTO sessions (token, user_id) VALUES (?, ?)", args: [sessionToken, inserted.rows[0].id] });
+    await db.execute({ sql: "INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)", args: [sessionToken, inserted.rows[0].id, new Date().toISOString()] });
     const user = { ...publicUser(inserted.rows[0]), token: sessionToken };
     return { status: 201, body: { ok: true, user, token: sessionToken } };
   } catch (error) {
@@ -80,7 +84,7 @@ async function loginUser(db, body, req) {
     return { status: 401, message: "Email or password is not correct." };
   }
   const token = makeToken();
-  await db.execute({ sql: "INSERT INTO sessions (token, user_id) VALUES (?, ?)", args: [token, found.rows[0].id] });
+  await db.execute({ sql: "INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)", args: [token, found.rows[0].id, new Date().toISOString()] });
   const user = { ...publicUser(found.rows[0]), token };
   return { status: 200, body: { ok: true, user, token } };
 }

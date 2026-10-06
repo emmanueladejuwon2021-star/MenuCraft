@@ -2,12 +2,18 @@ const hits = new Map();
 
 function applyCors(req, res) {
   const origin = String(req.headers.origin || "");
+  let host = "";
+  try {
+    host = origin ? new URL(origin).hostname : "";
+  } catch {
+    host = "";
+  }
   const allowed =
     !origin ||
-    origin.includes("localhost") ||
-    origin.includes("127.0.0.1") ||
-    origin.endsWith(".vercel.app") ||
-    origin.endsWith(".github.io");
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host.endsWith(".vercel.app") ||
+    host.endsWith(".github.io");
   if (allowed && origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");

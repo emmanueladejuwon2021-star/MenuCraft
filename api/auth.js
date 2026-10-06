@@ -43,6 +43,14 @@ function readToken(req) {
 
 const SESSION_DAYS = 14;
 
+function sessionTime(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return NaN;
+  const iso = raw.includes("T") ? raw : raw.replace(" ", "T");
+  const parsed = new Date(iso.endsWith("Z") || /[+-]\d{2}:?\d{2}$/.test(iso) ? iso : `${iso}Z`).getTime();
+  return Number.isFinite(parsed) ? parsed : NaN;
+}
+
 async function findUserByToken(db, token) {
   if (!token) return null;
   const session = await db.execute({
@@ -50,7 +58,7 @@ async function findUserByToken(db, token) {
     args: [token],
   });
   if (!session.rows.length) return null;
-  const created = new Date(session.rows[0].created_at || 0).getTime();
+  const created = sessionTime(session.rows[0].created_at);
   if (!Number.isFinite(created) || Date.now() - created > SESSION_DAYS * 24 * 60 * 60 * 1000) {
     await db.execute({ sql: "DELETE FROM sessions WHERE token = ?", args: [token] });
     return null;

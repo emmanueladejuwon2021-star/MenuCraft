@@ -10,6 +10,7 @@ function getDb() {
 }
 
 let ready = false;
+let opening = null;
 
 function shouldSeed() {
   return process.env.MENUCRAFT_SEED === "1" || (!process.env.VERCEL && process.env.NODE_ENV !== "production");
@@ -131,7 +132,21 @@ async function ensureSchema(db) {
 async function readyDb() {
   const db = getDb();
   if (!db) return null;
-  if (!ready) await ensureSchema(db);
+  if (ready) return db;
+  if (!opening) {
+    opening = ensureSchema(db)
+      .then(() => {
+        ready = true;
+      })
+      .catch((error) => {
+        ready = false;
+        throw error;
+      })
+      .finally(() => {
+        opening = null;
+      });
+  }
+  await opening;
   return db;
 }
 

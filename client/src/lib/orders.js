@@ -24,7 +24,7 @@ export function writePlate(items) {
 export function addToPlate(dish) {
   const plate = readPlate();
   const found = plate.find((row) => Number(row.id) === Number(dish.id));
-  if (found) found.qty += 1;
+  if (found) found.qty = Math.min(20, found.qty + 1);
   else {
     plate.push({
       id: dish.id,
@@ -39,7 +39,7 @@ export function addToPlate(dish) {
 
 export function setPlateQty(id, qty) {
   const next = readPlate()
-    .map((row) => (Number(row.id) === Number(id) ? { ...row, qty } : row))
+    .map((row) => (Number(row.id) === Number(id) ? { ...row, qty: Math.min(20, Math.floor(Number(qty) || 0)) } : row))
     .filter((row) => row.qty > 0);
   return writePlate(next);
 }
@@ -116,7 +116,9 @@ export async function placeOrder({ guest, items, note }) {
 }
 
 export function myOrders(email, orders = readOrders()) {
-  return orders.filter((row) => row.guest_email === email);
+  const wanted = String(email || "").trim().toLowerCase();
+  if (!wanted) return [];
+  return orders.filter((row) => String(row.guest_email || "").trim().toLowerCase() === wanted);
 }
 
 export async function setOrderStatus(id, status) {

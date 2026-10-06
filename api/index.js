@@ -15,11 +15,17 @@ app.use(
   cors({
     origin(origin, callback) {
       if (!origin) return callback(null, true);
+      let host = "";
+      try {
+        host = new URL(origin).hostname;
+      } catch {
+        return callback(null, false);
+      }
       const allowed =
-        origin.endsWith(".github.io") ||
-        origin.endsWith(".vercel.app") ||
-        origin.includes("localhost") ||
-        origin.includes("127.0.0.1");
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host.endsWith(".github.io") ||
+        host.endsWith(".vercel.app");
       callback(null, allowed);
     },
     credentials: true,
@@ -200,6 +206,8 @@ app.post("/api/items", withDb, requireStaff, async (req, res) => {
   if (Number.isNaN(price) || price < 0) return fail(res, 400, "Please enter a valid price.");
   const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "");
   try {
+    const category = await req.db.execute({ sql: "SELECT id FROM categories WHERE id = ?", args: [categoryId] });
+    if (!category.rows.length) return fail(res, 400, "Please choose a category that exists.");
     const inserted = await req.db.execute({
       sql: "INSERT INTO menu_items (category_id, name, description, price, image_url, is_available, tags, prep_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *",
       args: [categoryId, name, String(body.description || ""), price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10)))],
@@ -221,6 +229,8 @@ app.put("/api/items/:id", withDb, requireStaff, async (req, res) => {
   if (Number.isNaN(price) || price < 0) return fail(res, 400, "Please enter a valid price.");
   const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "");
   try {
+    const category = await req.db.execute({ sql: "SELECT id FROM categories WHERE id = ?", args: [categoryId] });
+    if (!category.rows.length) return fail(res, 400, "Please choose a category that exists.");
     const updated = await req.db.execute({
       sql: "UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, image_url = ?, is_available = ?, tags = ?, prep_time = ? WHERE id = ? RETURNING *",
       args: [categoryId, name, String(body.description || ""), price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10))), req.params.id],
@@ -260,11 +270,21 @@ app.post("/api/items/bulk-price-update", withDb, requireStaff, async (req, res) 
       sql: "SELECT id, price FROM menu_items WHERE category_id = ?",
       args: [categoryId],
     });
-    for (const row of current.rows) {
-      await req.db.execute({
-        sql: "UPDATE menu_items SET price = ? WHERE id = ?",
-        args: [applyPrice(row.price, mode, amount), row.id],
-      });
+    if (typeof req.db.batch === "function") {
+      await req.db.batch(
+        current.rows.map((row) => ({
+          sql: "UPDATE menu_items SET price = ? WHERE id = ?",
+          args: [applyPrice(row.price, mode, amount), row.id],
+        })),
+        "write"
+      );
+    } else {
+      for (const row of current.rows) {
+        await req.db.execute({
+          sql: "UPDATE menu_items SET price = ? WHERE id = ?",
+          args: [applyPrice(row.price, mode, amount), row.id],
+        });
+      }
     }
     const items = await req.db.execute({ sql: "SELECT * FROM menu_items WHERE category_id = ? ORDER BY name", args: [categoryId] });
     res.json({ ok: true, message: "Price updated successfully", items: items.rows.map(mapItem) });
