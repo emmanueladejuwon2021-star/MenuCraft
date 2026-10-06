@@ -85,7 +85,7 @@ function keepToken(session, user) {
 async function saveRemote(path, body) {
   const payload = await request(path, { method: "POST", body: JSON.stringify(body) });
   const user = payload.user || {};
-  return writeSession(keepToken(user, { ...user, token: user.token || payload.token, role: user.role || body.role || "staff" }));
+  return writeSession(keepToken(user, { ...user, token: user.token || payload.token, role: user.role || body.role || "guest" }));
 }
 
 export async function createAccount({ name, email, password, restaurant_name }) {
