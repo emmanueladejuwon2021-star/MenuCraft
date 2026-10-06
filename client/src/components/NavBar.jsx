@@ -51,11 +51,11 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
         </div>
       </header>
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur md:hidden" aria-label="Main">
-        <div className="nav-scroll flex gap-1 overflow-x-auto px-2 pt-1">
+        <div className={`grid gap-1 px-2 pt-1 ${tabs.length > 5 ? "grid-cols-4" : "grid-cols-5"}`}>
           {tabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex min-w-[4.75rem] flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-xs ${isActive ? "bg-paper font-semibold text-pine" : "text-muted"}`}>
+            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[11px] ${isActive ? "bg-paper font-semibold text-pine" : "text-muted"}`}>
               <tab.icon size={18} />
-              <span className="whitespace-nowrap leading-none">{tab.short}</span>
+              <span className="max-w-full truncate leading-none">{tab.short}</span>
             </NavLink>
           ))}
         </div>

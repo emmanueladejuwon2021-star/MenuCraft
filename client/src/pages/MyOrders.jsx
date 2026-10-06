@@ -24,8 +24,9 @@ export default function MyOrders({ settings, orders }) {
   }, [orders]);
   const mine = [...orders].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   const needle = ticket.trim().toLowerCase();
-  const found = needle
-    ? [...mine, ...local].filter((order, index, all) => all.findIndex((row) => row.id === order.id) === index && String(order.pay_ref || "").toLowerCase().includes(needle))
+  const pool = [...mine, ...local].filter((order, index, all) => all.findIndex((row) => String(row.id) === String(order.id)) === index);
+  const found = needle.length >= 6
+    ? pool.filter((order) => String(order.pay_ref || "").toLowerCase() === needle)
     : mine;
 
   return (
@@ -36,12 +37,12 @@ export default function MyOrders({ settings, orders }) {
       </Link>
       <label className="block text-sm font-medium text-ink">
         Find a ticket on this phone
-        <input value={ticket} onChange={(event) => setTicket(event.target.value)} placeholder="Ticket code, if the kitchen gave you one" className="field mt-1" />
+        <input value={ticket} onChange={(event) => setTicket(event.target.value)} placeholder="Full ticket code, such as COUNTER-12345678" className="field mt-1" />
       </label>
       {found.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-line bg-card px-5 py-12 text-center">
-          <p className="font-semibold text-ink">{needle ? "No ticket with that code on this phone" : "No orders yet"}</p>
-          <p className="mt-2 text-sm text-muted">{needle ? "Ask the kitchen for the ticket on their board, or send a new plate." : "Open the board, add a dish to your plate, then send it."}</p>
+          <p className="font-semibold text-ink">{needle.length >= 6 ? "No ticket with that exact code" : needle ? "Enter the full ticket code" : "No orders yet"}</p>
+          <p className="mt-2 text-sm text-muted">{needle.length >= 6 ? "Ask the kitchen for the full ticket on their board, or send a new plate." : needle ? "A short piece of the code is not enough. Use the full ticket." : "Open the board, add a dish to your plate, then send it."}</p>
         </div>
       ) : (
         <div className="space-y-3">

@@ -263,13 +263,17 @@ export default function App() {
     const ticket = { ...(guest || user || {}) };
     if (!ticket.name) throw new Error("Add your name so the kitchen can call the plate.");
     if (!ticket.email) {
-      const walkin = "walkin:" + ticket.name.toLowerCase().replace(/\s+/g, "-");
-      ticket.email = walkin;
+      let walkin = "";
       try {
-        window.localStorage.setItem("menucraft-walkin-email", walkin);
+        walkin = window.localStorage.getItem("menucraft-walkin-email") || "";
+        if (!walkin.startsWith("walkin:")) {
+          walkin = "walkin:" + (window.crypto?.randomUUID?.() || String(Date.now()));
+          window.localStorage.setItem("menucraft-walkin-email", walkin);
+        }
       } catch {
-        /* ignore private-mode storage */
+        walkin = "walkin:" + ticket.name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
       }
+      ticket.email = walkin;
     }
     await placeOrder({ guest: ticket, items: plate, note });
     setPlate(readPlate());
@@ -284,11 +288,11 @@ export default function App() {
     notify(status === "Cooking" ? "Kitchen has started this order" : status === "Ready" ? "Order is ready" : "Order marked served");
   }
 
-  const guestOrders = user?.email ? myOrders(user.email, orders) : orders;
+  const guestOrders = myOrders(user?.email || "", orders);
   const staffUser = isStaff(user) ? user : null;
 
   return (
-    <div className="min-h-screen bg-paper pb-28 md:pb-8">
+    <div className="min-h-screen bg-paper pb-40 md:pb-8">
       <NavBar settings={menu.settings} user={user} theme={theme} onToggleTheme={handleTheme} plateCount={plateCount(plate)} />
       <Toast toast={toast} />
       <ConfirmDialog box={confirmBox} onClose={() => setConfirmBox(null)} />

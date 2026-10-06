@@ -80,7 +80,8 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
                 {dishes.map((item) => {
                   const tags = item.tags || [];
                   return (
-                    <article key={item.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+                    <article key={item.id} className="flex flex-col gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:flex-row sm:items-center">
+                      <div className="flex min-w-0 flex-1 gap-3">
                       <DishPhoto src={item.image_url} name={item.name} className="h-20 w-20 shrink-0" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-3">
@@ -90,10 +91,11 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
                         {item.description ? <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p> : null}
                         <p className="mt-2 text-xs font-semibold text-ink">{item.is_available ? "Ready" : "Sold out"}{tags.length ? <span className="font-normal text-muted">{` \u00b7 ${tags.join(", ")}`}</span> : null}</p>
                       </div>
+                      </div>
                       {item.is_available && onAddToPlate ? (
-                        <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 shrink-0 rounded-full bg-pine px-4 text-sm font-semibold text-invert">Add</button>
+                        <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 w-full shrink-0 rounded-full bg-pine px-4 text-sm font-semibold text-invert sm:w-auto">Add</button>
                       ) : (
-                        <span className="inline-flex h-11 shrink-0 items-center rounded-full bg-paper px-3 text-xs font-semibold text-ink">Sold out</span>
+                        <span className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-full bg-paper px-3 text-xs font-semibold text-ink sm:w-auto">Sold out</span>
                       )}
                     </article>
                   );

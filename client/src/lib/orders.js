@@ -21,10 +21,12 @@ export function writePlate(items) {
   return items;
 }
 
+const MAX_QTY = 20;
+
 export function addToPlate(dish) {
   const plate = readPlate();
   const found = plate.find((row) => Number(row.id) === Number(dish.id));
-  if (found) found.qty += 1;
+  if (found) found.qty = Math.min(MAX_QTY, Number(found.qty) + 1);
   else {
     plate.push({
       id: dish.id,
@@ -111,12 +113,20 @@ export async function placeOrder({ guest, items, note }) {
     };
     writeOrders([order, ...readOrders()]);
     clearPlate();
+    rememberTicket(order);
     return order;
   }
 }
 
 export function myOrders(email, orders = readOrders()) {
-  return orders.filter((row) => row.guest_email === email);
+  const wanted = String(email || "").trim().toLowerCase();
+  const tickets = new Set(readJson(TICKETS_KEY, []));
+  return orders.filter((row) => {
+    const token = String(row.view_token || "");
+    if (token && tickets.has(token)) return true;
+    if (!wanted) return false;
+    return String(row.guest_email || "").trim().toLowerCase() === wanted;
+  });
 }
 
 export async function setOrderStatus(id, status) {

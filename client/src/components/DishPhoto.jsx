@@ -1,6 +1,9 @@
+import { useState } from "react";
+
 export default function DishPhoto({ src, name, className = "h-24 w-24" }) {
-  if (src) {
-    return <img src={src} alt={name ? name : "Dish photo"} className={`${className} rounded-2xl object-cover`} />;
+  const [broken, setBroken] = useState(false);
+  if (src && !broken) {
+    return <img src={src} alt={name ? name : "Dish photo"} className={`${className} rounded-2xl object-cover`} onError={() => setBroken(true)} />;
   }
   const mark = name ? name.trim().slice(0, 1).toUpperCase() : "?";
   return (

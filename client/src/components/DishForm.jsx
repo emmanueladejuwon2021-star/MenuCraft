@@ -42,16 +42,16 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
       <div className="grid gap-3 md:grid-cols-2">
         <label className="block text-sm text-ink">
           Dish name
-          <input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
+          <input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className="field mt-1" />
         </label>
         <label className="block text-sm text-ink">
           Price
-          <input required type="number" min="0" step="0.01" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
+          <input required type="number" min="0" step="0.01" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} className="field mt-1" />
         </label>
         <label className="block text-sm text-ink">
           Category
           {categories.length ? (
-            <select required value={form.category_id} onChange={(event) => setForm({ ...form, category_id: event.target.value })} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink">
+            <select required value={form.category_id} onChange={(event) => setForm({ ...form, category_id: event.target.value })} className="field mt-1">
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
@@ -62,16 +62,16 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
         </label>
         <label className="block text-sm text-ink">
           Prep minutes
-          <input type="number" min="1" value={form.prep_time} onChange={(event) => setForm({ ...form, prep_time: event.target.value })} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
+          <input type="number" min="1" value={form.prep_time} onChange={(event) => setForm({ ...form, prep_time: event.target.value })} className="field mt-1" />
         </label>
       </div>
       <label className="block text-sm text-ink">
         Photo link
-        <input value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} placeholder="Paste a photo link" className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
+        <input value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} placeholder="Paste a photo link" className="field mt-1" />
       </label>
       <label className="block text-sm text-ink">
         Description
-        <textarea rows={2} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2 text-ink" />
+        <textarea rows={2} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="mt-1 min-h-24 w-full rounded-2xl border border-line bg-paper px-3 py-2 text-ink" />
       </label>
       <button type="button" aria-pressed={form.is_available} onClick={() => setForm((prev) => ({ ...prev, is_available: !prev.is_available }))} className={`tap h-11 w-full rounded-full px-4 text-sm font-medium ${form.is_available ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`}>
         {form.is_available ? "In stock \u00b7 tap to mark sold out" : "Sold out \u00b7 tap to put back on the board"}

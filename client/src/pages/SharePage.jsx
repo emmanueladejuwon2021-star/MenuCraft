@@ -63,7 +63,7 @@ export default function SharePage({ settings, onSaveSettings, user }) {
   }
 
   return (
-    <section className="grid gap-4 md:grid-cols-[1fr_280px]">
+    <section className="page-enter grid gap-4 pb-8 md:grid-cols-[1fr_280px]">
       <form
         className="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft"
         onSubmit={(event) => {
@@ -81,11 +81,11 @@ export default function SharePage({ settings, onSaveSettings, user }) {
           <>
             <label className="block text-sm text-ink">
               Restaurant name
-              <input value={name} onChange={(event) => setName(event.target.value)} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
+              <input value={name} onChange={(event) => setName(event.target.value)} className="field mt-1" />
             </label>
             <label className="block text-sm text-ink">
               Money symbol
-              <input value={symbol} onChange={(event) => setSymbol(event.target.value)} className="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
+              <input value={symbol} onChange={(event) => setSymbol(event.target.value)} className="field mt-1" />
             </label>
             <button className="tap h-11 rounded-full bg-pine px-5 text-sm font-semibold text-invert">Save details</button>
           </>
