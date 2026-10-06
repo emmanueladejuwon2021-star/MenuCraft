@@ -1,5 +1,5 @@
 const { hashPassword, checkPassword, makeToken, publicUser, readToken, findUserByToken } = require("./auth");
-const { tooMany, clientKey } = require("./http");
+const { tooMany, clientKey, clearHits } = require("./http");
 
 async function claimFirstStaff(db) {
   const staff = await db.execute("SELECT COUNT(*) AS n FROM users WHERE role = 'staff'");
@@ -70,12 +70,13 @@ async function registerUser(db, body, token) {
 }
 
 async function loginUser(db, body, req) {
-  if (tooMany(`login:${clientKey(req)}`)) {
-    return { status: 429, message: "Too many sign-in tries. Wait a few minutes and try again." };
-  }
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
   if (!email || !password) return { status: 400, message: "Please enter your email and password." };
+  const key = `login:${clientKey(req)}`;
+  if (tooMany(key)) {
+    return { status: 429, message: "Too many sign-in tries. Wait a few minutes and try again." };
+  }
   const found = await db.execute({
     sql: "SELECT id, name, email, phone, restaurant_name, role, password_hash FROM users WHERE email = ?",
     args: [email],
@@ -83,6 +84,7 @@ async function loginUser(db, body, req) {
   if (!found.rows.length || !checkPassword(password, found.rows[0].password_hash)) {
     return { status: 401, message: "Email or password is not correct." };
   }
+  clearHits(key);
   const token = makeToken();
   await db.execute({ sql: "INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)", args: [token, found.rows[0].id, new Date().toISOString()] });
   const user = { ...publicUser(found.rows[0]), token };

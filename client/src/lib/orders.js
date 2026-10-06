@@ -65,6 +65,31 @@ function writeOrders(orders) {
   return orders;
 }
 
+const WALKIN_KEY = "menucraft-walkin-email";
+
+export function readWalkinEmail() {
+  try {
+    return localStorage.getItem(WALKIN_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+export function rememberWalkin(name) {
+  const slug = String(name || "guest").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "guest";
+  const email = `walkin:${slug}-${Date.now().toString(36)}`;
+  try {
+    localStorage.setItem(WALKIN_KEY, email);
+  } catch {
+    /* private mode */
+  }
+  return email;
+}
+
+export function readTickets() {
+  return readJson(TICKETS_KEY, []).filter((token) => typeof token === "string" && token.length <= 80).slice(0, 20);
+}
+
 function rememberTicket(order) {
   if (!order?.view_token) return;
   const tickets = readJson(TICKETS_KEY, []).filter((token) => token !== order.view_token);
@@ -74,7 +99,7 @@ function rememberTicket(order) {
 
 export async function loadOrders() {
   try {
-    const tickets = readJson(TICKETS_KEY, []).slice(0, 20).join(",");
+    const tickets = readTickets().join(",");
     const path = tickets ? `/api/orders?tickets=${encodeURIComponent(tickets)}` : "/api/orders";
     const payload = await request(path);
     return payload.orders || [];
@@ -111,8 +136,23 @@ export async function placeOrder({ guest, items, note }) {
     };
     writeOrders([order, ...readOrders()]);
     clearPlate();
+    rememberTicket(order);
     return order;
   }
+}
+
+export function guestVisibleOrders(orders, user) {
+  const email = String(user?.email || "").trim().toLowerCase();
+  const walkin = readWalkinEmail().trim().toLowerCase();
+  const tickets = new Set(readTickets());
+  return (orders || []).filter((order) => {
+    const token = String(order.view_token || "");
+    if (token && tickets.has(token)) return true;
+    const guestEmail = String(order.guest_email || "").trim().toLowerCase();
+    if (email && guestEmail === email) return true;
+    if (!email && walkin && guestEmail === walkin) return true;
+    return false;
+  });
 }
 
 export function myOrders(email, orders = readOrders()) {

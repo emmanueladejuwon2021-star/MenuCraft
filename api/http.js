@@ -34,6 +34,10 @@ function tooMany(key, limit = 8, windowMs = 10 * 60 * 1000) {
   return row.n > limit;
 }
 
+function clearHits(key) {
+  hits.delete(key);
+}
+
 function clientKey(req) {
   const forwarded = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
   return forwarded || req.socket?.remoteAddress || "unknown";
@@ -64,4 +68,4 @@ function readBody(req) {
   return {};
 }
 
-module.exports = { applyCors, tooMany, clientKey, cleanImageUrl, readBody };
+module.exports = { applyCors, tooMany, clearHits, clientKey, cleanImageUrl, readBody };

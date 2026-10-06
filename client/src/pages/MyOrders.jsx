@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { money } from "../lib/store";
-import { readOrders } from "../lib/orders";
 import PageHeader from "../components/PageHeader.jsx";
 
 const WORDS = {
@@ -19,13 +18,10 @@ function when(value) {
 
 export default function MyOrders({ settings, orders }) {
   const [ticket, setTicket] = useState("");
-  const local = useMemo(() => {
-    try { return readOrders(); } catch { return []; }
-  }, [orders]);
   const mine = [...orders].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   const needle = ticket.trim().toLowerCase();
   const found = needle
-    ? [...mine, ...local].filter((order, index, all) => all.findIndex((row) => row.id === order.id) === index && String(order.pay_ref || "").toLowerCase().includes(needle))
+    ? mine.filter((order) => String(order.pay_ref || "").toLowerCase().includes(needle) || String(order.guest_name || "").toLowerCase().includes(needle))
     : mine;
 
   return (

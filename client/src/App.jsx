@@ -27,7 +27,7 @@ import {
   updateItem,
 } from "./lib/store.js";
 import { createAccount, createGuestAccount, isStaff, readSession, signIn, signOut, updateAccount } from "./lib/auth.js";
-import { addToPlate, loadOrders, myOrders, placeOrder, plateCount, readPlate, setOrderStatus, setPlateQty, writePlate } from "./lib/orders.js";
+import { addToPlate, guestVisibleOrders, loadOrders, placeOrder, plateCount, readPlate, rememberWalkin, setOrderStatus, setPlateQty, writePlate } from "./lib/orders.js";
 import { readTheme, toggleTheme } from "./lib/theme.js";
 import { kitchenLockPath } from "./lib/kitchenGate.js";
 import ConfirmDialog from "./components/ConfirmDialog.jsx";
@@ -262,15 +262,7 @@ export default function App() {
   async function handlePaid({ note, guest }) {
     const ticket = { ...(guest || user || {}) };
     if (!ticket.name) throw new Error("Add your name so the kitchen can call the plate.");
-    if (!ticket.email) {
-      const walkin = "walkin:" + ticket.name.toLowerCase().replace(/\s+/g, "-");
-      ticket.email = walkin;
-      try {
-        window.localStorage.setItem("menucraft-walkin-email", walkin);
-      } catch {
-        /* ignore private-mode storage */
-      }
-    }
+    if (!ticket.email) ticket.email = rememberWalkin(ticket.name);
     await placeOrder({ guest: ticket, items: plate, note });
     setPlate(readPlate());
     setOrders(await loadOrders());
@@ -284,11 +276,11 @@ export default function App() {
     notify(status === "Cooking" ? "Kitchen has started this order" : status === "Ready" ? "Order is ready" : "Order marked served");
   }
 
-  const guestOrders = user?.email ? myOrders(user.email, orders) : orders;
+  const guestOrders = isStaff(user) ? [] : guestVisibleOrders(orders, user);
   const staffUser = isStaff(user) ? user : null;
 
   return (
-    <div className="min-h-screen bg-paper pb-28 md:pb-8">
+    <div className="min-h-screen bg-paper pb-28 lg:pb-8">
       <NavBar settings={menu.settings} user={user} theme={theme} onToggleTheme={handleTheme} plateCount={plateCount(plate)} />
       <Toast toast={toast} />
       <ConfirmDialog box={confirmBox} onClose={() => setConfirmBox(null)} />

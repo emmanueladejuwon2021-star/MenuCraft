@@ -27,6 +27,7 @@ jobs:
         run: |
           mkdir -p site
           cp -r client/dist/* site/
+          cp site/index.html site/404.html
           touch site/.nojekyll
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4

@@ -67,7 +67,7 @@ export default function PlatePage({ settings, user, plate, onQty, onClear }) {
               </div>
             </div>
           ) : null}
-          <div className="fixed inset-x-3 bottom-[4.75rem] z-30 rounded-3xl border border-line bg-card/95 px-4 py-3 shadow-soft backdrop-blur md:sticky md:inset-auto md:bottom-4 md:z-10">
+          <div className="fixed inset-x-3 bottom-[4.75rem] z-30 rounded-3xl border border-line bg-card/95 px-4 py-3 shadow-soft backdrop-blur lg:sticky lg:inset-auto lg:bottom-4 lg:z-10">
             <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs text-muted">{portions} {portions === 1 ? "portion" : "portions"}{guestName ? ` \u00b7 ${guestName}` : ""}</p>

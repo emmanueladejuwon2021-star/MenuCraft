@@ -15,7 +15,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
             {settings.restaurant_name}
           </h1>
           <p className="mt-4 max-w-md text-base leading-relaxed text-muted">
-            Come for the rice, stay for the soup. Today’s board is short on purpose so you can pick fast and eat well.
+            Today’s board is short on purpose so you can pick fast and eat well.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/menu" className="tap inline-flex items-center rounded-full bg-pine px-6 text-sm font-semibold text-invert">
