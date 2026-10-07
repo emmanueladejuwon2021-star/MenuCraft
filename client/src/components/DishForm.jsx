@@ -28,11 +28,22 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
       setError("Add a category first, then save the dish.");
       return;
     }
+    const price = Number(form.price);
+    if (!Number.isFinite(price) || price < 0) {
+      setError("Enter a price that is zero or more.");
+      return;
+    }
+    const prep = Number(form.prep_time || 10);
+    if (!Number.isFinite(prep) || prep < 1) {
+      setError("Prep time should be at least 1 minute.");
+      return;
+    }
     onSubmit({
       ...form,
-      price: Number(form.price),
+      name: form.name.trim(),
+      price,
       category_id: Number(form.category_id),
-      prep_time: Number(form.prep_time || 10),
+      prep_time: Math.min(240, Math.floor(prep)),
       is_available: Boolean(form.is_available),
     });
   }
@@ -74,7 +85,7 @@ export default function DishForm({ categories, initial, onCancel, onSubmit }) {
         <textarea rows={2} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2 text-ink" />
       </label>
       <button type="button" aria-pressed={form.is_available} onClick={() => setForm((prev) => ({ ...prev, is_available: !prev.is_available }))} className={`tap h-11 w-full rounded-full px-4 text-sm font-medium ${form.is_available ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`}>
-        {form.is_available ? "In stock \u00b7 tap to mark sold out" : "Sold out \u00b7 tap to put back on the board"}
+        {form.is_available ? "In stock · tap to mark sold out" : "Sold out · tap to put back on the board"}
       </button>
       <div className="flex flex-wrap gap-2">
         {ALL_TAGS.map((tag) => (

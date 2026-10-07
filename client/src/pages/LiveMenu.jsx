@@ -39,7 +39,7 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
         <p className="text-sm font-medium text-ink">{countLabel(visible.length, "dish", "dishes")}</p>
       </div>
 
-      <div className="sticky top-[4.6rem] z-20 space-y-3 rounded-[1.4rem] border border-line bg-card/95 p-3 shadow-soft backdrop-blur">
+      <div className="sticky top-16 z-20 space-y-3 rounded-[1.4rem] border border-line bg-card/95 p-3 shadow-soft backdrop-blur">
         <label className="relative block">
           <span className="sr-only">Search the board</span>
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
@@ -59,7 +59,6 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
           <button type="button" className={chip(showSoldOut)} onClick={() => setShowSoldOut((value) => !value)}>{showSoldOut ? "Hide sold out" : "Show sold out"}</button>
         </div>
       </div>
-
       {visible.length === 0 ? (
         <div className="rounded-[2rem] border border-dashed border-line bg-card px-5 py-12 text-center">
           <p className="text-lg font-semibold text-ink">Nothing matches that search</p>
@@ -82,15 +81,15 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
                   return (
                     <article key={item.id} className="flex flex-col gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:flex-row sm:items-center">
                       <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <DishPhoto src={item.image_url} name={item.name} className="h-20 w-20 shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline justify-between gap-3">
-                          <h3 className="min-w-0 break-words text-base font-semibold text-ink">{item.name}</h3>
-                          <p className="shrink-0 text-base font-semibold text-ink">{money(settings.currency_symbol, item.price)}</p>
+                        <DishPhoto src={item.image_url} name={item.name} className="h-20 w-20 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline justify-between gap-3">
+                            <h3 className="min-w-0 break-words text-base font-semibold text-ink">{item.name}</h3>
+                            <p className="shrink-0 text-base font-semibold text-ink">{money(settings.currency_symbol, item.price)}</p>
+                          </div>
+                          {item.description ? <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p> : null}
+                          <p className="mt-2 text-xs font-semibold text-ink">{item.is_available ? "Ready" : "Sold out"}{tags.length ? <span className="font-normal text-muted">{` · ${tags.join(", ")}`}</span> : null}</p>
                         </div>
-                        {item.description ? <p className="mt-1 text-sm leading-relaxed text-muted">{item.description}</p> : null}
-                        <p className="mt-2 text-xs font-semibold text-ink">{item.is_available ? "Ready" : "Sold out"}{tags.length ? <span className="font-normal text-muted">{` · ${tags.join(", ")}`}</span> : null}</p>
-                      </div>
                       </div>
                       {item.is_available && onAddToPlate ? (
                         <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 w-full shrink-0 rounded-full bg-pine px-4 text-sm font-semibold text-invert sm:w-auto">Add</button>
