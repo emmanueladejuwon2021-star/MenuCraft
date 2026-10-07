@@ -7,12 +7,12 @@ async function claimFirstStaff(db) {
   const claimed = await db.execute("SELECT user_id FROM staff_claim WHERE id = 1");
   if (claimed.rows.length && Number(claimed.rows[0].user_id) > 0) return false;
   try {
-    if (claimed.rows.length) {
-      await db.execute("UPDATE staff_claim SET user_id = 0 WHERE id = 1 AND user_id = 0");
-      return true;
+    if (!claimed.rows.length) {
+      await db.execute("INSERT INTO staff_claim (id, user_id) VALUES (1, 0)");
     }
-    await db.execute("INSERT INTO staff_claim (id, user_id) VALUES (1, 0)");
-    return true;
+    // Only one request can move the claim off 0. A bare UPDATE was letting two signups both become staff.
+    const won = await db.execute("UPDATE staff_claim SET user_id = -1 WHERE id = 1 AND user_id = 0 RETURNING id");
+    return won.rows.length > 0;
   } catch {
     return false;
   }
@@ -52,7 +52,7 @@ async function registerUser(db, body, token) {
       args: [name, email, hashPassword(password), role === "guest" ? "Guest" : restaurantName, role, phone],
     });
     if (claimed) {
-      await db.execute({ sql: "UPDATE staff_claim SET user_id = ? WHERE id = 1", args: [inserted.rows[0].id] });
+      await db.execute({ sql: "UPDATE staff_claim SET user_id = ? WHERE id = 1 AND user_id = -1", args: [inserted.rows[0].id] });
     }
     const sessionToken = makeToken();
     await db.execute({ sql: "INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)", args: [sessionToken, inserted.rows[0].id, new Date().toISOString()] });
@@ -60,7 +60,7 @@ async function registerUser(db, body, token) {
     return { status: 201, body: { ok: true, user, token: sessionToken } };
   } catch (error) {
     if (claimed) {
-      await db.execute("DELETE FROM staff_claim WHERE id = 1 AND user_id = 0");
+      await db.execute("UPDATE staff_claim SET user_id = 0 WHERE id = 1 AND user_id = -1");
     }
     if (String(error.message || "").includes("UNIQUE")) {
       return { status: 409, message: "An account with that email already exists." };

@@ -37,6 +37,19 @@ function fail(res, status, message) {
   return res.status(status).json({ ok: false, message });
 }
 
+function moneyAmount(value) {
+  const price = Number(value);
+  if (!Number.isFinite(price) || price < 0 || price > 100000000) return null;
+  return Math.round(price * 100) / 100;
+}
+
+function positiveId(value) {
+  const id = Number(value);
+  if (!Number.isInteger(id) || id < 1) return null;
+  return id;
+}
+
+
 function mapOrder(row) {
   let items = [];
   try {
@@ -170,7 +183,7 @@ app.get("/api/categories", withDb, async (req, res) => {
 
 app.post("/api/categories", withDb, requireStaff, async (req, res) => {
   const name = String(req.body?.name || "").trim();
-  if (!name) return fail(res, 400, "Please enter a category name.");
+  if (!name || name.length > 60) return fail(res, 400, "Please enter a category name.");
   try {
     const orderRes = await req.db.execute("SELECT COALESCE(MAX(display_order), 0) + 1 AS next_order FROM categories");
     const inserted = await req.db.execute({
@@ -199,11 +212,11 @@ app.delete("/api/categories/:id", withDb, requireStaff, async (req, res) => {
 app.post("/api/items", withDb, requireStaff, async (req, res) => {
   const body = req.body || {};
   const name = String(body.name || "").trim();
-  const categoryId = Number(body.category_id);
-  const price = Number(body.price);
-  if (!name) return fail(res, 400, "Please enter a dish name.");
+  const categoryId = positiveId(body.category_id);
+  const price = moneyAmount(body.price);
+  if (!name || name.length > 80) return fail(res, 400, "Please enter a dish name.");
   if (!categoryId) return fail(res, 400, "Please choose a category.");
-  if (Number.isNaN(price) || price < 0) return fail(res, 400, "Please enter a valid price.");
+  if (price == null) return fail(res, 400, "Please enter a valid price.");
   const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "");
   try {
     const category = await req.db.execute({ sql: "SELECT id FROM categories WHERE id = ?", args: [categoryId] });
@@ -222,11 +235,11 @@ app.post("/api/items", withDb, requireStaff, async (req, res) => {
 app.put("/api/items/:id", withDb, requireStaff, async (req, res) => {
   const body = req.body || {};
   const name = String(body.name || "").trim();
-  const categoryId = Number(body.category_id);
-  const price = Number(body.price);
-  if (!name) return fail(res, 400, "Please enter a dish name.");
+  const categoryId = positiveId(body.category_id);
+  const price = moneyAmount(body.price);
+  if (!name || name.length > 80) return fail(res, 400, "Please enter a dish name.");
   if (!categoryId) return fail(res, 400, "Please choose a category.");
-  if (Number.isNaN(price) || price < 0) return fail(res, 400, "Please enter a valid price.");
+  if (price == null) return fail(res, 400, "Please enter a valid price.");
   const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "");
   try {
     const category = await req.db.execute({ sql: "SELECT id FROM categories WHERE id = ?", args: [categoryId] });
@@ -260,11 +273,12 @@ app.patch("/api/items/:id/status", withDb, requireStaff, async (req, res) => {
 });
 
 app.post("/api/items/bulk-price-update", withDb, requireStaff, async (req, res) => {
-  const categoryId = Number(req.body?.category_id);
+  const categoryId = positiveId(req.body?.category_id);
   const mode = String(req.body?.mode || "percent");
   const amount = Number(req.body?.amount);
   if (!categoryId) return fail(res, 400, "Please choose a category.");
-  if (Number.isNaN(amount)) return fail(res, 400, "Please enter an amount.");
+  if (mode !== "amount" && mode !== "percent") return fail(res, 400, "Choose an amount or a percent.");
+  if (!Number.isFinite(amount) || Math.abs(amount) > 1000000) return fail(res, 400, "Please enter an amount.");
   try {
     const current = await req.db.execute({
       sql: "SELECT id, price FROM menu_items WHERE category_id = ?",
@@ -375,15 +389,19 @@ app.post("/api/orders", withDb, async (req, res) => {
 
 app.post("/api/logout", withDb, async (req, res) => {
   const token = readToken(req);
-  if (token) {
-    await req.db.execute({ sql: "DELETE FROM sessions WHERE token = ?", args: [token] });
+  try {
+    if (token) {
+      await req.db.execute({ sql: "DELETE FROM sessions WHERE token = ?", args: [token] });
+    }
+  } catch (error) {
+    console.error(error);
   }
   res.json({ ok: true });
 });
 
 app.post("/api/order-status", withDb, requireStaff, async (req, res) => {
   const status = String(req.body?.status || "").trim();
-  const id = Number(req.body?.id);
+  const id = positiveId(req.body?.id);
   if (!id) return fail(res, 400, "That order could not be found.");
   if (!ORDER_STATUSES.includes(status)) return fail(res, 400, "That order status is not valid.");
   try {
