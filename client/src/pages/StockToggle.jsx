@@ -29,7 +29,7 @@ export default function StockToggle({ items, categories, onToggle }) {
                       aria-pressed={item.is_available}
                       aria-label={item.is_available ? `Mark ${item.name} sold out` : `Put ${item.name} back in stock`}
                       onClick={() => onToggle(item.id, !item.is_available)}
-                      className={`tap relative h-11 w-[4.5rem] shrink-0 rounded-full border px-1 ${item.is_available ? "border-pine bg-pine" : "border-line bg-card"}`}
+                      className={`tap relative flex h-11 w-[4.5rem] shrink-0 items-center rounded-full border px-1 ${item.is_available ? "border-pine bg-pine" : "border-line bg-card"}`}
                     >
                       <span className={`block h-8 w-8 rounded-full shadow ${item.is_available ? "ml-auto bg-invert" : "ml-0 bg-ink"}`} />
                     </button>

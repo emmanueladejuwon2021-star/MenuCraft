@@ -10,9 +10,9 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
         { to: "/menu", label: "Board", short: "Board", icon: BookOpen },
         { to: "/dishes", label: "Dishes", short: "Dishes", icon: ClipboardList },
         { to: "/stock", label: "Stock", short: "Stock", icon: Warehouse },
-        { to: "/pricing", label: "Prices", short: "Prices", icon: BadgeDollarSign, desktopOnly: true },
+        { to: "/pricing", label: "Prices", short: "Prices", icon: BadgeDollarSign },
         { to: "/orders", label: "Orders", short: "Orders", icon: ConciergeBell },
-        { to: "/share", label: "Share", short: "Share", icon: QrCode, desktopOnly: true },
+        { to: "/share", label: "Share", short: "Share", icon: QrCode },
         { to: "/account", label: "Account", short: "Account", icon: UserRound },
       ]
     : [
@@ -22,13 +22,6 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
         { to: "/my-orders", label: "My orders", short: "Orders", icon: ConciergeBell },
         { to: "/guest-account", label: "Account", short: "Account", icon: UserRound },
       ];
-  const phoneTabs = tabs.filter((tab) => !tab.desktopOnly);
-  const extra = staff
-    ? [
-        { to: "/pricing", label: "Prices", icon: BadgeDollarSign },
-        { to: "/share", label: "Share", icon: QrCode },
-      ]
-    : [];
 
   return (
     <>
@@ -38,13 +31,8 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
             <p className="truncate text-base font-semibold tracking-tight sm:text-lg">{settings.restaurant_name}</p>
             <p className="truncate text-xs text-muted">{staff ? `Kitchen · ${user.name}` : guest ? `Guest · ${user.name}` : "Guest menu"}</p>
           </div>
-          {extra.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} aria-label={tab.label} className={({ isActive }) => `tap inline-flex items-center justify-center rounded-full lg:hidden ${isActive ? "bg-pine text-invert" : "text-muted"}`} style={{ width: 44 }}>
-              <tab.icon size={18} />
-            </NavLink>
-          ))}
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          <nav className="hidden items-center justify-end gap-1 lg:flex">
+          <nav className="hidden items-center justify-end gap-1 lg:flex" aria-label="Main">
             {tabs.map((tab) => (
               <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap inline-flex items-center gap-2 rounded-full px-3 text-sm font-medium ${isActive ? "bg-pine text-invert" : "text-muted hover:bg-paper"}`}>
                 <tab.icon size={16} />
@@ -55,9 +43,9 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
         </div>
       </header>
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur lg:hidden" aria-label="Main">
-        <div className="grid grid-cols-5 gap-1 px-2 pt-1">
-          {phoneTabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-xs ${isActive ? "bg-paper font-semibold text-pine" : "text-muted"}`}>
+        <div className={`nav-scroll flex gap-1 overflow-x-auto px-2 pt-1 ${staff ? "" : "grid grid-cols-5"}`}>
+          {tabs.map((tab) => (
+            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex min-w-[4.4rem] flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-xs ${isActive ? "bg-paper font-semibold text-pine" : "text-muted"}`}>
               <tab.icon size={18} />
               <span className="max-w-full truncate leading-none">{tab.short}</span>
             </NavLink>

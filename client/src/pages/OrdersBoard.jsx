@@ -100,7 +100,7 @@ export default function OrdersBoard({ settings, orders, onStatus }) {
                 </ul>
                 <p className="mt-3 text-sm font-semibold text-ink">{money(settings.currency_symbol, order.total)} · Pay at the counter</p>
                 {action ? (
-                  <button type="button" disabled={busy || pendingId} onClick={() => advance(order, action.status)} className="tap mt-3 h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">
+                  <button type="button" disabled={busy} onClick={() => advance(order, action.status)} className="tap mt-3 h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">
                     {busy ? "Saving…" : action.label}
                   </button>
                 ) : (

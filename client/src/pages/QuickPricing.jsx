@@ -75,7 +75,7 @@ export default function QuickPricing({ settings, categories, items, onApply }) {
           preview.map((item) => (
             <div key={item.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl border border-line bg-card px-3 py-2">
               <span className="min-w-0 break-words text-sm font-medium text-ink">{item.name}</span>
-              <span className="shrink-0 text-xs text-ink">{money(settings.currency_symbol, item.price)} \u2192 {money(settings.currency_symbol, applyPrice(item.price, mode, number))}</span>
+              <span className="shrink-0 text-xs text-ink">{money(settings.currency_symbol, item.price)} → {money(settings.currency_symbol, applyPrice(item.price, mode, number))}</span>
             </div>
           ))
         )}

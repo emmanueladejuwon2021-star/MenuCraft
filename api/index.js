@@ -145,11 +145,7 @@ app.get("/api/menu", withDb, async (req, res) => {
     res.json({
       ok: true,
       settings: { restaurant_name: settings.restaurant_name, currency_symbol: settings.currency_symbol },
-      categories: categoriesRes.rows.map((row) => ({
-        id: Number(row.id),
-        name: row.name,
-        display_order: Number(row.display_order || 0),
-      })),
+      categories: categoriesRes.rows.map(mapCategory),
       items: itemsRes.rows.map(mapItem),
     });
   } catch (error) {
@@ -158,10 +154,18 @@ app.get("/api/menu", withDb, async (req, res) => {
   }
 });
 
+function mapCategory(row) {
+  return {
+    id: Number(row.id),
+    name: row.name,
+    display_order: Number(row.display_order || 0),
+  };
+}
+
 app.get("/api/categories", withDb, async (req, res) => {
   try {
     const result = await req.db.execute("SELECT id, name, display_order FROM categories ORDER BY display_order, name");
-    res.json({ ok: true, categories: result.rows });
+    res.json({ ok: true, categories: result.rows.map(mapCategory) });
   } catch (error) {
     console.error(error);
     fail(res, 500, "Could not load categories. Please try again.");
@@ -177,7 +181,7 @@ app.post("/api/categories", withDb, requireStaff, async (req, res) => {
       sql: "INSERT INTO categories (name, display_order) VALUES (?, ?) RETURNING id, name, display_order",
       args: [name, Number(orderRes.rows[0].next_order)],
     });
-    res.status(201).json({ ok: true, message: "Added to category list", category: inserted.rows[0] });
+    res.status(201).json({ ok: true, message: "Added to category list", category: mapCategory(inserted.rows[0]) });
   } catch (error) {
     if (String(error.message || "").includes("UNIQUE")) return fail(res, 409, "That category already exists.");
     console.error(error);
@@ -186,9 +190,13 @@ app.post("/api/categories", withDb, requireStaff, async (req, res) => {
 });
 
 app.delete("/api/categories/:id", withDb, requireStaff, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) return fail(res, 400, "That category could not be found.");
   try {
-    await req.db.execute({ sql: "DELETE FROM menu_items WHERE category_id = ?", args: [req.params.id] });
-    await req.db.execute({ sql: "DELETE FROM categories WHERE id = ?", args: [req.params.id] });
+    const found = await req.db.execute({ sql: "SELECT id FROM categories WHERE id = ?", args: [id] });
+    if (!found.rows.length) return fail(res, 404, "That category could not be found.");
+    await req.db.execute({ sql: "DELETE FROM menu_items WHERE category_id = ?", args: [id] });
+    await req.db.execute({ sql: "DELETE FROM categories WHERE id = ?", args: [id] });
     res.json({ ok: true, message: "Category removed" });
   } catch (error) {
     console.error(error);
@@ -270,6 +278,9 @@ app.post("/api/items/bulk-price-update", withDb, requireStaff, async (req, res) 
       sql: "SELECT id, price FROM menu_items WHERE category_id = ?",
       args: [categoryId],
     });
+    if (!current.rows.length) {
+      return res.json({ ok: true, message: "No dishes in that list to update", items: [] });
+    }
     if (typeof req.db.batch === "function") {
       await req.db.batch(
         current.rows.map((row) => ({
@@ -316,7 +327,7 @@ app.get("/api/settings", withDb, async (req, res) => {
 
 app.put("/api/settings", withDb, requireStaff, async (req, res) => {
   const name = String(req.body?.restaurant_name || "").trim();
-  const symbol = String(req.body?.currency_symbol || "").trim() || "$";
+  const symbol = String(req.body?.currency_symbol || "").trim() || "₦";
   if (!name) return fail(res, 400, "Please enter a restaurant name.");
   try {
     await req.db.execute({

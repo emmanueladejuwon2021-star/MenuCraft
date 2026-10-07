@@ -161,9 +161,9 @@ export default function App() {
     }));
     try {
       notify((await setItemStatus(id, isAvailable)).message);
-    } catch {
+    } catch (error) {
       setMenu((current) => ({ ...current, items: previous }));
-      notify("Something went wrong. Changes were not saved.", "error");
+      notify(error.message || "Something went wrong. Changes were not saved.", "error");
     }
   }
 
@@ -286,7 +286,7 @@ export default function App() {
       <ConfirmDialog box={confirmBox} onClose={() => setConfirmBox(null)} />
       <main className="mx-auto max-w-6xl px-4 py-5">
         {loading && location.pathname !== "/" ? (
-          <p className="text-sm text-muted">Loading menu\u2026</p>
+          <p className="text-sm text-muted">Loading the menu…</p>
         ) : (
           <Routes>
             <Route path="/" element={staffUser ? <Navigate to="/orders" replace /> : <HomePage settings={menu.settings} items={menu.items} onAddToPlate={handleAddToPlate} />} />
