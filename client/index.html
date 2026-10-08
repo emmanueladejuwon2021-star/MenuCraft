@@ -8,9 +8,19 @@
       (function () {
         var path = window.location.pathname || "/";
         var host = window.location.hostname || "";
-        var projectPage = host.endsWith("github.io") && path.toLowerCase().indexOf("/menucraft") === 0;
+        var search = window.location.search || "";
+        var projectAt = path.toLowerCase().indexOf("/menucraft");
+        var projectPage = host.endsWith("github.io") && projectAt === 0;
+        if (projectPage && !window.location.hash) {
+          var root = path.slice(0, projectAt + "/menucraft".length);
+          var rest = path.slice(root.length).replace(/\/index\.html$/i, "").replace(/\/$/, "");
+          if (rest && rest !== "/index.html") {
+            window.location.replace(root + "/#" + rest + search);
+            return;
+          }
+        }
         if (!projectPage && path !== "/" && path.indexOf("/api/") !== 0 && path !== "/index.html" && !window.location.hash) {
-          window.location.replace("/#" + path + window.location.search);
+          window.location.replace("/#" + path + search);
           return;
         }
         try {

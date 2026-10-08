@@ -39,11 +39,14 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
         <p className="text-sm font-medium text-ink">{countLabel(visible.length, "dish", "dishes")}</p>
       </div>
 
-      <div className="sticky top-16 z-20 space-y-3 rounded-[1.4rem] border border-line bg-card/95 p-3 shadow-soft backdrop-blur">
+      <div className="sticky top-[4.25rem] z-20 space-y-3 rounded-[1.4rem] border border-line bg-card/95 p-3 shadow-soft backdrop-blur">
         <label className="relative block">
           <span className="sr-only">Search the board</span>
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the board" aria-label="Search the board" className="tap h-12 w-full rounded-2xl border border-line bg-paper pl-9 pr-3 text-ink" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the board" aria-label="Search the board" className="tap h-12 w-full rounded-2xl border border-line bg-paper pl-9 pr-16 text-ink" />
+          {query ? (
+            <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 text-sm font-medium text-pine" onClick={() => setQuery("")}>Clear</button>
+          ) : null}
         </label>
         <div className="nav-scroll flex gap-2 overflow-x-auto pb-1">
           <button type="button" className={chip(categoryId === "all")} onClick={() => setCategoryId("all")}>Whole board</button>
@@ -51,7 +54,7 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
             <button type="button" key={category.id} className={chip(Number(categoryId) === Number(category.id))} onClick={() => setCategoryId(category.id)}>{category.name}</button>
           ))}
         </div>
-        <div className="nav-scroll flex gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-2">
           <button type="button" className={chip(tag === "all")} onClick={() => setTag("all")}>Any diet</button>
           {ALL_TAGS.map((item) => (
             <button type="button" key={item} className={chip(tag === item)} onClick={() => setTag(item)}>{item}</button>

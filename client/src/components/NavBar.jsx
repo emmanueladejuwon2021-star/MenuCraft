@@ -32,7 +32,7 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
             <p className="truncate text-xs text-muted">{staff ? `Kitchen · ${user.name}` : guest ? `Guest · ${user.name}` : "Guest menu"}</p>
           </div>
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          <nav className="hidden items-center justify-end gap-1 lg:flex" aria-label="Main">
+          <nav className="hidden max-w-[70%] items-center justify-end gap-1 overflow-x-auto lg:flex" aria-label="Main">
             {tabs.map((tab) => (
               <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap inline-flex items-center gap-2 rounded-full px-3 text-sm font-medium ${isActive ? "bg-pine text-invert" : "text-muted hover:bg-paper"}`}>
                 <tab.icon size={16} />
@@ -43,11 +43,11 @@ export default function NavBar({ settings, user, theme, onToggleTheme, plateCoun
         </div>
       </header>
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur lg:hidden" aria-label="Main">
-        <div className={`nav-scroll flex gap-1 overflow-x-auto px-2 pt-1 ${staff ? "" : "grid grid-cols-5"}`}>
+        <div className={`nav-scroll flex gap-1 overflow-x-auto px-2 pt-1 ${staff ? "justify-start" : "grid grid-cols-5"}`}>
           {tabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex min-w-[4.4rem] flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-xs ${isActive ? "bg-paper font-semibold text-pine" : "text-muted"}`}>
-              <tab.icon size={18} />
-              <span className="max-w-full truncate leading-none">{tab.short}</span>
+            <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `tap flex ${staff ? "min-w-[4.7rem] shrink-0" : "min-w-0 flex-1"} flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[11px] leading-none ${isActive ? "bg-paper font-semibold text-pine" : "text-muted"}`}>
+              <tab.icon size={18} aria-hidden="true" />
+              <span className="max-w-[4.6rem] truncate">{tab.short}</span>
             </NavLink>
           ))}
         </div>

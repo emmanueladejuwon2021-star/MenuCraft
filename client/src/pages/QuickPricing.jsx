@@ -18,7 +18,8 @@ export default function QuickPricing({ settings, categories, items, onApply }) {
 
   const preview = items.filter((item) => Number(item.category_id) === Number(categoryId));
   const number = Number(amount);
-  const ready = categoryId && Number.isFinite(number);
+  const percentOk = mode !== "percent" || (number >= -100 && number <= 500);
+  const ready = categoryId && Number.isFinite(number) && percentOk;
   const hint = mode === "percent"
     ? "10 raises every price by 10 percent. -10 lowers them by 10 percent."
     : "10 adds 10 to every price. -10 takes 10 off. Prices cannot go below zero.";
@@ -31,6 +32,7 @@ export default function QuickPricing({ settings, categories, items, onApply }) {
         onSubmit={(event) => {
           event.preventDefault();
           if (!ready || !preview.length) return;
+          if (mode === "percent" && (number < -100 || number > 500)) return;
           setAsk(true);
         }}
       >
@@ -56,6 +58,7 @@ export default function QuickPricing({ settings, categories, items, onApply }) {
           </label>
         </div>
         <p className="text-xs text-muted">{hint}</p>
+        {!percentOk ? <p className="text-sm text-danger">Use a percent between -100 and 500.</p> : null}
         <button disabled={!ready || !preview.length} className="tap h-11 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">Review price change</button>
         {ask ? (
           <div className="rounded-2xl border border-line bg-paper p-3" role="alertdialog" aria-labelledby="price-title">

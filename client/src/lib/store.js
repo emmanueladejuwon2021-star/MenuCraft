@@ -180,10 +180,11 @@ export async function bulkUpdatePrices({ categoryId, mode, amount }) {
       return { ...item, price: applyPrice(item.price, mode, amount) };
     });
     writeLocal(data);
+    const floored = data.items.some((item) => Number(item.category_id) === Number(categoryId) && item.price === 0);
     return {
       source: "local",
       items: data.items.filter((item) => Number(item.category_id) === Number(categoryId)).map(normalizeItem),
-      message: "Price updated successfully",
+      message: floored ? "Prices updated. Some dishes stopped at zero." : "Price updated successfully",
     };
   }
 }
@@ -221,9 +222,11 @@ export async function saveSettings(settings) {
 }
 
 export function money(symbol, value) {
-  const amount = Number(value || 0).toLocaleString("en-NG", {
-    minimumFractionDigits: Number(value) % 1 === 0 ? 0 : 2,
+  const amount = Number(value);
+  const safe = Number.isFinite(amount) ? amount : 0;
+  const formatted = safe.toLocaleString("en-NG", {
+    minimumFractionDigits: safe % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   });
-  return `${symbol}${amount}`;
+  return `${symbol || "₦"}${formatted}`;
 }

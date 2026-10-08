@@ -247,8 +247,8 @@ export default function App() {
     }
   }
 
-  function handleSignOut() {
-    signOut();
+  async function handleSignOut() {
+    await signOut();
     setUser(null);
     notify("Signed out");
     navigate("/");

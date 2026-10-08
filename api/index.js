@@ -281,24 +281,34 @@ app.post("/api/items/bulk-price-update", withDb, requireStaff, async (req, res) 
     if (!current.rows.length) {
       return res.json({ ok: true, message: "No dishes in that list to update", items: [] });
     }
+    if (mode === "percent" && (amount < -100 || amount > 500)) {
+      return fail(res, 400, "Use a percent between -100 and 500.");
+    }
+    const nextPrices = current.rows.map((row) => applyPrice(row.price, mode, amount));
+    const floored = nextPrices.some((price, index) => price === 0 && Number(current.rows[index].price) > 0);
     if (typeof req.db.batch === "function") {
       await req.db.batch(
-        current.rows.map((row) => ({
+        current.rows.map((row, index) => ({
           sql: "UPDATE menu_items SET price = ? WHERE id = ?",
-          args: [applyPrice(row.price, mode, amount), row.id],
+          args: [nextPrices[index], row.id],
         })),
         "write"
       );
     } else {
-      for (const row of current.rows) {
+      for (let index = 0; index < current.rows.length; index += 1) {
+        const row = current.rows[index];
         await req.db.execute({
           sql: "UPDATE menu_items SET price = ? WHERE id = ?",
-          args: [applyPrice(row.price, mode, amount), row.id],
+          args: [nextPrices[index], row.id],
         });
       }
     }
     const items = await req.db.execute({ sql: "SELECT * FROM menu_items WHERE category_id = ? ORDER BY name", args: [categoryId] });
-    res.json({ ok: true, message: "Price updated successfully", items: items.rows.map(mapItem) });
+    res.json({
+      ok: true,
+      message: floored ? "Prices updated. Some dishes stopped at zero." : "Price updated successfully",
+      items: items.rows.map(mapItem),
+    });
   } catch (error) {
     console.error(error);
     fail(res, 500, "Something went wrong. Changes were not saved.");
@@ -307,6 +317,8 @@ app.post("/api/items/bulk-price-update", withDb, requireStaff, async (req, res) 
 
 app.delete("/api/items/:id", withDb, requireStaff, async (req, res) => {
   try {
+    const found = await req.db.execute({ sql: "SELECT id FROM menu_items WHERE id = ?", args: [req.params.id] });
+    if (!found.rows.length) return fail(res, 404, "That dish could not be found.");
     await req.db.execute({ sql: "DELETE FROM menu_items WHERE id = ?", args: [req.params.id] });
     res.json({ ok: true, message: "Dish removed" });
   } catch (error) {

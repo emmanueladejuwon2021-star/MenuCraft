@@ -30,7 +30,7 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
         {spotlight ? (
           <article className="overflow-hidden rounded-[2rem] border border-line bg-card shadow-soft">
             {spotlight.image_url ? (
-              <img src={spotlight.image_url} alt={spotlight.name} className="h-52 w-full object-cover" />
+              <DishPhoto src={spotlight.image_url} name={spotlight.name} className="h-52 w-full rounded-none" />
             ) : (
               <div className="flex h-52 items-end bg-gradient-to-br from-blue-200 to-sky-100 p-6 dark:from-blue-900/40 dark:to-slate-900">
                 <p className="text-sm font-medium text-ink">First dish on the board</p>

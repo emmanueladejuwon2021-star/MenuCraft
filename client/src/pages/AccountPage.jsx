@@ -41,8 +41,8 @@ export default function AccountPage({ user, settings, onCreate, onSignIn, onUpda
           {mode === "signup" && (
             <label className="block text-sm font-medium text-ink">Your name<input className="field mt-1" value={form.name} onChange={(event) => change("name", event.target.value)} /></label>
           )}
-          <label className="block text-sm font-medium text-ink">Email<input type="email" className="field mt-1" value={form.email} onChange={(event) => change("email", event.target.value)} /></label>
-          <label className="block text-sm font-medium text-ink">Password<input type="password" className="field mt-1" value={form.password} onChange={(event) => change("password", event.target.value)} /></label>
+          <label className="block text-sm font-medium text-ink">Email<input required type="email" className="field mt-1" value={form.email} onChange={(event) => change("email", event.target.value)} /></label>
+          <label className="block text-sm font-medium text-ink">Password<input required type="password" minLength={6} className="field mt-1" value={form.password} onChange={(event) => change("password", event.target.value)} /></label>
           {mode === "signup" && (
             <label className="block text-sm font-medium text-ink">Restaurant name<input className="field mt-1" value={form.restaurant_name} onChange={(event) => change("restaurant_name", event.target.value)} /></label>
           )}
