@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>MenuCraft</title>
+    <script>
+      (function () {
+        var path = window.location.pathname || "/";
+        var host = window.location.hostname || "";
+        var search = window.location.search || "";
+        var projectAt = path.toLowerCase().indexOf("/menucraft");
+        var projectPage = host.endsWith("github.io") && projectAt === 0;
+        if (projectPage && !window.location.hash) {
+          var root = path.slice(0, projectAt + "/menucraft".length);
+          var rest = path.slice(root.length).replace(/\/index\.html$/i, "").replace(/\/$/, "");
+          if (rest && rest !== "/index.html") {
+            window.location.replace(root + "/#" + rest + search);
+            return;
+          }
+        }
+        if (!projectPage && path !== "/" && path.indexOf("/api/") !== 0 && path !== "/index.html" && !window.location.hash) {
+          window.location.replace("/#" + path + search);
+          return;
+        }
+        try {
+          var theme = localStorage.getItem("menucraft-theme");
+          if (theme !== "dark" && theme !== "light") {
+            theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          if (theme === "dark") document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = theme;
+        } catch (error) {}
+      })();
+    </script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>" />
+    <script type="module" crossorigin src="./assets/index-Cq1cU-JC.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DfDK12gD.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
