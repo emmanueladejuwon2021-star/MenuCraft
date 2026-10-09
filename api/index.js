@@ -55,6 +55,7 @@ function mapOrder(row) {
     paid: Number(row.paid) === 1,
     pay_ref: row.pay_ref || "",
     view_token: row.view_token || "",
+    linked_user_id: row.linked_user_id === undefined || row.linked_user_id === null ? null : Number(row.linked_user_id),
     status: row.status || "New",
     created_at: row.created_at,
   };
@@ -95,7 +96,7 @@ app.get("/api/health", async (_req, res) => {
 
 app.post("/api/signup", withDb, async (req, res) => {
   try {
-    const result = await registerUser(req.db, req.body || {}, readToken(req));
+    const result = await registerUser(req.db, req.body || {}, readToken(req), req);
     if (result.message) return fail(res, result.status, result.message);
     return res.status(result.status).json(result.body);
   } catch (error) {
@@ -374,10 +375,12 @@ app.post("/api/orders", withDb, async (req, res) => {
   } catch {
     session = null;
   }
-  const name = String(guest.name || session?.name || "").trim().slice(0, 80);
+  const name = String(session?.name || guest.name || "").trim().slice(0, 80);
   if (!name) return fail(res, 400, "Add your name so the kitchen can call the plate.");
-  const email = String(guest.email || session?.email || "").trim().toLowerCase().slice(0, 120);
-  const phone = String(guest.phone || session?.phone || "").trim().slice(0, 30);
+  // A signed-in guest cannot put the ticket on another account by sending a different email.
+  const email = String(session?.email || guest.email || "").trim().toLowerCase().slice(0, 120);
+  const phone = String(session?.phone || guest.phone || "").trim().slice(0, 30);
+  const linkedUserId = session ? Number(session.id) || 0 : 0;
   const note = String(req.body?.note || "").trim().slice(0, 240);
   try {
     const menu = await req.db.execute("SELECT id, name, price, is_available, image_url FROM menu_items");
@@ -385,8 +388,8 @@ app.post("/api/orders", withDb, async (req, res) => {
     const payRef = `COUNTER-${Date.now().toString().slice(-8)}`;
     const viewToken = crypto.randomBytes(18).toString("hex");
     const inserted = await req.db.execute({
-      sql: "INSERT INTO orders (guest_name, guest_email, phone, note, items_json, total, paid, pay_ref, status, created_at, view_token) VALUES (?, ?, ?, ?, ?, ?, 0, ?, 'New', ?, ?) RETURNING *",
-      args: [name, email, phone, note, JSON.stringify(built.lines), built.total, payRef, new Date().toISOString(), viewToken],
+      sql: "INSERT INTO orders (guest_name, guest_email, phone, note, items_json, total, paid, pay_ref, status, created_at, view_token, linked_user_id) VALUES (?, ?, ?, ?, ?, ?, 0, ?, 'New', ?, ?, ?) RETURNING *",
+      args: [name, email, phone, note, JSON.stringify(built.lines), built.total, payRef, new Date().toISOString(), viewToken, linkedUserId],
     });
     res.status(201).json({ ok: true, order: mapOrder(inserted.rows[0]) });
   } catch (error) {

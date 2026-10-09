@@ -72,6 +72,7 @@ async function ensureSchema(db) {
     "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'guest'",
     "ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''",
     "ALTER TABLE orders ADD COLUMN view_token TEXT",
+    "ALTER TABLE orders ADD COLUMN linked_user_id INTEGER",
   ];
   for (const sql of extras) {
     try {

@@ -8,17 +8,17 @@ async function claimFirstStaff(db) {
   if (claimed.rows.length && Number(claimed.rows[0].user_id) > 0) return false;
   try {
     if (claimed.rows.length) {
-      await db.execute("UPDATE staff_claim SET user_id = 0 WHERE id = 1 AND user_id = 0");
-      return true;
+      const updated = await db.execute("UPDATE staff_claim SET user_id = -1 WHERE id = 1 AND user_id = 0");
+      return Number(updated.rowsAffected) === 1;
     }
-    await db.execute("INSERT INTO staff_claim (id, user_id) VALUES (1, 0)");
+    await db.execute("INSERT INTO staff_claim (id, user_id) VALUES (1, -1)");
     return true;
   } catch {
     return false;
   }
 }
 
-async function registerUser(db, body, token) {
+async function registerUser(db, body, token, req) {
   const name = String(body.name || "").trim();
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
@@ -27,6 +27,9 @@ async function registerUser(db, body, token) {
   if (!name) return { status: 400, message: "Please enter your name." };
   if (!email.includes("@") || email.length > 120) return { status: 400, message: "Please enter a valid email." };
   if (password.length < 6 || password.length > 200) return { status: 400, message: "Password should be at least 6 characters." };
+  if (req && tooMany(`signup:${clientKey(req)}`, 5)) {
+    return { status: 429, message: "Too many new accounts from this connection. Wait a few minutes and try again." };
+  }
 
   const existing = await db.execute({ sql: "SELECT id FROM users WHERE email = ?", args: [email] });
   if (existing.rows.length) return { status: 409, message: "An account with that email already exists." };
@@ -60,7 +63,7 @@ async function registerUser(db, body, token) {
     return { status: 201, body: { ok: true, user, token: sessionToken } };
   } catch (error) {
     if (claimed) {
-      await db.execute("DELETE FROM staff_claim WHERE id = 1 AND user_id = 0");
+      await db.execute("UPDATE staff_claim SET user_id = 0 WHERE id = 1 AND user_id = -1");
     }
     if (String(error.message || "").includes("UNIQUE")) {
       return { status: 409, message: "An account with that email already exists." };

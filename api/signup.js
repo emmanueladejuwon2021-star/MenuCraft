@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   try {
     const db = await readyDb();
     if (!db) return res.status(503).json({ ok: false, message: "The shared menu is not connected yet. Add the database details in Vercel, then try again." });
-    const result = await registerUser(db, readBody(req), readToken(req));
+    const result = await registerUser(db, readBody(req), readToken(req), req);
     if (result.message) return res.status(result.status).json({ ok: false, message: result.message });
     return res.status(result.status).json(result.body);
   } catch (error) {

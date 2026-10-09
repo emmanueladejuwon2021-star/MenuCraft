@@ -43,3 +43,12 @@ test("adds quantities when the same dish is sent twice", () => {
   assert.equal(built.lines[0].qty, 5);
   assert.equal(built.total, 16000);
 });
+
+test("does not attach a new walk-in order to an account by email alone", () => {
+  const orders = [
+    { id: 3, guest_email: "ada@example.com", linked_user_id: 0, view_token: "ticket-c" },
+    { id: 4, guest_email: "other@example.com", linked_user_id: 7, view_token: "ticket-d" },
+  ];
+  assert.deepEqual(visibleOrders(orders, { id: 7, role: "guest", email: "ada@example.com" }, "").map((row) => row.id), [4]);
+  assert.deepEqual(visibleOrders(orders, { id: 7, role: "guest", email: "ada@example.com" }, "ticket-c").map((row) => row.id), [3, 4]);
+});

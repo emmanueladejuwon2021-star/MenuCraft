@@ -67,6 +67,7 @@ function visibleOrders(orders, user, tickets) {
   const list = Array.isArray(orders) ? orders : [];
   if (user && user.role === "staff") return list;
   const email = String((user && user.email) || "").trim().toLowerCase();
+  const userId = Number(user && user.id);
   const allowed = new Set(
     String(tickets || "")
       .split(",")
@@ -76,7 +77,11 @@ function visibleOrders(orders, user, tickets) {
   return list.filter((order) => {
     const token = String(order.view_token || "");
     if (token && allowed.has(token)) return true;
-    return Boolean(email) && String(order.guest_email || "").toLowerCase() === email;
+    if (Number.isFinite(userId) && userId > 0 && Number(order.linked_user_id) === userId) return true;
+    // Rows saved before linking have no linked_user_id. New walk-in orders set it to 0
+    // so a guessed email cannot plant a ticket on someone else's account.
+    const legacy = order.linked_user_id === undefined || order.linked_user_id === null;
+    return legacy && Boolean(email) && String(order.guest_email || "").toLowerCase() === email;
   });
 }
 

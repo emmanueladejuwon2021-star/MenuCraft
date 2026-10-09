@@ -1,4 +1,5 @@
 const app = require("./index");
+const { applyCors } = require("./http");
 
 function withApiPrefix(req) {
   const raw = req.url || "/";
@@ -12,11 +13,7 @@ function withApiPrefix(req) {
 
 module.exports = (req, res) => {
   withApiPrefix(req);
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    return res.status(204).end();
-  }
+  applyCors(req, res);
+  if (req.method === "OPTIONS") return res.status(204).end();
   return app(req, res);
 };
