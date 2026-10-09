@@ -61,7 +61,8 @@ input:disabled, select:disabled, textarea:disabled {
 }
 option { color: var(--ink); background: var(--card); }
 img { max-width: 100%; }
-.tap { min-height: 44px; min-width: 44px; }
+.tap { min-height: 44px; }
+.tap-icon { min-width: 44px; min-height: 44px; }
 .field { width: 100%; height: 48px; border-radius: 16px; border: 1px solid var(--line); background: var(--paper); padding: 0 14px; }
 .bg-ink { background-color: var(--ink) !important; color: var(--invert) !important; }
 .bg-pine { background-color: var(--pine) !important; color: var(--invert) !important; }

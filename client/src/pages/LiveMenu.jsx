@@ -82,7 +82,7 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
                 {dishes.map((item) => {
                   const tags = item.tags || [];
                   return (
-                    <article key={item.id} className="flex flex-col gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:flex-row sm:items-center">
+                    <article key={item.id} className={`flex flex-col gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:flex-row sm:items-center ${item.is_available ? "" : "opacity-70"}`}>
                       <div className="flex min-w-0 flex-1 items-center gap-3">
                         <DishPhoto src={item.image_url} name={item.name} className="h-20 w-20 shrink-0" />
                         <div className="min-w-0 flex-1">
@@ -95,7 +95,7 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
                         </div>
                       </div>
                       {item.is_available && onAddToPlate ? (
-                        <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 w-full shrink-0 rounded-full bg-pine px-4 text-sm font-semibold text-invert sm:w-auto">Add</button>
+                        <button type="button" onClick={() => onAddToPlate(item)} className="tap h-11 w-full shrink-0 rounded-full bg-pine px-5 text-sm font-semibold text-invert sm:w-auto">Add to plate</button>
                       ) : (
                         <span className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-paper px-3 text-xs font-semibold text-ink">Sold out</span>
                       )}

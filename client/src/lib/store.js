@@ -174,6 +174,8 @@ export async function bulkUpdatePrices({ categoryId, mode, amount }) {
     };
   } catch (error) {
     if (!shouldUseLocal(error)) throw error;
+    if (mode !== "percent" && mode !== "amount") throw new Error("Choose percent or a fixed amount.");
+    if (!Number.isFinite(Number(amount))) throw new Error("Please enter an amount.");
     const data = readLocal();
     data.items = data.items.map((item) => {
       if (Number(item.category_id) !== Number(categoryId)) return item;

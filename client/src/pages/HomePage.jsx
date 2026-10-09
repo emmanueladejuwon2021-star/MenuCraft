@@ -25,6 +25,11 @@ export default function HomePage({ settings, items = [], onAddToPlate }) {
               Check your plate
             </Link>
           </div>
+          <ol className="mt-8 grid gap-2 text-sm text-ink sm:grid-cols-3">
+            <li className="rounded-2xl bg-paper px-3 py-3"><span className="font-semibold">1. Pick</span><span className="mt-1 block text-muted">Choose from today’s board.</span></li>
+            <li className="rounded-2xl bg-paper px-3 py-3"><span className="font-semibold">2. Send</span><span className="mt-1 block text-muted">Add a table note. No card.</span></li>
+            <li className="rounded-2xl bg-paper px-3 py-3"><span className="font-semibold">3. Pay</span><span className="mt-1 block text-muted">Pay at the counter when it’s ready.</span></li>
+          </ol>
         </div>
 
         {spotlight ? (

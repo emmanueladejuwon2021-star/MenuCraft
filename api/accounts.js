@@ -1,21 +1,16 @@
 const { hashPassword, checkPassword, makeToken, publicUser, readToken, findUserByToken } = require("./auth");
 const { tooMany, clientKey, clearHits } = require("./http");
 
+function changedRows(result) {
+  return Number(result?.rowsAffected ?? result?.rows_affected ?? 0);
+}
+
 async function claimFirstStaff(db) {
   const staff = await db.execute("SELECT COUNT(*) AS n FROM users WHERE role = 'staff'");
   if (Number(staff.rows[0].n) > 0) return false;
-  const claimed = await db.execute("SELECT user_id FROM staff_claim WHERE id = 1");
-  if (claimed.rows.length && Number(claimed.rows[0].user_id) > 0) return false;
-  try {
-    if (claimed.rows.length) {
-      await db.execute("UPDATE staff_claim SET user_id = 0 WHERE id = 1 AND user_id = 0");
-      return true;
-    }
-    await db.execute("INSERT INTO staff_claim (id, user_id) VALUES (1, 0)");
-    return true;
-  } catch {
-    return false;
-  }
+  await db.execute("INSERT OR IGNORE INTO staff_claim (id, user_id) VALUES (1, 0)");
+  const claimed = await db.execute("UPDATE staff_claim SET user_id = -1 WHERE id = 1 AND user_id = 0");
+  return changedRows(claimed) === 1;
 }
 
 async function registerUser(db, body, token) {
@@ -60,7 +55,7 @@ async function registerUser(db, body, token) {
     return { status: 201, body: { ok: true, user, token: sessionToken } };
   } catch (error) {
     if (claimed) {
-      await db.execute("DELETE FROM staff_claim WHERE id = 1 AND user_id = 0");
+      await db.execute("UPDATE staff_claim SET user_id = 0 WHERE id = 1 AND user_id = -1");
     }
     if (String(error.message || "").includes("UNIQUE")) {
       return { status: 409, message: "An account with that email already exists." };

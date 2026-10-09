@@ -37,6 +37,22 @@ function fail(res, status, message) {
   return res.status(status).json({ ok: false, message });
 }
 
+function readMoney(value) {
+  const price = Number(value);
+  if (!Number.isFinite(price) || price < 0 || price > 10000000) return null;
+  return Math.round(price * 100) / 100;
+}
+
+function readLabel(value, max) {
+  return String(value || "").trim().slice(0, max);
+}
+
+function readOrderId(value) {
+  const id = Number(value);
+  if (!Number.isInteger(id) || id < 1) return 0;
+  return id;
+}
+
 function mapOrder(row) {
   let items = [];
   try {
@@ -119,9 +135,9 @@ app.put("/api/account", withDb, async (req, res) => {
   try {
     const current = await findUserByToken(req.db, readToken(req));
     if (!current) return fail(res, 401, "Please sign in first.");
-    const name = String(req.body?.name || current.name).trim();
-    const phone = String(req.body?.phone || current.phone || "").trim();
-    const restaurantName = String(req.body?.restaurant_name || current.restaurant_name || "").trim();
+    const name = readLabel(req.body?.name || current.name, 80);
+    const phone = readLabel(req.body?.phone || current.phone || "", 30);
+    const restaurantName = readLabel(req.body?.restaurant_name || current.restaurant_name || "", 80);
     if (!name) return fail(res, 400, "Please enter your name.");
     await req.db.execute({
       sql: "UPDATE users SET name = ?, phone = ?, restaurant_name = ? WHERE id = ?",
@@ -173,8 +189,9 @@ app.get("/api/categories", withDb, async (req, res) => {
 });
 
 app.post("/api/categories", withDb, requireStaff, async (req, res) => {
-  const name = String(req.body?.name || "").trim();
+  const name = readLabel(req.body?.name, 40);
   if (!name) return fail(res, 400, "Please enter a category name.");
+  if (String(req.body?.name || "").trim().length > 40) return fail(res, 400, "Category names can be 40 characters.");
   try {
     const orderRes = await req.db.execute("SELECT COALESCE(MAX(display_order), 0) + 1 AS next_order FROM categories");
     const inserted = await req.db.execute({
@@ -206,19 +223,21 @@ app.delete("/api/categories/:id", withDb, requireStaff, async (req, res) => {
 
 app.post("/api/items", withDb, requireStaff, async (req, res) => {
   const body = req.body || {};
-  const name = String(body.name || "").trim();
+  const name = readLabel(body.name, 80);
   const categoryId = Number(body.category_id);
-  const price = Number(body.price);
+  const price = readMoney(body.price);
   if (!name) return fail(res, 400, "Please enter a dish name.");
-  if (!categoryId) return fail(res, 400, "Please choose a category.");
-  if (Number.isNaN(price) || price < 0) return fail(res, 400, "Please enter a valid price.");
-  const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "");
+  if (String(body.name || "").trim().length > 80) return fail(res, 400, "Dish names can be 80 characters.");
+  if (!Number.isInteger(categoryId) || categoryId < 1) return fail(res, 400, "Please choose a category.");
+  if (price === null) return fail(res, 400, "Please enter a valid price.");
+  const tags = (Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "")).slice(0, 120);
+  const description = readLabel(body.description, 280);
   try {
     const category = await req.db.execute({ sql: "SELECT id FROM categories WHERE id = ?", args: [categoryId] });
     if (!category.rows.length) return fail(res, 400, "Please choose a category that exists.");
     const inserted = await req.db.execute({
       sql: "INSERT INTO menu_items (category_id, name, description, price, image_url, is_available, tags, prep_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *",
-      args: [categoryId, name, String(body.description || ""), price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10)))],
+      args: [categoryId, name, description, price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10)))],
     });
     res.status(201).json({ ok: true, message: "Added to category", item: mapItem(inserted.rows[0]) });
   } catch (error) {
@@ -229,19 +248,23 @@ app.post("/api/items", withDb, requireStaff, async (req, res) => {
 
 app.put("/api/items/:id", withDb, requireStaff, async (req, res) => {
   const body = req.body || {};
-  const name = String(body.name || "").trim();
+  const id = readOrderId(req.params.id);
+  const name = readLabel(body.name, 80);
   const categoryId = Number(body.category_id);
-  const price = Number(body.price);
+  const price = readMoney(body.price);
+  if (!id) return fail(res, 400, "That dish could not be found.");
   if (!name) return fail(res, 400, "Please enter a dish name.");
-  if (!categoryId) return fail(res, 400, "Please choose a category.");
-  if (Number.isNaN(price) || price < 0) return fail(res, 400, "Please enter a valid price.");
-  const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "");
+  if (String(body.name || "").trim().length > 80) return fail(res, 400, "Dish names can be 80 characters.");
+  if (!Number.isInteger(categoryId) || categoryId < 1) return fail(res, 400, "Please choose a category.");
+  if (price === null) return fail(res, 400, "Please enter a valid price.");
+  const tags = (Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags || "")).slice(0, 120);
+  const description = readLabel(body.description, 280);
   try {
     const category = await req.db.execute({ sql: "SELECT id FROM categories WHERE id = ?", args: [categoryId] });
     if (!category.rows.length) return fail(res, 400, "Please choose a category that exists.");
     const updated = await req.db.execute({
       sql: "UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, image_url = ?, is_available = ?, tags = ?, prep_time = ? WHERE id = ? RETURNING *",
-      args: [categoryId, name, String(body.description || ""), price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10))), req.params.id],
+      args: [categoryId, name, description, price, cleanImageUrl(body.image_url), body.is_available === false ? 0 : 1, tags, Math.min(240, Math.max(1, Math.floor(Number(body.prep_time) || 10))), id],
     });
     if (!updated.rows.length) return fail(res, 404, "That dish could not be found.");
     res.json({ ok: true, message: "Saved!", item: mapItem(updated.rows[0]) });
@@ -271,8 +294,10 @@ app.post("/api/items/bulk-price-update", withDb, requireStaff, async (req, res) 
   const categoryId = Number(req.body?.category_id);
   const mode = String(req.body?.mode || "percent");
   const amount = Number(req.body?.amount);
-  if (!categoryId) return fail(res, 400, "Please choose a category.");
-  if (Number.isNaN(amount)) return fail(res, 400, "Please enter an amount.");
+  if (!Number.isInteger(categoryId) || categoryId < 1) return fail(res, 400, "Please choose a category.");
+  if (mode !== "percent" && mode !== "amount") return fail(res, 400, "Choose percent or a fixed amount.");
+  if (!Number.isFinite(amount)) return fail(res, 400, "Please enter an amount.");
+  if (mode === "amount" && Math.abs(amount) > 10000000) return fail(res, 400, "That amount is too large.");
   try {
     const current = await req.db.execute({
       sql: "SELECT id, price FROM menu_items WHERE category_id = ?",
@@ -338,9 +363,10 @@ app.get("/api/settings", withDb, async (req, res) => {
 });
 
 app.put("/api/settings", withDb, requireStaff, async (req, res) => {
-  const name = String(req.body?.restaurant_name || "").trim();
-  const symbol = String(req.body?.currency_symbol || "").trim() || "₦";
+  const name = readLabel(req.body?.restaurant_name, 80);
+  const symbol = readLabel(req.body?.currency_symbol, 4) || "₦";
   if (!name) return fail(res, 400, "Please enter a restaurant name.");
+  if (String(req.body?.restaurant_name || "").trim().length > 80) return fail(res, 400, "Restaurant names can be 80 characters.");
   try {
     await req.db.execute({
       sql: "UPDATE restaurant_settings SET restaurant_name = ?, currency_symbol = ? WHERE id = 1",
@@ -399,14 +425,18 @@ app.post("/api/orders", withDb, async (req, res) => {
 app.post("/api/logout", withDb, async (req, res) => {
   const token = readToken(req);
   if (token) {
-    await req.db.execute({ sql: "DELETE FROM sessions WHERE token = ?", args: [token] });
+    try {
+      await req.db.execute({ sql: "DELETE FROM sessions WHERE token = ?", args: [token] });
+    } catch (error) {
+      console.error(error);
+    }
   }
   res.json({ ok: true });
 });
 
 app.post("/api/order-status", withDb, requireStaff, async (req, res) => {
   const status = String(req.body?.status || "").trim();
-  const id = Number(req.body?.id);
+  const id = readOrderId(req.body?.id);
   if (!id) return fail(res, 400, "That order could not be found.");
   if (!ORDER_STATUSES.includes(status)) return fail(res, 400, "That order status is not valid.");
   try {
@@ -424,11 +454,13 @@ app.post("/api/order-status", withDb, requireStaff, async (req, res) => {
 
 app.patch("/api/orders/:id", withDb, requireStaff, async (req, res) => {
   const status = String(req.body?.status || "").trim();
+  const id = readOrderId(req.params.id);
+  if (!id) return fail(res, 400, "That order could not be found.");
   if (!ORDER_STATUSES.includes(status)) return fail(res, 400, "That order status is not valid.");
   try {
     const updated = await req.db.execute({
       sql: "UPDATE orders SET status = ? WHERE id = ? RETURNING *",
-      args: [status, req.params.id],
+      args: [status, id],
     });
     if (!updated.rows.length) return fail(res, 404, "That order could not be found.");
     res.json({ ok: true, order: mapOrder(updated.rows[0]) });
