@@ -29,6 +29,8 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
   const sections = categoryId === "all" ? categories : selectedCategory ? [selectedCategory] : [];
   const chip = (on) => `tap h-11 shrink-0 rounded-full px-4 text-sm font-medium ${on ? "bg-pine text-invert" : "border border-line bg-paper text-ink"}`;
 
+  const hasActiveFilters = query || categoryId !== "all" || tag !== "all" || showSoldOut;
+
   return (
     <section className="page-enter space-y-4 pb-8">
       <div className="flex items-end justify-between gap-3">
@@ -60,6 +62,9 @@ export default function LiveMenu({ settings, categories, items, onAddToPlate }) 
             <button type="button" key={item} className={chip(tag === item)} onClick={() => setTag(item)}>{item}</button>
           ))}
           <button type="button" className={chip(showSoldOut)} onClick={() => setShowSoldOut((value) => !value)}>{showSoldOut ? "Hide sold out" : "Show sold out"}</button>
+          {hasActiveFilters ? (
+            <button type="button" className="tap h-11 shrink-0 rounded-full border border-line bg-paper px-4 text-sm font-medium text-pine" onClick={() => { setQuery(""); setCategoryId("all"); setTag("all"); setShowSoldOut(false); }}>Reset filters</button>
+          ) : null}
         </div>
       </div>
       {visible.length === 0 ? (

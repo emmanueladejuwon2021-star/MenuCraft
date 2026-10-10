@@ -24,12 +24,16 @@ export function writePlate(items) {
 export function addToPlate(dish) {
   const plate = readPlate();
   const found = plate.find((row) => Number(row.id) === Number(dish.id));
-  if (found) found.qty = Math.min(20, found.qty + 1);
-  else {
+  const currentPrice = Number(dish.price);
+  if (found) {
+    found.qty = Math.min(20, found.qty + 1);
+    // Keep the latest menu price so the plate total stays accurate if prices changed
+    if (Number.isFinite(currentPrice)) found.price = currentPrice;
+  } else {
     plate.push({
       id: dish.id,
       name: dish.name,
-      price: Number(dish.price),
+      price: Number.isFinite(currentPrice) ? currentPrice : 0,
       image_url: dish.image_url || "",
       qty: 1,
     });
