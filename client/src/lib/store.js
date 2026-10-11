@@ -21,7 +21,11 @@ function readLocal() {
 }
 
 function writeLocal(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.warn("Could not save local menu", error);
+  }
   return data;
 }
 
