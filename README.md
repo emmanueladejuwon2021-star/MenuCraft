@@ -66,3 +66,9 @@ After the first Actions run, open the repository Settings, then Pages, and set t
 /client   Guest and staff screens
 
 /api      Vercel routes and Turso tables
+
+## Robustness notes
+
+- Guest and staff screens are wrapped in an error boundary so a single UI problem shows a refresh prompt instead of a blank page.
+- Local menu and plate data are written inside try/catch so a full browser storage quota does not crash the app.
+- Order totals always come from the menu prices stored on the server or in the local seed, never from numbers the browser sends.
