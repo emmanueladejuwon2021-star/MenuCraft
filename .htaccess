@@ -1,0 +1,17 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Allow direct access to existing files and directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Secret kitchen lock route
+    RewriteRule ^iyabisi/kitchenlock/?$ iyabisi/kitchenlock/index.php [L,QSA]
+</IfModule>
+
+# Protect SQLite database file from direct download
+<Files "*.db">
+    Require all denied
+</Files>

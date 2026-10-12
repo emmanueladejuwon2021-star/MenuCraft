@@ -1,68 +1,147 @@
-# MenuCraft
+# MenuCraft (PHP Edition)
 
-A live restaurant menu and price manager. Kitchen staff can mark dishes sold out, managers can change prices in bulk, and guests can open the menu from a QR code.
+A digital restaurant live menu, ordering system, and kitchen management application built in PHP and SQLite.
 
-## Live preview
+Kitchen staff can mark dishes sold out, managers can change prices in bulk, and guests can open the live menu from a table QR code.
 
-GitHub Pages: https://emmanueladejuwon2021-star.github.io/MenuCraft/
+---
 
-The Pages site works right away with a built-in sample menu stored in the browser. Connect Turso and deploy on Vercel when you want a shared live kitchen menu.
+## 🍽 Features
 
-## Guest site and kitchen door
+1. **Today's Board & Live Menu (`index.php` / `menu.php`)**
+   - Guest view with instant search, category filtering, diet tags (Gluten-Free, Vegetarian, Spicy), and stock badges.
+   - Add dishes directly to plate (cart).
 
-Guests only see Home, Menu, Plate, and Account. There is no kitchen login on those screens.
+2. **Guest Plate & Checkout (`plate.php` / `pay.php`)**
+   - Increment or decrement portion quantities (up to 20).
+   - Checkout with table/pickup note — no credit card needed (counter payment).
+   - Authoritative pricing calculated on the server to prevent tamper.
 
-Staff open a hidden path:
+3. **My Orders (`my-orders.php`)**
+   - Real-time order tracking: *Sent to the kitchen* (New) → *On the fire* (Cooking) → *Ready to pick up* (Ready) → *Served*.
+   - Ticket reference search.
 
-- Local: http://localhost:5173/#/iyabisi/kitchenlock
-- GitHub Pages: https://emmanueladejuwon2021-star.github.io/MenuCraft/#/iyabisi/kitchenlock
+4. **Dish Manager (`dishes.php`)**
+   - Add, edit, and remove dishes with photo links, prep time, price, tags, and descriptions.
+   - Create and delete categories.
 
-Bookmark that link on the kitchen tablet. Do not print it on the guest QR code. If someone types `/account` on the guest site, they are sent back to the menu.
+5. **Stock Toggle (`stock.php`)**
+   - Big, tactile on/off switches designed for kitchen tablets to quickly mark dishes sold out or in stock.
 
-After staff sign in, kitchen tools appear: dishes, stock, prices, orders, and share.
+6. **Quick Pricing (`pricing.php`)**
+   - Bulk adjust dish prices for an entire category by percentage (+10%, -5%) or fixed amount (+₦500, -₦200).
+   - Live preview before applying with automatic zero-floor protection.
 
-The kitchen path is only a bookmark. It is not a lock. Dish, price, stock, category, settings, and order-status changes need a staff session. The first account created from that kitchen form becomes staff. A guest form never becomes staff. Later staff accounts must be created by someone who is already signed in as staff. A blank email cannot read other orders. Order totals use the prices stored on the menu, not the numbers sent by the browser.
+7. **QR Code & Share (`share.php`)**
+   - Generates scannable QR code linking to the live menu.
+   - Download QR code image as PNG.
+   - Copy guest menu link.
+   - Copy hidden kitchen door link.
+   - Manage restaurant name and currency symbol (₦, $, €, £, etc.).
 
-Checkout asks for a table note only. It does not collect card numbers.
+---
 
-## Five screens
+## 🔐 Guest Site and Kitchen Door
 
-1. Live Menu — guest view with search, categories, and stock badges
-2. Dish Manager — add, edit, and remove dishes
-3. Stock Toggle — large on/off switches for busy kitchens
-4. Quick Pricing — raise or lower a whole category in one tap
-5. QR and Share — download a QR code and copy the guest link
+- **Guests** only see Home, Menu, Plate, Orders, and Account.
+- **Kitchen staff** access the secret kitchen entrance:
 
-## Run on your computer
+```
+http://localhost:8000/iyabisi/kitchenlock/
+```
 
-cd client
+- **Bookmark that link** on the kitchen tablet. Do not print it on guest QR codes.
+- The first account registered through the kitchen door automatically claims the **staff** role.
+- Later staff accounts must be created by someone already signed in as staff.
 
-npm install
+---
 
-npm run dev
+## 🚀 Getting Started
 
-Open the printed local address. Changes stay in this browser until you add the cloud database.
+### Prerequisites
 
-Price rules are covered by `npm test` from the repo root. CI runs those tests and a client build on every pull request.
+- PHP 8.1 or higher with PDO SQLite extension enabled (`pdo_sqlite`).
 
-## Connect Turso (shared live menu)
+### Running Locally
 
-1. Create a Turso database and copy the URL and token.
-2. Add these values in Vercel project settings: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN.
-3. Optional client value: VITE_API_URL = your Vercel site.
-4. Optional: MENUCRAFT_SEED = 1 only if you want the sample Nigerian menu on an empty database.
-5. Redeploy. After that, GitHub Pages can talk to the same live menu if VITE_API_URL is set in the Pages build.
+Clone the repository and start PHP's built-in development server from the project root:
 
-## Deploy
+```bash
+php -S localhost:8000
+```
 
-GitHub Pages: every push to main builds /client and publishes the gh-pages branch.
+Open your browser and visit:
+- **Guest Menu:** [http://localhost:8000](http://localhost:8000)
+- **Kitchen Entrance:** [http://localhost:8000/iyabisi/kitchenlock/](http://localhost:8000/iyabisi/kitchenlock/)
 
-Vercel: import this repository. Build command and output folder are already set in vercel.json.
+The database (`menu.db`) will be automatically created and seeded with sample dishes (Beef Suya, Puff Puff, Asun, Egusi, Jollof Rice, Chapman, etc.) on first launch.
 
-After the first Actions run, open the repository Settings, then Pages, and set the source to the gh-pages branch.
+---
 
-## Project layout
+## 🧪 Running Tests
 
-/client   Guest and staff screens
+MenuCraft includes a pure PHP test suite covering price calculation rules, plate validation, and order visibility security:
 
-/api      Vercel routes and Turso tables
+```bash
+php tests/run.php
+```
+
+All tests run without requiring any third-party test dependencies.
+
+---
+
+## 📁 Project Structure
+
+```
+├── assets/
+│   ├── css/
+│   │   └── app.css             # Theme variables & custom UI styles
+│   └── js/
+│       ├── app.js              # Theme switcher, toasts, plate & stock AJAX
+│       └── qrcode.min.js       # Standalone client QR generator
+├── includes/
+│   ├── auth.php                # Authentication & staff claim logic
+│   ├── db.php                  # PDO SQLite connection & seeder
+│   ├── footer.php              # Shared HTML footer
+│   ├── header.php              # Shared header, navbar & mobile bottom bar
+│   ├── helpers.php             # Cart, ticket session, currency formatters
+│   ├── kitchen_nav.php         # Staff navigation subheader
+│   ├── order_build.php         # Server-side order verification & visibility
+│   └── pricing.php             # Bulk pricing calculation engine
+├── iyabisi/
+│   └── kitchenlock/
+│       └── index.php           # Hidden kitchen door entrance
+├── tests/
+│   ├── OrderBuildTest.php      # Order validation unit tests
+│   ├── PricingTest.php         # Price calculation unit tests
+│   └── run.php                 # PHP test runner
+├── index.php                   # Guest Landing Page
+├── menu.php                    # Live Menu & Filters
+├── plate.php                   # Guest Cart / Plate
+├── pay.php                     # Table Note & Checkout
+├── my-orders.php               # Guest Order Tracking
+├── guest-account.php           # Guest Sign-In / Sign-Up
+├── dishes.php                  # Staff Dish Manager
+├── stock.php                   # Staff Stock Switches
+├── pricing.php                 # Staff Quick Pricing
+├── orders.php                  # Staff Kitchen Orders Board
+├── share.php                   # Staff QR Code & Share
+├── account.php                 # Staff Account Settings
+├── logout.php                  # Session logout
+├── .htaccess                   # Apache URL rewrite configuration
+└── README.md
+```
+
+---
+
+## 🌐 Deployment
+
+### Apache / XAMPP / WAMP / cPanel
+- Copy the project into your web root (e.g., `htdocs/MenuCraft`).
+- The provided `.htaccess` file handles URL routing and blocks direct HTTP access to `menu.db`.
+
+### Nginx
+Configure fastcgi to point to `index.php` and allow direct script execution.
+
+### Docker / Cloud Hosting
+Run any standard PHP 8+ container pointing to the project directory.
