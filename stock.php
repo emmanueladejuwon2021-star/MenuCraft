@@ -10,6 +10,7 @@ $db = getDb();
 
 // Handle Toggle POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $id = (int)($_POST['id'] ?? 0);
     $isAvailable = !empty($_POST['is_available']) ? 1 : 0;
 

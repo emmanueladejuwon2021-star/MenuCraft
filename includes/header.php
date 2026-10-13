@@ -65,6 +65,7 @@ $navItems = $isStaffUser ? $staffNav : $guestNav;
   </script>
   <link rel="stylesheet" href="assets/css/app.css">
   <script src="assets/js/app.js" defer></script>
+  <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()) ?>">
 </head>
 <body class="min-h-screen bg-paper pb-28 lg:pb-8 flex flex-col">
 

@@ -44,13 +44,15 @@
     }
 
     try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
       const res = await fetch('plate.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': csrfToken
         },
-        body: new URLSearchParams({ action: 'add', id: dishId })
+        body: new URLSearchParams({ action: 'add', id: dishId, csrf_token: csrfToken })
       });
       const data = await res.json();
       if (data.ok) {
@@ -114,13 +116,15 @@
     }
 
     try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
       const res = await fetch('stock.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': csrfToken
         },
-        body: new URLSearchParams({ id: id, is_available: nextStatus ? '1' : '0' })
+        body: new URLSearchParams({ id: id, is_available: nextStatus ? '1' : '0', csrf_token: csrfToken })
       });
       const data = await res.json();
       if (data.ok) {

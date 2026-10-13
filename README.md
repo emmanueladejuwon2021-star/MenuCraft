@@ -76,6 +76,8 @@ Open your browser and visit:
 
 The database (`menu.db`) will be automatically created and seeded with sample dishes (Beef Suya, Puff Puff, Asun, Egusi, Jollof Rice, Chapman, etc.) on first launch.
 
+**Note on deployment:** This is a PHP application. It requires a host that supports PHP 8.1+ with the PDO SQLite extension (e.g. Render, a VPS, or local development with `php -S`). GitHub Pages only serves static files and cannot run this PHP backend. The included GitHub Actions workflow is a placeholder for future static assets if needed.
+
 ---
 
 ## 🧪 Running Tests

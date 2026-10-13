@@ -22,6 +22,7 @@ $note = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $submittedName = clean_label($_POST['name'] ?? $name, 80);
     $submittedPhone = clean_label($_POST['phone'] ?? $phone, 30);
     $submittedNote = clean_label($_POST['note'] ?? '', 240);
@@ -102,6 +103,7 @@ require_once __DIR__ . '/includes/header.php';
       </div>
 
       <form method="POST" action="pay.php" class="space-y-3">
+        <?= csrf_field() ?>
         <?php if (!$signedGuest): ?>
           <label class="block text-sm font-medium text-ink">
             Your name

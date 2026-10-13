@@ -12,6 +12,8 @@ $settings = get_restaurant_settings($db);
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
+    // existing action handling...
     $name = clean_label($_POST['name'] ?? '', 80);
     $phone = clean_label($_POST['phone'] ?? '', 30);
     $restaurantName = clean_label($_POST['restaurant_name'] ?? '', 80) ?: 'Iya Bisi Kitchen';
@@ -44,6 +46,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <section class="page-enter mx-auto max-w-lg space-y-4">
   <form method="POST" action="account.php" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
+    <?= csrf_field() ?>
     <div>
       <h1 class="text-lg font-semibold text-ink">Account settings</h1>
       <p class="mt-1 text-sm text-muted">Signed in as <?= htmlspecialchars($currentUser['email']) ?>. Save your details, or sign out below.</p>

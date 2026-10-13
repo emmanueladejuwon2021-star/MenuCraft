@@ -10,6 +10,7 @@ $isGuest = is_guest();
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $action = $_POST['action'] ?? '';
 
     if ($action === 'login') {
@@ -73,6 +74,7 @@ require_once __DIR__ . '/includes/header.php';
   <?php if ($isGuest && $currentUser): ?>
     <!-- Signed-in Profile View -->
     <form method="POST" action="guest-account.php" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
+      <?= csrf_field() ?>
       <input type="hidden" name="action" value="update" />
       <div>
         <h1 class="text-lg font-semibold text-ink">Your account</h1>
@@ -109,6 +111,7 @@ require_once __DIR__ . '/includes/header.php';
   <?php else: ?>
     <!-- Guest Auth Form (Sign In / Sign Up) -->
     <form method="POST" action="guest-account.php?mode=<?= htmlspecialchars($mode) ?>" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
+      <?= csrf_field() ?>
       <input type="hidden" name="action" value="<?= $mode === 'signup' ? 'signup' : 'login' ?>" />
 
       <div>

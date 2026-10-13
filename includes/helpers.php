@@ -180,10 +180,19 @@ function csrf_token(): string {
     return $_SESSION['csrf_token'];
 }
 
-function verify_csrf(): bool {
-    ensure_session();
-    $submitted = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    return !empty($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $submitted);
+function csrf_field(): string {
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(csrf_token()) . '">';
+}
+
+function require_csrf(): void {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verify_csrf()) {
+        if (is_ajax()) {
+            json_response(['ok' => false, 'message' => 'Security check failed. Please refresh and try again.'], 403);
+        }
+        flash('error', 'Security check failed. Please refresh the page and try again.');
+        header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? 'index.php'));
+        exit;
+    }
 }
 
 function base_url(): string {

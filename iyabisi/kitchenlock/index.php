@@ -16,6 +16,7 @@ $mode = $_GET['mode'] ?? 'signin';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $action = $_POST['action'] ?? '';
 
     if ($action === 'login') {
@@ -80,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <form method="POST" action="index.php?mode=<?= htmlspecialchars($mode) ?>" class="space-y-3 rounded-2xl border border-line bg-card p-6 shadow-soft">
+      <?= csrf_field() ?>
       <input type="hidden" name="action" value="<?= $mode === 'signup' ? 'signup' : 'login' ?>" />
 
       <div class="grid grid-cols-2 gap-2 rounded-full bg-paper p-1">

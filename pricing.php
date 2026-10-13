@@ -19,6 +19,8 @@ $confirm = !empty($_POST['confirm']);
 
 // Handle Bulk Update Submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $confirm) {
+    require_csrf();
+    // existing apply logic continues
     if ($selectedCatId <= 0) {
         $error = 'Please choose a category.';
     } elseif ($mode !== 'percent' && $mode !== 'amount') {
@@ -117,6 +119,7 @@ require_once __DIR__ . '/includes/header.php';
   <?php if (!empty($previewDishes)): ?>
     <!-- Confirmation Dialog / Apply Form -->
     <form method="POST" action="pricing.php" class="rounded-2xl border border-line bg-card p-4 shadow-soft space-y-3" onsubmit="return confirm('Change <?= count($previewDishes) ?> dish prices? This updates every price in the list.');">
+      <?= csrf_field() ?>
       <input type="hidden" name="category_id" value="<?= (int)$selectedCatId ?>" />
       <input type="hidden" name="mode" value="<?= htmlspecialchars($mode) ?>" />
       <input type="hidden" name="amount" value="<?= htmlspecialchars((string)$amount) ?>" />

@@ -12,6 +12,7 @@ $error = '';
 
 // Handle Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $action = $_POST['action'] ?? '';
 
     if ($action === 'create_category') {
@@ -146,6 +147,7 @@ require_once __DIR__ . '/includes/header.php';
 
     <!-- Create new Category -->
     <form method="POST" action="dishes.php" class="mt-3 flex flex-col gap-2 sm:flex-row">
+      <?= csrf_field() ?>
       <input type="hidden" name="action" value="create_category" />
       <input required type="text" name="name" placeholder="New category name" class="tap h-11 w-full rounded-2xl border border-line bg-paper px-3 text-ink sm:flex-1" />
       <button type="submit" class="tap h-11 rounded-full border border-line bg-paper px-4 text-sm font-medium text-ink sm:shrink-0">
@@ -159,6 +161,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-paper px-3 py-2">
           <p class="text-sm font-medium text-ink"><?= htmlspecialchars($cat['name']) ?></p>
           <form method="POST" action="dishes.php" onsubmit="return confirm('Remove category <?= htmlspecialchars(addslashes($cat['name'])) ?> and all dishes inside?');">
+            <?= csrf_field() ?>
             <input type="hidden" name="action" value="remove_category" />
             <input type="hidden" name="id" value="<?= (int)$cat['id'] ?>" />
             <button type="submit" class="tap h-9 shrink-0 rounded-full border border-line px-3 text-xs font-medium text-danger">
@@ -182,6 +185,7 @@ require_once __DIR__ . '/includes/header.php';
     $formTags = !empty($editingDish['tags']) ? array_map('trim', explode(',', $editingDish['tags'])) : [];
   ?>
     <form method="POST" action="dishes.php" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
+      <?= csrf_field() ?>
       <input type="hidden" name="action" value="save_dish" />
       <?php if ($editingDish): ?>
         <input type="hidden" name="id" value="<?= (int)$editingDish['id'] ?>" />

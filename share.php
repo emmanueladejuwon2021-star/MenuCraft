@@ -10,6 +10,8 @@ $db = getDb();
 $settings = get_restaurant_settings($db);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
+    // share settings update
     $name = clean_label($_POST['restaurant_name'] ?? '', 80);
     $symbol = clean_label($_POST['currency_symbol'] ?? '₦', 4);
 
@@ -42,6 +44,7 @@ require_once __DIR__ . '/includes/header.php';
     ?>
 
     <form method="POST" action="share.php" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
+      <?= csrf_field() ?>
       <h2 class="text-base font-semibold text-ink">Restaurant details</h2>
       <label class="block text-sm text-ink">
         Restaurant name

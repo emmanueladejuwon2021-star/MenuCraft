@@ -9,6 +9,7 @@ $settings = get_restaurant_settings($db);
 
 // Handle POST actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $action = $_POST['action'] ?? '';
     $dishId = (int)($_POST['id'] ?? 0);
 
@@ -109,6 +110,7 @@ require_once __DIR__ . '/includes/header.php';
 
               <div class="mt-3 flex items-center justify-between gap-2">
                 <form method="POST" action="plate.php" class="inline-flex items-center rounded-full border border-line bg-paper">
+                  <?= csrf_field() ?>
                   <input type="hidden" name="action" value="update" />
                   <input type="hidden" name="id" value="<?= (int)$row['id'] ?>" />
                   <button type="submit" name="qty" value="<?= (int)$row['qty'] - 1 ?>" class="tap w-11 text-lg text-ink" aria-label="Decrease quantity">−</button>
@@ -117,6 +119,7 @@ require_once __DIR__ . '/includes/header.php';
                 </form>
 
                 <form method="POST" action="plate.php">
+                  <?= csrf_field() ?>
                   <input type="hidden" name="action" value="remove" />
                   <input type="hidden" name="id" value="<?= (int)$row['id'] ?>" />
                   <button type="submit" class="tap rounded-full px-3 text-sm font-medium text-danger">Remove</button>
@@ -142,6 +145,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <div class="grid grid-cols-2 gap-2 sm:flex sm:w-auto">
           <form method="POST" action="plate.php" onsubmit="return confirm('Clear the whole plate?');">
+            <?= csrf_field() ?>
             <input type="hidden" name="action" value="clear" />
             <button type="submit" class="tap w-full rounded-full border border-line px-4 text-sm text-ink">Clear</button>
           </form>
