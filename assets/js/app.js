@@ -62,8 +62,7 @@
         showToast(data.message || 'Could not add dish', 'error');
       }
     } catch (err) {
-      // Fallback: normal submit if fetch fails
-      showToast(`${dishName || 'Dish'} added to your plate`, 'ok');
+      showToast('Network error. Please try again.', 'error');
     } finally {
       if (btnElement) {
         btnElement.disabled = false;
@@ -93,11 +92,16 @@
   window.toggleStock = async function(id, name, btn) {
     const isAvailable = btn.getAttribute('aria-pressed') === 'true';
     const nextStatus = !isAvailable;
+    const originalPressed = isAvailable;
+    const originalClass = btn.className;
+    const originalDotClass = btn.querySelector('.stock-dot')?.className || '';
+    const label = document.getElementById(`stock-label-${id}`);
+    const originalLabelText = label ? label.textContent : '';
+    const originalLabelClass = label ? label.className : '';
     
     // Optimistic UI update
     btn.setAttribute('aria-pressed', nextStatus ? 'true' : 'false');
     const dot = btn.querySelector('.stock-dot');
-    const label = document.getElementById(`stock-label-${id}`);
 
     if (nextStatus) {
       btn.className = 'tap relative flex h-11 w-[4.5rem] shrink-0 items-center rounded-full border px-1 border-pine bg-pine';
@@ -130,10 +134,26 @@
       if (data.ok) {
         showToast(nextStatus ? `Marked ${name} in stock` : `Marked ${name} sold out`, 'ok');
       } else {
+        // Revert on failure
+        btn.setAttribute('aria-pressed', originalPressed ? 'true' : 'false');
+        btn.className = originalClass;
+        if (dot) dot.className = originalDotClass;
+        if (label) {
+          label.textContent = originalLabelText;
+          label.className = originalLabelClass;
+        }
         showToast(data.message || 'Could not update stock', 'error');
       }
     } catch (err) {
-      // ignore or revert
+      // Revert on network error
+      btn.setAttribute('aria-pressed', originalPressed ? 'true' : 'false');
+      btn.className = originalClass;
+      if (dot) dot.className = originalDotClass;
+      if (label) {
+        label.textContent = originalLabelText;
+        label.className = originalLabelClass;
+      }
+      showToast('Network error updating stock', 'error');
     }
   };
 
