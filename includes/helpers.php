@@ -179,6 +179,22 @@ function csrf_token(): string {
     return $_SESSION['csrf_token'];
 }
 
+function csrf_field(): string {
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(csrf_token()) . '">';
+}
+
+function require_csrf(): void {
+    if (!verify_csrf()) {
+        http_response_code(403);
+        if (is_ajax()) {
+            json_response(['ok' => false, 'message' => 'Invalid or missing security token. Please refresh and try again.'], 403);
+        }
+        flash('error', 'Security check failed. Please try again.');
+        header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? 'index.php'));
+        exit;
+    }
+}
+
 function verify_csrf(): bool {
     ensure_session();
     $submitted = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
