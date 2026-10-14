@@ -175,9 +175,23 @@ img {
   min-width: 4.75rem;
 }
 
+/* Improved focus and touch targets */
+.tap, .tap-icon {
+  touch-action: manipulation;
+}
+
+/* Prevent text selection on buttons */
+button, .tap {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 @media (max-width: 640px) {
   .field {
     height: 52px;
     font-size: 16px; /* prevent zoom on iOS */
+  }
+  #toast-container {
+    bottom: 6.5rem; /* clear the bottom nav better */
   }
 }
