@@ -11,6 +11,7 @@ $settings = get_restaurant_settings($db);
 
 // Handle status advance POST action
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $orderId = (int)($_POST['id'] ?? 0);
     $newStatus = trim($_POST['status'] ?? '');
     $allowed = ['New', 'Cooking', 'Ready', 'Served'];
@@ -110,44 +111,35 @@ require_once __DIR__ . '/includes/header.php';
           </div>
 
           <?php if (!empty($order['note'])): ?>
-            <p class="mt-3 rounded-2xl bg-paper px-3 py-2 text-sm font-medium text-ink">Note: <?= htmlspecialchars($order['note']) ?></p>
+            <p class="mt-2 rounded-xl bg-paper px-3 py-2 text-sm text-ink"><?= htmlspecialchars($order['note']) ?></p>
           <?php endif; ?>
 
           <ul class="mt-3 space-y-1 text-sm text-ink">
-            <?php foreach ($items as $item): ?>
-              <li><?= (int)$item['qty'] ?> × <?= htmlspecialchars($item['name']) ?></li>
+            <?php foreach ($items as $line): ?>
+              <li class="flex justify-between gap-3">
+                <span><?= (int)$line['qty'] ?> × <?= htmlspecialchars($line['name']) ?></span>
+                <span><?= money($settings['currency_symbol'], (float)$line['price'] * (int)$line['qty']) ?></span>
+              </li>
             <?php endforeach; ?>
           </ul>
 
-          <p class="mt-3 text-sm font-semibold text-ink">
-            <?= money($settings['currency_symbol'], $order['total']) ?> · Pay at the counter
-          </p>
-
-          <?php if ($action): ?>
-            <form method="POST" action="orders.php?filter=<?= urlencode($filter) ?>">
-              <input type="hidden" name="id" value="<?= (int)$order['id'] ?>" />
-              <input type="hidden" name="status" value="<?= htmlspecialchars($action['status']) ?>" />
-              <button type="submit" class="tap mt-3 h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert">
-                <?= htmlspecialchars($action['label']) ?>
-              </button>
-            </form>
-          <?php else: ?>
-            <p class="mt-3 text-sm text-muted">Served</p>
-          <?php endif; ?>
+          <div class="mt-4 flex items-center justify-between gap-3 border-t border-line pt-3">
+            <p class="font-semibold text-ink"><?= money($settings['currency_symbol'], $order['total']) ?></p>
+            <?php if ($action): ?>
+              <form method="POST" action="orders.php?filter=<?= urlencode($filter) ?>">
+                <?= csrf_field() ?>
+                <input type="hidden" name="id" value="<?= (int)$order['id'] ?>" />
+                <input type="hidden" name="status" value="<?= htmlspecialchars($action['status']) ?>" />
+                <button type="submit" class="tap rounded-full bg-pine px-4 text-sm font-semibold text-invert">
+                  <?= htmlspecialchars($action['label']) ?>
+                </button>
+              </form>
+            <?php endif; ?>
+          </div>
         </article>
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
 </section>
-
-<!-- Auto-refresh orders board every 15 seconds -->
-<script>
-  setTimeout(() => {
-    // Soft reload to keep tickets updated
-    if (!document.hidden) {
-      window.location.reload();
-    }
-  }, 15000);
-</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
