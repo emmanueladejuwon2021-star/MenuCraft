@@ -5,13 +5,13 @@ require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/order_build.php';
 
-$plate = get_cart();
+$db = getDb();
+$plate = sync_cart_with_menu($db);
 if (empty($plate)) {
     header('Location: plate.php');
     exit;
 }
 
-$db = getDb();
 $settings = get_restaurant_settings($db);
 $currentUser = get_current_user_session();
 $signedGuest = is_guest();
