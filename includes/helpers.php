@@ -47,7 +47,7 @@ function clean_image_url(?string $url): string {
 function flash(string $tone, string $message): void {
     ensure_session();
     $_SESSION['flash'] = [
-        'tone' => $tone, // 'ok' or 'error'
+        'tone' => $tone,
         'text' => $message,
     ];
 }
@@ -207,4 +207,46 @@ function base_url(): string {
     $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
     $scriptDir = rtrim(str_replace('\\', '/', $scriptDir), '/');
     return "$protocol://$host$scriptDir";
+}
+
+/**
+ * Refresh prices and availability in the session cart from the live menu.
+ * Removes sold-out items and updates prices so the plate always shows current values.
+ */
+function sync_cart_with_menu(PDO $db): array {
+    $cart = get_cart();
+    if (empty($cart)) {
+        return $cart;
+    }
+
+    $ids = array_unique(array_map(fn($item) => (int)$item['id'], $cart));
+    if (empty($ids)) {
+        return $cart;
+    }
+
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $db->prepare("SELECT id, name, price, is_available, image_url FROM menu_items WHERE id IN ($placeholders)");
+    $stmt->execute($ids);
+    $rows = $stmt->fetchAll();
+
+    $byId = [];
+    foreach ($rows as $row) {
+        $byId[(int)$row['id']] = $row;
+    }
+
+    $updated = [];
+    foreach ($cart as $item) {
+        $id = (int)$item['id'];
+        if (!isset($byId[$id]) || empty($byId[$id]['is_available'])) {
+            continue;
+        }
+        $row = $byId[$id];
+        $item['name'] = $row['name'];
+        $item['price'] = (float)$row['price'];
+        $item['image_url'] = $row['image_url'] ?? '';
+        $updated[] = $item;
+    }
+
+    save_cart($updated);
+    return $updated;
 }
