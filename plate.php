@@ -5,6 +5,7 @@ require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/auth.php';
 
 $db = getDb();
+$plate = sync_cart_with_menu($db);
 $settings = get_restaurant_settings($db);
 
 // Handle POST actions
