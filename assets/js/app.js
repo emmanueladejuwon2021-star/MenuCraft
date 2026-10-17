@@ -1,1 +1,1 @@
-$(cat /tmp/improved_app.js)
+$(python3 -c 'print(open("/tmp/improved_app.js").read())')
