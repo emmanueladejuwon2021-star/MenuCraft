@@ -114,7 +114,7 @@ img {
 }
 
 .page-enter {
-  animation: rise 0.28s ease;
+  animation: rise 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .nav-scroll {
@@ -160,6 +160,9 @@ img {
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   transition: all 0.2s ease;
   animation: rise 0.2s ease;
+  max-width: min(90vw, 28rem);
+  text-align: center;
+  word-break: break-word;
 }
 .toast-ok {
   background-color: var(--ink);
@@ -193,5 +196,15 @@ button, .tap {
   }
   #toast-container {
     bottom: 6.5rem; /* clear the bottom nav better */
+  }
+}
+
+/* Slightly better card hover on desktop */
+@media (hover: hover) {
+  .bg-card:hover {
+    box-shadow: 0 8px 24px rgba(15, 39, 68, 0.06);
+  }
+  html.dark .bg-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 }
