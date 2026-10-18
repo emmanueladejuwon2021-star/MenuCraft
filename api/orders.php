@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($guestEmail === '') {
         $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $guestName)) ?: 'guest';
-        $guestEmail = "walkin:{$slug}-" . base_convert((string)time(), 10, 36);
+        $guestEmail = "walkin:{$slug}-" . bin2hex(random_bytes(4));
     }
 
     try {
