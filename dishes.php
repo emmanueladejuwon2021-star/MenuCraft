@@ -48,7 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dishId = (int)($_POST['id'] ?? 0);
         $name = clean_label($_POST['name'] ?? '', 80);
         $catId = (int)($_POST['category_id'] ?? 0);
-        $price = (float)($_POST['price'] ?? 0);
+        $rawPrice = $_POST['price'] ?? '';
+        $price = is_numeric($rawPrice) ? (float)$rawPrice : null;
         $prepTime = max(1, min(240, (int)($_POST['prep_time'] ?? 10)));
         $imageUrl = clean_image_url($_POST['image_url'] ?? '');
         $description = clean_label($_POST['description'] ?? '', 280);
@@ -61,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Please enter a dish name.';
         } elseif ($catId <= 0) {
             $error = 'Please choose a category.';
-        } elseif ($price < 0) {
-            $error = 'Please enter a valid price.';
+        } elseif ($price === null || !is_finite($price) || $price < 0) {
+            $error = 'Please enter a valid price (number 0 or higher).';
         } else {
             try {
                 if ($dishId > 0) {
