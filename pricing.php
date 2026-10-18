@@ -14,7 +14,8 @@ $error = '';
 $categories = $db->query("SELECT id, name, display_order FROM categories ORDER BY display_order, name")->fetchAll();
 $selectedCatId = (int)($_POST['category_id'] ?? $_GET['category_id'] ?? ($categories[0]['id'] ?? 0));
 $mode = $_POST['mode'] ?? $_GET['mode'] ?? 'percent';
-$amount = (float)($_POST['amount'] ?? $_GET['amount'] ?? 10);
+$rawAmount = $_POST['amount'] ?? $_GET['amount'] ?? '10';
+$amount = is_numeric($rawAmount) ? (float)$rawAmount : null;
 $confirm = !empty($_POST['confirm']);
 
 // Handle Bulk Update Submit
@@ -25,6 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $confirm) {
         $error = 'Please choose a category.';
     } elseif ($mode !== 'percent' && $mode !== 'amount') {
         $error = 'Choose percent or a fixed amount.';
+    } elseif ($amount === null || !is_finite($amount)) {
+        $error = 'Please enter a valid number for the adjustment.';
     } elseif ($mode === 'percent' && ($amount < -100 || $amount > 500)) {
         $error = 'Use a percent between -100 and 500.';
     } else {
@@ -63,7 +66,7 @@ if ($selectedCatId > 0) {
     $previewDishes = $stmt->fetchAll();
 }
 
-$percentOk = ($mode !== 'percent') || ($amount >= -100 && $amount <= 500);
+$percentOk = ($mode !== 'percent') || ($amount !== null && $amount >= -100 && $amount <= 500);
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -101,7 +104,7 @@ require_once __DIR__ . '/includes/header.php';
       </label>
       <label class="block text-sm font-medium text-ink">
         <?= $mode === 'percent' ? 'Percent' : 'Amount' ?>
-        <input type="number" step="0.01" name="amount" value="<?= htmlspecialchars((string)$amount) ?>" class="field mt-1" onchange="this.form.submit()" />
+        <input type="number" step="0.01" name="amount" value="<?= htmlspecialchars((string)($amount ?? '')) ?>" class="field mt-1" onchange="this.form.submit()" />
       </label>
     </div>
 
@@ -122,7 +125,7 @@ require_once __DIR__ . '/includes/header.php';
       <?= csrf_field() ?>
       <input type="hidden" name="category_id" value="<?= (int)$selectedCatId ?>" />
       <input type="hidden" name="mode" value="<?= htmlspecialchars($mode) ?>" />
-      <input type="hidden" name="amount" value="<?= htmlspecialchars((string)$amount) ?>" />
+      <input type="hidden" name="amount" value="<?= htmlspecialchars((string)($amount ?? '')) ?>" />
       <input type="hidden" name="confirm" value="1" />
 
       <button type="submit" <?= !$percentOk ? 'disabled' : '' ?> class="tap h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert disabled:opacity-60">
@@ -137,7 +140,7 @@ require_once __DIR__ . '/includes/header.php';
       <p class="rounded-2xl border border-dashed border-line bg-card px-3 py-6 text-center text-sm text-muted">No dishes in this list.</p>
     <?php else: ?>
       <?php foreach ($previewDishes as $item): 
-        $newPrice = applyPrice($item['price'], $mode, $amount);
+        $newPrice = ($amount !== null && is_finite($amount)) ? applyPrice($item['price'], $mode, $amount) : (float)$item['price'];
       ?>
         <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl border border-line bg-card px-3 py-2">
           <span class="min-w-0 break-words text-sm font-medium text-ink"><?= htmlspecialchars($item['name']) ?></span>
