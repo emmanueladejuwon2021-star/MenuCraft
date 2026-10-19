@@ -176,3 +176,43 @@
     }
   };
 })();
+
+  // Plate quantity AJAX updates (called from plate.php buttons)
+  window.updatePlateQty = async function(dishId, newQty, btn) {
+    if (btn) btn.disabled = true;
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const res = await fetch('plate.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': csrfToken
+        },
+        body: new URLSearchParams({ action: 'update', id: dishId, qty: newQty, csrf_token: csrfToken })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        updatePlateBadges(data.count);
+        // Optionally update total display if present
+        const totalEl = document.querySelector('[data-plate-total]');
+        if (totalEl && data.total !== undefined) {
+          totalEl.textContent = data.total; // server should format, but simple for now
+        }
+        if (newQty <= 0) {
+          const row = btn?.closest('[data-plate-row]');
+          if (row) row.remove();
+        } else {
+          const qtyEl = document.querySelector(`[data-qty="${dishId}"]`);
+          if (qtyEl) qtyEl.textContent = newQty;
+        }
+        showToast('Plate updated', 'ok', 1500);
+      } else {
+        showToast(data.message || 'Could not update', 'error');
+      }
+    } catch (e) {
+      showToast('Network error', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };

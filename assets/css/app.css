@@ -208,3 +208,27 @@ button, .tap {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 }
+
+/* Enhanced toast and interaction polish */
+.toast {
+  animation: rise 0.25s ease, fadeOut 0.2s ease 2.8s forwards;
+}
+@keyframes fadeOut {
+  to { opacity: 0; transform: translateY(8px); }
+}
+
+/* Smoother button press */
+.tap:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Better empty states */
+.empty-state {
+  border-style: dashed;
+}
+
+/* Improved dark mode card borders */
+html.dark .border-line {
+  border-color: var(--line);
+}

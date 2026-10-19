@@ -1,47 +1,43 @@
 <?php
-// includes/header.php - Global Header & Navigation
-require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/helpers.php';
-require_once __DIR__ . '/auth.php';
+// includes/header.php - Shared header, navigation, and layout for MenuCraft
 
-$db = getDb();
-$settings = get_restaurant_settings($db);
+if (!function_exists('get_current_user_session')) {
+    require_once __DIR__ . '/auth.php';
+}
+
 $currentUser = get_current_user_session();
 $isStaffUser = is_staff();
 $isGuestUser = is_guest();
-$plateCount = cart_count();
+$settings = $settings ?? get_restaurant_settings(getDb());
 $flash = get_flash();
-
-$activePage = basename($_SERVER['SCRIPT_NAME'] ?? 'index.php');
+$activePage = basename($_SERVER['SCRIPT_NAME'] ?? '');
 
 $guestNav = [
     ['href' => 'index.php', 'label' => 'Home', 'icon' => 'home'],
     ['href' => 'menu.php', 'label' => 'Menu', 'icon' => 'book-open'],
-    ['href' => 'plate.php', 'label' => ($plateCount > 0 ? "Plate ($plateCount)" : 'Plate'), 'icon' => 'shopping-bag', 'is_plate' => true],
+    ['href' => 'plate.php', 'label' => 'Plate', 'icon' => 'shopping-bag', 'is_plate' => true],
     ['href' => 'my-orders.php', 'label' => 'Orders', 'icon' => 'bell'],
-    ['href' => 'guest-account.php', 'label' => 'Account', 'icon' => 'user'],
+    ['href' => 'guest-account.php', 'label' => $isGuestUser ? 'Account' : 'Sign in', 'icon' => 'user'],
 ];
 
 $staffNav = [
-    ['href' => 'menu.php', 'label' => 'Board', 'icon' => 'book-open'],
-    ['href' => 'dishes.php', 'label' => 'Dishes', 'icon' => 'list'],
-    ['href' => 'stock.php', 'label' => 'Stock', 'icon' => 'package'],
-    ['href' => 'pricing.php', 'label' => 'Prices', 'icon' => 'tag'],
     ['href' => 'orders.php', 'label' => 'Orders', 'icon' => 'bell'],
+    ['href' => 'stock.php', 'label' => 'Stock', 'icon' => 'package'],
+    ['href' => 'dishes.php', 'label' => 'Dishes', 'icon' => 'utensils'],
+    ['href' => 'pricing.php', 'label' => 'Prices', 'icon' => 'tag'],
     ['href' => 'share.php', 'label' => 'Share', 'icon' => 'qr-code'],
     ['href' => 'account.php', 'label' => 'Account', 'icon' => 'user'],
 ];
 
 $navItems = $isStaffUser ? $staffNav : $guestNav;
 ?>
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" class="">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title><?= htmlspecialchars($settings['restaurant_name']) ?> — MenuCraft</title>
-  <meta name="description" content="A live restaurant menu and price manager. Kitchen staff can mark dishes sold out, managers can change prices in bulk, and guests can open the menu from a QR code.">
-  <!-- Tailwind CSS via CDN -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><?= htmlspecialchars($settings['restaurant_name']) ?> · MenuCraft</title>
+  <meta name="description" content="Live digital menu and kitchen board for <?= htmlspecialchars($settings['restaurant_name']) ?>">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -134,8 +130,8 @@ $navItems = $isStaffUser ? $staffNav : $guestNav;
           case 'user':
             $iconSvg = '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>';
             break;
-          case 'list':
-            $iconSvg = '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>';
+          case 'utensils':
+            $iconSvg = '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>';
             break;
           case 'package':
             $iconSvg = '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>';
@@ -159,7 +155,7 @@ $navItems = $isStaffUser ? $staffNav : $guestNav;
   </nav>
 
   <!-- Flash Toast message (if set in session) -->
-  <div id="toast-container">
+  <div id="toast-container" role="status" aria-live="polite" aria-atomic="true">
     <?php if ($flash): ?>
       <div class="toast toast-<?= htmlspecialchars($flash['tone']) ?>">
         <?= htmlspecialchars($flash['text']) ?>
