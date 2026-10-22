@@ -11,7 +11,6 @@ $settings = get_restaurant_settings($db);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
-    // share settings update
     $name = clean_label($_POST['restaurant_name'] ?? '', 80);
     $symbol = clean_label($_POST['currency_symbol'] ?? '₦', 4);
 
@@ -20,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $stmt = $db->prepare("UPDATE restaurant_settings SET restaurant_name = ?, currency_symbol = ? WHERE id = 1");
         $stmt->execute([$name, $symbol]);
-        flash('ok', 'Saved!');
+        flash('ok', 'Restaurant branding saved!');
         header('Location: share.php');
         exit;
     }
@@ -35,55 +34,93 @@ $kitchenLink = "$protocol://$host$dir/iyabisi/kitchenlock/index.php";
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-enter grid gap-4 md:grid-cols-[1fr_300px]">
-  <div class="space-y-4">
-    <?php 
-    $title = "Share the live menu";
-    $hint = "Guests scan the code or open the guest link. They only see the menu, not kitchen tools.";
-    require __DIR__ . '/includes/kitchen_nav.php'; 
-    ?>
+<section class="page-enter space-y-6 pb-16">
+  <?php
+  $title = "QR Code & Share Portal";
+  $hint = "Generate table QR codes, copy live menu links, and manage restaurant branding.";
+  require __DIR__ . '/includes/kitchen_nav.php';
+  ?>
 
-    <form method="POST" action="share.php" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
-      <?= csrf_field() ?>
-      <h2 class="text-base font-semibold text-ink">Restaurant details</h2>
-      <label class="block text-sm text-ink">
-        Restaurant name
-        <input required type="text" name="restaurant_name" value="<?= htmlspecialchars($settings['restaurant_name']) ?>" class="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
-      </label>
+  <div class="grid gap-6 md:grid-cols-[1fr_340px]">
 
-      <label class="block text-sm text-ink">
-        Money symbol
-        <input required type="text" name="currency_symbol" value="<?= htmlspecialchars($settings['currency_symbol']) ?>" class="tap mt-1 w-full rounded-xl border border-line bg-paper px-3 text-ink" />
-      </label>
+    <!-- Left Column: Details & Links -->
+    <div class="space-y-6">
 
-      <button type="submit" class="tap h-11 rounded-full bg-pine px-5 text-sm font-semibold text-invert">
-        Save details
+      <!-- Restaurant Details Form -->
+      <div class="overflow-hidden rounded-3xl border border-line bg-card shadow-card">
+        <div class="bg-gradient-to-r from-pine/15 via-pine/5 to-transparent px-6 py-4 border-b border-line">
+          <span class="text-xs font-bold uppercase tracking-wider text-pine">🏪 Brand Identity</span>
+          <h2 class="mt-0.5 text-lg font-extrabold text-ink">Restaurant & Currency Settings</h2>
+        </div>
+
+        <form method="POST" action="share.php" class="p-6 space-y-4">
+          <?= csrf_field() ?>
+
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Restaurant Name</label>
+            <input required type="text" name="restaurant_name" value="<?= htmlspecialchars($settings['restaurant_name']) ?>" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-bold text-ink focus:border-pine focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Currency Symbol</label>
+            <input required type="text" name="currency_symbol" value="<?= htmlspecialchars($settings['currency_symbol']) ?>" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-bold text-ink focus:border-pine focus:outline-none" />
+          </div>
+
+          <button type="submit" class="tap shrink-0 rounded-full bg-pine px-6 py-2.5 text-xs font-bold text-white shadow-soft">
+            Save Details
+          </button>
+        </form>
+      </div>
+
+      <!-- Links Box -->
+      <div class="rounded-3xl border border-line bg-card p-6 shadow-card space-y-5">
+        <div>
+          <h3 class="font-bold text-base text-ink flex items-center gap-2">
+            <span>🔗 Public Guest Menu Link</span>
+          </h3>
+          <p class="text-xs text-muted mt-1">Print or share this link with guests at tables.</p>
+          <div class="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <p class="truncate flex-1 rounded-2xl bg-paper px-4 py-2.5 text-xs font-mono font-bold text-ink border border-line/60"><?= htmlspecialchars($guestLink) ?></p>
+            <button type="button" onclick="copyText('<?= htmlspecialchars(addslashes($guestLink)) ?>', 'Guest menu link copied!')" class="tap shrink-0 rounded-full border border-line bg-paper px-4 py-2.5 text-xs font-bold text-ink hover:bg-line">
+              📋 Copy Link
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-line/60">
+          <h3 class="font-bold text-base text-ink flex items-center gap-2">
+            <span>🔐 Private Kitchen Door Link</span>
+          </h3>
+          <p class="text-xs text-muted mt-1">Staff entrance for kitchen tablets. Do not share publicly.</p>
+          <div class="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <p class="truncate flex-1 rounded-2xl bg-paper px-4 py-2.5 text-xs font-mono font-bold text-ink border border-line/60"><?= htmlspecialchars($kitchenLink) ?></p>
+            <button type="button" onclick="copyText('<?= htmlspecialchars(addslashes($kitchenLink)) ?>', 'Kitchen entrance link copied!')" class="tap shrink-0 rounded-full border border-line bg-paper px-4 py-2.5 text-xs font-bold text-ink hover:bg-line">
+              📋 Copy Link
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: QR Code Display -->
+    <div class="rounded-3xl border border-line bg-card p-6 text-center shadow-card flex flex-col items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-pine uppercase tracking-wider block">Scannable QR Code</span>
+        <h3 class="font-extrabold text-lg text-ink">Table QR Poster</h3>
+        <p class="text-xs text-muted">Point any smartphone camera to scan and view the live menu instantly.</p>
+      </div>
+
+      <div class="my-6 rounded-2xl bg-white p-4 shadow-soft border border-line">
+        <div id="qrcode-container" class="inline-block"></div>
+      </div>
+
+      <button type="button" onclick="downloadQr()" class="tap h-12 w-full flex items-center justify-center gap-2 rounded-full bg-pine font-bold text-xs text-white shadow-soft">
+        <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        <span>Download Printable PNG</span>
       </button>
+    </div>
 
-      <hr class="border-line my-4" />
-
-      <p class="text-sm font-medium text-ink">Guest link</p>
-      <p class="break-all rounded-xl bg-paper px-3 py-2 text-sm text-ink"><?= htmlspecialchars($guestLink) ?></p>
-      <button type="button" onclick="copyText('<?= htmlspecialchars(addslashes($guestLink)) ?>', 'Link copied! Guests can scan or open it to view the live menu.')" class="tap h-11 rounded-full border border-line px-4 text-sm text-ink">
-        Copy guest link
-      </button>
-
-      <p class="pt-3 text-sm font-medium text-ink">Kitchen door (staff only)</p>
-      <p class="text-xs text-muted">Bookmark this on the kitchen tablet. Do not print it on the guest QR code.</p>
-      <p class="break-all rounded-xl bg-paper px-3 py-2 text-sm text-ink"><?= htmlspecialchars($kitchenLink) ?></p>
-      <button type="button" onclick="copyText('<?= htmlspecialchars(addslashes($kitchenLink)) ?>', 'Kitchen door copied! Save it on the kitchen tablet only.')" class="tap h-11 rounded-full border border-line px-4 text-sm text-ink">
-        Copy kitchen door
-      </button>
-    </form>
-  </div>
-
-  <!-- QR Code Box -->
-  <div class="rounded-2xl border border-line bg-card p-5 text-center shadow-soft flex flex-col items-center justify-center">
-    <div id="qrcode-container" class="rounded-xl bg-white p-3 shadow inline-block"></div>
-    <p class="mt-4 text-sm text-muted">Point a phone camera at this code to open the live menu.</p>
-    <button type="button" onclick="downloadQr()" class="tap mt-3 h-11 rounded-full bg-pine px-4 text-sm font-semibold text-invert">
-      Download QR image
-    </button>
   </div>
 </section>
 
@@ -93,9 +130,9 @@ require_once __DIR__ . '/includes/header.php';
     const guestUrl = "<?= htmlspecialchars($guestLink) ?>";
     new QRCode(document.getElementById("qrcode-container"), {
       text: guestUrl,
-      width: 220,
-      height: 220,
-      colorDark: "#1d4ed8",
+      width: 200,
+      height: 200,
+      colorDark: "#1b4d3e",
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.H
     });
@@ -105,7 +142,7 @@ require_once __DIR__ . '/includes/header.php';
     const canvas = document.querySelector("#qrcode-container canvas");
     if (!canvas) return;
     const link = document.createElement("a");
-    link.download = "menu-qr.png";
+    link.download = "<?= strtolower(preg_replace('/[^a-z0-9]+/i', '-', $settings['restaurant_name'])) ?>-qr.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   }
