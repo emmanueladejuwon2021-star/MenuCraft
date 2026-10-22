@@ -129,9 +129,6 @@ $currentUser = get_current_user_session();
     </div>
   </header>
 
-  <?php if ($isStaffUser): ?>
-    <?php require_once __DIR__ . '/kitchen_nav.php'; ?>
-  <?php endif; ?>
 
   <!-- Flash Messages -->
   <?php if ($flash): ?>

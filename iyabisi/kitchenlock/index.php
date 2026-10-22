@@ -66,71 +66,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kitchen Gate — <?= htmlspecialchars($settings['restaurant_name']) ?></title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../../assets/css/app.css">
   <script src="../../assets/js/app.js" defer></script>
 </head>
-<body class="min-h-screen bg-paper pb-16 flex flex-col justify-center items-center px-4">
-  <div class="w-full max-w-lg space-y-4">
+<body class="min-h-screen bg-canvas pb-16 flex flex-col justify-center items-center px-4">
+  <div class="w-full max-w-md space-y-5">
+
     <div class="text-center">
-      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-clay">Kitchen Door Lock</p>
-      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mt-1">Staff Entrance</h1>
+      <span class="text-xs font-bold uppercase tracking-wider text-pine">🔐 Kitchen Lock</span>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink mt-1">Staff Entrance</h1>
       <p class="text-xs text-muted mt-1">Bookmark this screen on the kitchen tablet only.</p>
     </div>
 
-    <form method="POST" action="index.php?mode=<?= htmlspecialchars($mode) ?>" class="space-y-3 rounded-2xl border border-line bg-card p-6 shadow-soft">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="<?= $mode === 'signup' ? 'signup' : 'login' ?>" />
+    <div class="overflow-hidden rounded-3xl border border-line bg-card shadow-card p-6 space-y-4">
+      <form method="POST" action="index.php?mode=<?= htmlspecialchars($mode) ?>" class="space-y-4">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="<?= $mode === 'signup' ? 'signup' : 'login' ?>" />
 
-      <div class="grid grid-cols-2 gap-2 rounded-full bg-paper p-1">
-        <a href="index.php?mode=signin" class="tap inline-flex items-center justify-center rounded-full text-sm font-medium <?= $mode === 'signin' ? 'bg-pine text-invert' : 'text-muted' ?>">
-          Sign in
-        </a>
-        <a href="index.php?mode=signup" class="tap inline-flex items-center justify-center rounded-full text-sm font-medium <?= $mode === 'signup' ? 'bg-pine text-invert' : 'text-muted' ?>">
-          Create account
-        </a>
-      </div>
+        <div class="grid grid-cols-2 gap-1 rounded-full bg-paper p-1 border border-line">
+          <a href="index.php?mode=signin" class="tap inline-flex h-9 items-center justify-center rounded-full text-xs font-bold transition-all <?= $mode === 'signin' ? 'bg-pine text-white shadow-soft' : 'text-muted hover:text-ink' ?>">
+            Sign In
+          </a>
+          <a href="index.php?mode=signup" class="tap inline-flex h-9 items-center justify-center rounded-full text-xs font-bold transition-all <?= $mode === 'signup' ? 'bg-pine text-white shadow-soft' : 'text-muted hover:text-ink' ?>">
+            Create Account
+          </a>
+        </div>
 
-      <?php if ($error !== ''): ?>
-        <p class="rounded-xl bg-card border border-line p-3 text-sm text-danger"><?= htmlspecialchars($error) ?></p>
-      <?php endif; ?>
+        <?php if ($error !== ''): ?>
+          <div class="rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 p-3 text-xs font-bold text-red-600">
+            <?= htmlspecialchars($error) ?>
+          </div>
+        <?php endif; ?>
 
-      <?php if ($mode === 'signup'): ?>
-        <label class="block text-sm font-medium text-ink">
-          Your name
-          <input required type="text" name="name" class="field mt-1" placeholder="Chef Ada" />
-        </label>
-      <?php endif; ?>
+        <?php if ($mode === 'signup'): ?>
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Your Name</label>
+            <input required type="text" name="name" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" placeholder="Chef Ada" />
+          </div>
+        <?php endif; ?>
 
-      <label class="block text-sm font-medium text-ink">
-        Email
-        <input required type="email" name="email" class="field mt-1" placeholder="kitchen@restaurant.com" />
-      </label>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Kitchen Email</label>
+          <input required type="email" name="email" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" placeholder="kitchen@restaurant.com" />
+        </div>
 
-      <label class="block text-sm font-medium text-ink">
-        Password
-        <input required type="password" name="password" minlength="6" class="field mt-1" placeholder="••••••••" />
-      </label>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Password</label>
+          <input required type="password" name="password" minlength="6" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" placeholder="••••••••" />
+        </div>
 
-      <?php if ($mode === 'signup'): ?>
-        <label class="block text-sm font-medium text-ink">
-          Restaurant name
-          <input required type="text" name="restaurant_name" value="<?= htmlspecialchars($settings['restaurant_name']) ?>" class="field mt-1" />
-        </label>
-      <?php endif; ?>
+        <?php if ($mode === 'signup'): ?>
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Restaurant Name</label>
+            <input required type="text" name="restaurant_name" value="<?= htmlspecialchars($settings['restaurant_name']) ?>" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" />
+          </div>
+        <?php endif; ?>
 
-      <button type="submit" class="tap h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert">
-        <?= $mode === 'signup' ? 'Create kitchen account' : 'Sign in to kitchen' ?>
-      </button>
+        <div class="pt-2 space-y-3">
+          <button type="submit" class="tap flex h-12 w-full items-center justify-center gap-2 rounded-full bg-pine font-bold text-sm text-white shadow-soft transition-transform active:scale-95">
+            <span><?= $mode === 'signup' ? 'Create Kitchen Account' : 'Sign In to Kitchen' ?></span>
+            <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+          </button>
 
-      <div class="text-center pt-2">
-        <a href="../../menu.php" class="text-sm text-muted hover:underline">
-          Just want food? Open the menu
-        </a>
-      </div>
-    </form>
+          <div class="text-center pt-1">
+            <a href="../../menu.php" class="text-xs font-bold text-muted hover:text-ink">
+              Just want food? Open guest menu &rarr;
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
   </div>
 </body>
 </html>
