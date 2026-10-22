@@ -1,0 +1,40 @@
+[Thu Oct 22 19:54:32 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Thu Oct 22 19:55:59 2026] [::1]:59094 Accepted
+[Thu Oct 22 19:55:59 2026] [::1]:59094 [200]: GET /index.php
+[Thu Oct 22 19:55:59 2026] [::1]:59094 Closing
+[Thu Oct 22 19:56:00 2026] [::1]:59096 Accepted
+[Thu Oct 22 19:56:00 2026] [::1]:59096 [200]: GET /assets/css/app.css
+[Thu Oct 22 19:56:00 2026] [::1]:59096 Closing
+[Thu Oct 22 19:56:00 2026] [::1]:59112 Accepted
+[Thu Oct 22 19:56:00 2026] [::1]:59112 [200]: GET /assets/js/app.js
+[Thu Oct 22 19:56:00 2026] [::1]:59112 Closing
+[Thu Oct 22 19:56:02 2026] [::1]:33062 Accepted
+[Thu Oct 22 19:56:02 2026] [::1]:33062 [200]: GET /menu.php
+[Thu Oct 22 19:56:02 2026] [::1]:33062 Closing
+[Thu Oct 22 19:56:02 2026] [::1]:33064 Accepted
+[Thu Oct 22 19:56:02 2026] [::1]:33064 [200]: GET /assets/css/app.css
+[Thu Oct 22 19:56:02 2026] [::1]:33064 Closing
+[Thu Oct 22 19:56:02 2026] [::1]:33066 Accepted
+[Thu Oct 22 19:56:02 2026] [::1]:33066 [200]: GET /assets/js/app.js
+[Thu Oct 22 19:56:02 2026] [::1]:33066 Closing
+[Thu Oct 22 19:56:04 2026] [::1]:33070 Accepted
+[Thu Oct 22 19:56:04 2026] [::1]:33070 [200]: POST /plate.php
+[Thu Oct 22 19:56:04 2026] [::1]:33070 Closing
+[Thu Oct 22 19:56:05 2026] [::1]:33078 Accepted
+[Thu Oct 22 19:56:05 2026] [::1]:33078 [200]: GET /plate.php
+[Thu Oct 22 19:56:05 2026] [::1]:33078 Closing
+[Thu Oct 22 19:56:05 2026] [::1]:33088 Accepted
+[Thu Oct 22 19:56:05 2026] [::1]:33094 Accepted
+[Thu Oct 22 19:56:05 2026] [::1]:33088 [200]: GET /assets/css/app.css
+[Thu Oct 22 19:56:05 2026] [::1]:33094 [200]: GET /assets/js/app.js
+[Thu Oct 22 19:56:05 2026] [::1]:33088 Closing
+[Thu Oct 22 19:56:05 2026] [::1]:33094 Closing
+[Thu Oct 22 19:56:06 2026] [::1]:33096 Accepted
+[Thu Oct 22 19:56:06 2026] [::1]:33096 [200]: GET /pay.php
+[Thu Oct 22 19:56:06 2026] [::1]:33096 Closing
+[Thu Oct 22 19:56:06 2026] [::1]:33110 Accepted
+[Thu Oct 22 19:56:06 2026] [::1]:33122 Accepted
+[Thu Oct 22 19:56:06 2026] [::1]:33110 [200]: GET /assets/css/app.css
+[Thu Oct 22 19:56:06 2026] [::1]:33122 [200]: GET /assets/js/app.js
+[Thu Oct 22 19:56:06 2026] [::1]:33110 Closing
+[Thu Oct 22 19:56:06 2026] [::1]:33122 Closing

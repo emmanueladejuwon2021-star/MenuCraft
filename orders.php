@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare("UPDATE orders SET status = ? WHERE id = ?");
         $stmt->execute([$newStatus, $orderId]);
         
-        $msg = ($newStatus === 'Cooking') ? 'Kitchen has started this order' : (($newStatus === 'Ready') ? 'Order is ready' : 'Order marked served');
+        $msg = ($newStatus === 'Cooking') ? 'Kitchen has started cooking this order' : (($newStatus === 'Ready') ? 'Order marked ready for pickup!' : 'Order marked served');
         if (is_ajax()) {
             json_response(['ok' => true, 'message' => $msg]);
         }
@@ -55,87 +55,113 @@ usort($visibleOrders, function($a, $b) use ($rank) {
 });
 
 $nextActionMap = [
-    'New' => ['label' => 'Start cooking', 'status' => 'Cooking'],
-    'Cooking' => ['label' => 'Mark ready', 'status' => 'Ready'],
-    'Ready' => ['label' => 'Mark served', 'status' => 'Served'],
+    'New' => ['label' => 'Start Cooking 🔥', 'status' => 'Cooking', 'class' => 'bg-amber-600 text-white hover:bg-amber-700'],
+    'Cooking' => ['label' => 'Mark Ready 🔔', 'status' => 'Ready', 'class' => 'bg-pine text-white hover:bg-pine-hover'],
+    'Ready' => ['label' => 'Mark Served ✅', 'status' => 'Served', 'class' => 'bg-emerald-700 text-white hover:bg-emerald-800'],
 ];
 
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-enter space-y-5">
+<section class="page-enter space-y-6 pb-16">
   <?php 
-  $title = "Kitchen orders";
-  $hint = "New orders land at the top. Move each one as you cook. Pay is still at the counter.";
+  $title = "Kitchen Orders Board";
+  $hint = "Live ticket queue for cooks and counters. Advance orders as they prepare.";
   require __DIR__ . '/includes/kitchen_nav.php'; 
   ?>
 
-  <!-- Filter tabs -->
-  <div class="flex flex-wrap items-center gap-2">
-    <a href="orders.php?filter=open" class="tap h-11 inline-flex items-center rounded-full px-4 text-sm font-medium <?= $filter === 'open' ? 'bg-pine text-invert' : 'border border-line bg-card text-ink' ?>">
-      Open (<?= $openCount ?>)
-    </a>
-    <a href="orders.php?filter=served" class="tap h-11 inline-flex items-center rounded-full px-4 text-sm font-medium <?= $filter === 'served' ? 'bg-pine text-invert' : 'border border-line bg-card text-ink' ?>">
-      Served
-    </a>
-    <a href="orders.php?filter=all" class="tap h-11 inline-flex items-center rounded-full px-4 text-sm font-medium <?= $filter === 'all' ? 'bg-pine text-invert' : 'border border-line bg-card text-ink' ?>">
-      All
-    </a>
+  <!-- Filter tabs bar -->
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-1.5 rounded-full bg-paper p-1 border border-line text-xs font-bold">
+      <a href="orders.php?filter=open" class="tap inline-flex h-8 items-center rounded-full px-4 transition-all <?= $filter === 'open' ? 'bg-pine text-white shadow-soft' : 'text-muted hover:text-ink' ?>">
+        Open Queue (<?= $openCount ?>)
+      </a>
+      <a href="orders.php?filter=served" class="tap inline-flex h-8 items-center rounded-full px-4 transition-all <?= $filter === 'served' ? 'bg-pine text-white shadow-soft' : 'text-muted hover:text-ink' ?>">
+        Completed / Served
+      </a>
+      <a href="orders.php?filter=all" class="tap inline-flex h-8 items-center rounded-full px-4 transition-all <?= $filter === 'all' ? 'bg-pine text-white shadow-soft' : 'text-muted hover:text-ink' ?>">
+        All Orders
+      </a>
+    </div>
+
+    <button onclick="window.location.reload()" class="tap hidden sm:inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3.5 py-1.5 text-xs font-bold text-muted hover:text-ink">
+      <span>🔄 Refresh</span>
+    </button>
   </div>
 
   <?php if (empty($visibleOrders)): ?>
-    <div class="rounded-3xl border border-dashed border-line bg-card px-5 py-12 text-center">
-      <p class="font-semibold text-ink"><?= $filter === 'served' ? 'Nothing served yet' : 'No open orders' ?></p>
-      <p class="mt-2 text-sm text-muted">Tickets show up here after a guest sends a plate.</p>
-      <a href="share.php" class="tap mt-5 inline-flex items-center justify-center rounded-full bg-pine px-5 text-sm font-semibold text-invert">
-        Share the menu
+    <div class="rounded-3xl border border-dashed border-line bg-card p-12 text-center shadow-soft">
+      <span class="text-5xl block mb-3">👨‍🍳</span>
+      <h2 class="text-xl font-bold text-ink"><?= $filter === 'served' ? 'No served orders yet' : 'Order queue is empty' ?></h2>
+      <p class="mt-2 text-sm text-muted">New guest orders will appear automatically on this board.</p>
+      <a href="share.php" class="tap mt-6 inline-flex items-center gap-2 rounded-full bg-pine px-6 py-3 text-xs font-bold text-white shadow-soft">
+        <span>Share QR Menu Code</span>
       </a>
     </div>
   <?php else: ?>
-    <div class="grid gap-3 md:grid-cols-2">
+    <div class="grid gap-5 md:grid-cols-2">
       <?php foreach ($visibleOrders as $order): 
         $items = json_decode($order['items_json'] ?? '[]', true) ?: [];
         $action = $nextActionMap[$order['status']] ?? null;
-        $timeStr = !empty($order['created_at']) ? date('M j, g:i a', strtotime($order['created_at'])) : 'Just now';
-        $contact = !empty($order['phone']) ? $order['phone'] : (!empty($order['guest_email']) && strpos($order['guest_email'], 'walkin:') === false ? $order['guest_email'] : 'Walk-in');
+        $timeStr = !empty($order['created_at']) ? date('g:i a', strtotime($order['created_at'])) : 'Just now';
+        $status = $order['status'] ?: 'New';
+
+        $badgeColors = [
+          'New' => 'bg-red-500/10 text-red-600 border-red-500/30',
+          'Cooking' => 'bg-amber-500/10 text-amber-600 border-amber-500/30',
+          'Ready' => 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+          'Served' => 'bg-gray-500/10 text-gray-500 border-gray-500/30',
+        ];
       ?>
-        <article class="rounded-3xl border border-line bg-card p-4 shadow-soft">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="truncate font-semibold text-ink"><?= htmlspecialchars($order['guest_name'] ?: 'Guest') ?></p>
-              <p class="truncate text-xs text-muted"><?= htmlspecialchars($contact) ?> · <?= htmlspecialchars($timeStr) ?></p>
+        <article class="overflow-hidden rounded-3xl border border-line bg-card shadow-card space-y-4 p-5 transition-all hover:border-pine/30">
+
+          <div class="flex items-start justify-between gap-3 border-b border-line pb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-base text-ink"><?= htmlspecialchars($order['guest_name'] ?: 'Walk-in Guest') ?></span>
+                <span class="text-xs font-mono font-bold text-muted">#<?= htmlspecialchars($order['pay_ref']) ?></span>
+              </div>
+              <p class="text-xs text-muted mt-0.5"><?= htmlspecialchars($order['phone'] ?: 'No phone provided') ?> · Received at <?= htmlspecialchars($timeStr) ?></p>
             </div>
-            <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold <?= $order['status'] === 'Ready' ? 'bg-pine text-invert' : 'bg-paper text-clay' ?>">
-              <?= htmlspecialchars($order['status'] ?: 'New') ?>
+
+            <span class="shrink-0 rounded-full border px-3 py-1 text-xs font-extrabold <?= $badgeColors[$status] ?? 'bg-paper text-muted border-line' ?>">
+              <?= htmlspecialchars($status) ?>
             </span>
           </div>
 
           <?php if (!empty($order['note'])): ?>
-            <p class="mt-2 rounded-xl bg-paper px-3 py-2 text-sm text-ink"><?= htmlspecialchars($order['note']) ?></p>
+            <div class="rounded-2xl bg-paper px-3.5 py-2 text-xs font-semibold text-ink border border-line/60">
+              <span class="text-clay font-bold">📌 Table / Note:</span> <?= htmlspecialchars($order['note']) ?>
+            </div>
           <?php endif; ?>
 
-          <ul class="mt-3 space-y-1 text-sm text-ink">
+          <ul class="space-y-1.5 text-xs border-b border-line pb-3">
             <?php foreach ($items as $line): ?>
-              <li class="flex justify-between gap-3">
-                <span><?= (int)$line['qty'] ?> × <?= htmlspecialchars($line['name']) ?></span>
-                <span><?= money($settings['currency_symbol'], (float)$line['price'] * (int)$line['qty']) ?></span>
+              <li class="flex items-center justify-between">
+                <span class="font-bold text-ink"><span class="inline-block w-6 text-pine font-extrabold"><?= (int)$line['qty'] ?>x</span> <?= htmlspecialchars($line['name']) ?></span>
+                <span class="font-semibold text-muted"><?= money($settings['currency_symbol'], (float)$line['price'] * (int)$line['qty']) ?></span>
               </li>
             <?php endforeach; ?>
           </ul>
 
-          <div class="mt-4 flex items-center justify-between gap-3 border-t border-line pt-3">
-            <p class="font-semibold text-ink"><?= money($settings['currency_symbol'], $order['total']) ?></p>
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <div>
+              <span class="text-[10px] font-bold text-muted block uppercase">Counter Total</span>
+              <span class="text-base font-extrabold text-pine"><?= money($settings['currency_symbol'], $order['total']) ?></span>
+            </div>
+
             <?php if ($action): ?>
               <form method="POST" action="orders.php?filter=<?= urlencode($filter) ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= (int)$order['id'] ?>" />
                 <input type="hidden" name="status" value="<?= htmlspecialchars($action['status']) ?>" />
-                <button type="submit" class="tap rounded-full bg-pine px-4 text-sm font-semibold text-invert">
+                <button type="submit" class="tap rounded-full px-5 py-2.5 text-xs font-bold transition-transform active:scale-95 shadow-soft <?= $action['class'] ?>">
                   <?= htmlspecialchars($action['label']) ?>
                 </button>
               </form>
             <?php endif; ?>
           </div>
+
         </article>
       <?php endforeach; ?>
     </div>

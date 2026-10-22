@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $signedGuest ? ($currentUser['email'] ?? '') : '';
 
     if ($submittedName === '') {
-        $error = "Add your name so the kitchen can call the plate.";
+        $error = "Add your name so the kitchen can identify your order.";
     } else {
         if ($email === '') {
             $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $submittedName)) ?: 'guest';
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             clear_cart();
             add_ticket($viewToken);
 
-            flash('ok', "Order sent. Pay at the counter. The kitchen can see it.");
+            flash('ok', "Order sent successfully! Pay at the counter when called.");
             header('Location: my-orders.php');
             exit;
         } catch (Exception $e) {
@@ -74,64 +74,85 @@ $total = cart_total();
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-enter mx-auto max-w-lg space-y-5 pb-8">
-  <div class="overflow-hidden rounded-[2rem] border border-line bg-card shadow-soft">
-    <div class="bg-gradient-to-br from-blue-200/70 to-transparent px-6 py-6 dark:from-blue-500/15">
-      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-clay">Checkout</p>
-      <h1 class="mt-1 text-2xl font-semibold text-ink">Send this plate</h1>
-      <p class="mt-2 text-sm leading-relaxed text-muted">No card is needed. The kitchen gets the order now. You pay at the counter when you pick it up.</p>
+<section class="page-enter mx-auto max-w-xl space-y-6 pb-12">
+  <div class="overflow-hidden rounded-3xl border border-line bg-card shadow-card">
+
+    <!-- Header banner -->
+    <div class="bg-gradient-to-r from-pine/15 via-pine/5 to-transparent px-6 py-6 border-b border-line">
+      <div class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-pine">
+        <span>📝 Table / Counter Checkout</span>
+      </div>
+      <h1 class="mt-1 text-2xl font-extrabold text-ink">Send Order to Kitchen</h1>
+      <p class="mt-1 text-xs leading-relaxed text-muted">No card or online payment required. Pay in cash or transfer at the counter when your food is ready.</p>
     </div>
 
-    <div class="space-y-4 px-6 pb-6">
-      <?php if ($signedGuest): ?>
-        <p class="text-sm text-ink">Sending as <span class="font-semibold"><?= htmlspecialchars($currentUser['name']) ?></span></p>
-      <?php else: ?>
-        <p class="text-sm text-muted">No account needed. Leave a name for the ticket.</p>
-      <?php endif; ?>
+    <div class="space-y-6 p-6">
 
-      <div class="rounded-2xl bg-paper px-4 py-3 space-y-1">
-        <?php foreach ($plate as $row): ?>
-          <p class="flex justify-between gap-3 py-1 text-sm text-ink">
-            <span><?= (int)$row['qty'] ?> × <?= htmlspecialchars($row['name']) ?></span>
-            <span><?= money($settings['currency_symbol'], (float)$row['price'] * (int)$row['qty']) ?></span>
-          </p>
-        <?php endforeach; ?>
-        <p class="mt-2 flex justify-between border-t border-line pt-3 text-base font-semibold text-ink">
-          <span>Total at the counter</span>
-          <span><?= money($settings['currency_symbol'], $total) ?></span>
-        </p>
+      <!-- Order Items Summary Box -->
+      <div class="rounded-2xl bg-paper/80 border border-line/60 p-4 space-y-2">
+        <span class="text-xs font-bold text-muted uppercase tracking-wider block border-b border-line/60 pb-2">Plate Summary</span>
+        <div class="divide-y divide-line/40">
+          <?php foreach ($plate as $row): ?>
+            <div class="flex items-center justify-between py-2 text-sm">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-pine/10 text-xs font-bold text-pine"><?= (int)$row['qty'] ?></span>
+                <span class="font-bold text-ink"><?= htmlspecialchars($row['name']) ?></span>
+              </div>
+              <span class="font-extrabold text-ink"><?= money($settings['currency_symbol'], (float)$row['price'] * (int)$row['qty']) ?></span>
+            </div>
+          <?php endforeach; ?>
+        </div>
+
+        <div class="mt-2 flex items-center justify-between border-t border-line/80 pt-3 text-base">
+          <span class="font-bold text-ink">Total Due at Counter</span>
+          <span class="text-xl font-extrabold text-pine"><?= money($settings['currency_symbol'], $total) ?></span>
+        </div>
       </div>
 
-      <form method="POST" action="pay.php" class="space-y-3">
+      <!-- Submission Form -->
+      <form method="POST" action="pay.php" class="space-y-4">
         <?= csrf_field() ?>
-        <?php if (!$signedGuest): ?>
-          <label class="block text-sm font-medium text-ink">
-            Your name
-            <input required type="text" name="name" value="<?= htmlspecialchars($name) ?>" placeholder="Name on the ticket" class="field mt-1" />
-          </label>
-          <label class="block text-sm font-medium text-ink">
-            Phone (optional)
-            <input type="text" name="phone" value="<?= htmlspecialchars($phone) ?>" placeholder="If the kitchen should call you" class="field mt-1" />
-          </label>
+
+        <?php if ($signedGuest): ?>
+          <div class="rounded-2xl border border-line bg-paper/50 p-3.5 flex items-center justify-between text-xs">
+            <span class="text-muted">Ordering as registered guest:</span>
+            <span class="font-bold text-ink"><?= htmlspecialchars($currentUser['name']) ?> (<?= htmlspecialchars($currentUser['email'] ?? '') ?>)</span>
+          </div>
+        <?php else: ?>
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Your Name <span class="text-red-500">*</span></label>
+            <input required type="text" name="name" value="<?= htmlspecialchars($name) ?>" placeholder="e.g. Table 5 / Alex" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Phone Number <span class="text-muted font-normal">(Optional, for notification)</span></label>
+            <input type="text" name="phone" value="<?= htmlspecialchars($phone) ?>" placeholder="e.g. 08012345678" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+          </div>
         <?php endif; ?>
 
-        <label class="block text-sm font-medium text-ink">
-          Table or pickup note
-          <input type="text" name="note" value="<?= htmlspecialchars($note) ?>" placeholder="Table 4, or pickup" class="field mt-1" />
-        </label>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Table # or Pickup Note</label>
+          <input type="text" name="note" value="<?= htmlspecialchars($note) ?>" placeholder="e.g. Table 4 / Dine-in / Extra spicy" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+        </div>
 
         <?php if ($error !== ''): ?>
-          <p class="rounded-2xl border border-line bg-card px-3 py-3 text-sm text-danger"><?= htmlspecialchars($error) ?></p>
+          <div class="rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 p-3 text-xs font-bold text-red-600">
+            <?= htmlspecialchars($error) ?>
+          </div>
         <?php endif; ?>
 
-        <button type="submit" class="tap h-12 w-full rounded-full bg-pine text-sm font-semibold text-invert">
-          Send order · <?= money($settings['currency_symbol'], $total) ?>
-        </button>
+        <div class="pt-2 space-y-2">
+          <button type="submit" class="tap flex h-12 w-full items-center justify-center gap-2 rounded-full bg-pine font-bold text-sm text-white shadow-soft transition-transform active:scale-95">
+            <span>Send Order · <?= money($settings['currency_symbol'], $total) ?></span>
+            <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
 
-        <a href="plate.php" class="tap inline-flex h-11 w-full items-center justify-center rounded-full border border-line text-sm font-medium text-ink">
-          Back to plate
-        </a>
+          <a href="plate.php" class="tap flex h-11 w-full items-center justify-center rounded-full border border-line bg-paper text-xs font-bold text-ink hover:bg-line">
+            Back to Plate
+          </a>
+        </div>
       </form>
+
     </div>
   </div>
 </section>

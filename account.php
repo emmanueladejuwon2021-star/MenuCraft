@@ -13,7 +13,6 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
-    // existing action handling...
     $name = clean_label($_POST['name'] ?? '', 80);
     $phone = clean_label($_POST['phone'] ?? '', 30);
     $restaurantName = clean_label($_POST['restaurant_name'] ?? '', 80) ?: 'Iya Bisi Kitchen';
@@ -35,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user']['restaurant_name'] = $restaurantName;
         $currentUser = $_SESSION['user'];
 
-        flash('ok', 'Saved!');
+        flash('ok', 'Kitchen staff settings saved!');
         header('Location: account.php');
         exit;
     }
@@ -44,51 +43,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-enter mx-auto max-w-lg space-y-4">
-  <form method="POST" action="account.php" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
-    <?= csrf_field() ?>
-    <div>
-      <h1 class="text-lg font-semibold text-ink">Account settings</h1>
-      <p class="mt-1 text-sm text-muted">Signed in as <?= htmlspecialchars($currentUser['email']) ?>. Save your details, or sign out below.</p>
+<section class="page-enter mx-auto max-w-xl space-y-6 pb-16">
+  <?php
+  $title = "Kitchen Staff Account";
+  $hint = "Manage staff preferences, restaurant name, and currency settings.";
+  require __DIR__ . '/includes/kitchen_nav.php';
+  ?>
+
+  <div class="overflow-hidden rounded-3xl border border-line bg-card shadow-card">
+    <div class="bg-gradient-to-r from-pine/15 via-pine/5 to-transparent px-6 py-4 border-b border-line">
+      <span class="text-xs font-bold uppercase tracking-wider text-pine">⚙️ Staff Credentials</span>
+      <h2 class="mt-0.5 text-lg font-extrabold text-ink">Settings & Profile</h2>
+      <p class="text-xs text-muted">Logged in as <?= htmlspecialchars($currentUser['email']) ?></p>
     </div>
 
-    <?php if ($error !== ''): ?>
-      <p class="rounded-xl bg-card border border-line p-3 text-sm text-danger"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
+    <form method="POST" action="account.php" class="p-6 space-y-4">
+      <?= csrf_field() ?>
 
-    <label class="block text-sm font-medium text-ink">
-      Your name
-      <input required type="text" name="name" value="<?= htmlspecialchars($currentUser['name']) ?>" class="field mt-1" />
-    </label>
+      <?php if ($error !== ''): ?>
+        <div class="rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 p-3 text-xs font-bold text-red-600">
+          <?= htmlspecialchars($error) ?>
+        </div>
+      <?php endif; ?>
 
-    <label class="block text-sm font-medium text-ink">
-      Email
-      <input type="email" value="<?= htmlspecialchars($currentUser['email']) ?>" disabled class="field mt-1 opacity-70" />
-    </label>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Your Name</label>
+        <input required type="text" name="name" value="<?= htmlspecialchars($currentUser['name']) ?>" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" />
+      </div>
 
-    <label class="block text-sm font-medium text-ink">
-      Phone
-      <input type="text" name="phone" value="<?= htmlspecialchars($currentUser['phone'] ?? '') ?>" placeholder="Kitchen contact" class="field mt-1" />
-    </label>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Email Address</label>
+        <input type="email" value="<?= htmlspecialchars($currentUser['email']) ?>" disabled class="h-11 w-full rounded-2xl border border-line bg-paper/50 px-4 text-sm font-medium text-muted cursor-not-allowed" />
+      </div>
 
-    <label class="block text-sm font-medium text-ink">
-      Restaurant name
-      <input required type="text" name="restaurant_name" value="<?= htmlspecialchars($currentUser['restaurant_name'] ?: $settings['restaurant_name']) ?>" class="field mt-1" />
-    </label>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Phone Number</label>
+        <input type="text" name="phone" value="<?= htmlspecialchars($currentUser['phone'] ?? '') ?>" placeholder="Kitchen tablet phone" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" />
+      </div>
 
-    <label class="block text-sm font-medium text-ink">
-      Money symbol
-      <input required type="text" name="currency_symbol" value="<?= htmlspecialchars($settings['currency_symbol']) ?>" placeholder="₦" class="field mt-1" />
-    </label>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Restaurant Name</label>
+        <input required type="text" name="restaurant_name" value="<?= htmlspecialchars($currentUser['restaurant_name'] ?: $settings['restaurant_name']) ?>" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" />
+      </div>
 
-    <button type="submit" class="tap h-11 w-full rounded-full bg-pine text-sm font-semibold text-invert">
-      Save settings
-    </button>
-  </form>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Currency Symbol</label>
+        <input required type="text" name="currency_symbol" value="<?= htmlspecialchars($settings['currency_symbol']) ?>" placeholder="₦" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none" />
+      </div>
 
-  <a href="logout.php" class="tap inline-flex items-center justify-center h-11 w-full rounded-full border border-line bg-card text-sm font-medium text-ink">
-    Sign out
-  </a>
+      <div class="pt-3 space-y-2">
+        <button type="submit" class="tap flex h-12 w-full items-center justify-center gap-2 rounded-full bg-pine font-bold text-sm text-white shadow-soft transition-transform active:scale-95">
+          Save Staff Settings
+        </button>
+
+        <a href="logout.php" class="tap flex h-11 w-full items-center justify-center rounded-full border border-line bg-paper text-xs font-bold text-red-600 hover:bg-red-50">
+          Sign Out of Kitchen Staff Account
+        </a>
+      </div>
+    </form>
+  </div>
 </section>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

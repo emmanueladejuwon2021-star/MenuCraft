@@ -38,55 +38,66 @@ $items = $db->query("SELECT * FROM menu_items ORDER BY name")->fetchAll();
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-enter space-y-4">
+<section class="page-enter space-y-6 pb-16">
   <?php 
-  $title = "Stock";
-  $hint = "Tap a switch to mark a dish in stock or sold out.";
+  $title = "Tactile Stock Switches";
+  $hint = "Designed for kitchen tablets. Tap any switch to instantly mark dishes in stock or sold out.";
   require __DIR__ . '/includes/kitchen_nav.php'; 
   ?>
 
   <?php if (empty($categories)): ?>
-    <div class="rounded-3xl border border-dashed border-line bg-card px-5 py-12 text-center">
-      <p class="font-semibold text-ink">No lists yet</p>
-      <p class="mt-2 text-sm text-muted">Add a category on the dishes page, then the switches show up here.</p>
+    <div class="rounded-3xl border border-dashed border-line bg-card p-12 text-center shadow-soft">
+      <span class="text-5xl block mb-3">🔘</span>
+      <h2 class="text-xl font-bold text-ink">No categories found</h2>
+      <p class="mt-2 text-sm text-muted">Create menu categories first on the Dishes page.</p>
     </div>
   <?php else: ?>
-    <?php foreach ($categories as $cat): 
-      $catDishes = array_filter($items, fn($i) => (int)$i['category_id'] === (int)$cat['id']);
-    ?>
-      <div class="rounded-2xl border border-line bg-card p-4 shadow-soft">
-        <h2 class="mb-3 font-semibold text-ink text-base"><?= htmlspecialchars($cat['name']) ?></h2>
-        <?php if (empty($catDishes)): ?>
-          <p class="rounded-xl bg-paper px-3 py-3 text-sm text-muted">No dishes on this list.</p>
-        <?php else: ?>
-          <div class="space-y-2">
-            <?php foreach ($catDishes as $item): 
-              $isAvail = !empty($item['is_available']);
-            ?>
-              <div class="flex items-center justify-between gap-3 rounded-xl bg-paper px-3 py-2">
-                <div class="min-w-0">
-                  <p class="font-medium text-ink truncate"><?= htmlspecialchars($item['name']) ?></p>
-                  <p id="stock-label-<?= (int)$item['id'] ?>" class="text-xs font-semibold <?= $isAvail ? 'text-pine' : 'text-danger' ?>">
-                    <?= $isAvail ? 'In stock' : 'Sold out' ?>
-                  </p>
-                </div>
-
-                <!-- Tactile Switch Button -->
-                <button
-                  type="button"
-                  aria-pressed="<?= $isAvail ? 'true' : 'false' ?>"
-                  aria-label="<?= $isAvail ? 'Mark ' . htmlspecialchars($item['name']) . ' sold out' : 'Put ' . htmlspecialchars($item['name']) . ' back in stock' ?>"
-                  onclick="toggleStock(<?= (int)$item['id'] ?>, '<?= htmlspecialchars(addslashes($item['name'])) ?>', this)"
-                  class="tap relative flex h-11 w-[4.5rem] shrink-0 items-center rounded-full border px-1 <?= $isAvail ? 'border-pine bg-pine' : 'border-line bg-card' ?>"
-                >
-                  <span class="stock-dot block h-8 w-8 rounded-full shadow <?= $isAvail ? 'ml-auto bg-invert' : 'ml-0 bg-ink' ?>"></span>
-                </button>
-              </div>
-            <?php endforeach; ?>
+    <div class="space-y-6">
+      <?php foreach ($categories as $cat):
+        $catDishes = array_filter($items, fn($i) => (int)$i['category_id'] === (int)$cat['id']);
+      ?>
+        <div class="overflow-hidden rounded-3xl border border-line bg-card shadow-card">
+          <div class="bg-gradient-to-r from-pine/15 via-pine/5 to-transparent px-6 py-3.5 border-b border-line flex items-center justify-between">
+            <h2 class="font-extrabold text-base text-ink flex items-center gap-2">
+              <span>📁 <?= htmlspecialchars($cat['name']) ?></span>
+              <span class="text-xs font-bold text-muted bg-paper px-2.5 py-0.5 rounded-full border border-line/60"><?= count($catDishes) ?> items</span>
+            </h2>
           </div>
-        <?php endif; ?>
-      </div>
-    <?php endforeach; ?>
+
+          <?php if (empty($catDishes)): ?>
+            <div class="p-6 text-center text-xs font-semibold text-muted">No dishes in this category.</div>
+          <?php else: ?>
+            <div class="p-4 grid gap-3 sm:grid-cols-2">
+              <?php foreach ($catDishes as $item):
+                $isAvail = !empty($item['is_available']);
+              ?>
+                <div class="flex items-center justify-between gap-3 rounded-2xl bg-paper/80 p-3.5 border border-line/60 transition-all hover:bg-paper">
+                  <div class="min-w-0 flex-1">
+                    <p class="font-bold text-sm text-ink truncate"><?= htmlspecialchars($item['name']) ?></p>
+                    <p id="stock-label-<?= (int)$item['id'] ?>" class="text-xs font-bold mt-0.5 <?= $isAvail ? 'text-pine' : 'text-red-600' ?>">
+                      <?= $isAvail ? '● In stock' : '○ Sold out' ?>
+                    </p>
+                  </div>
+
+                  <!-- Tactile Switch Button -->
+                  <button
+                    type="button"
+                    aria-pressed="<?= $isAvail ? 'true' : 'false' ?>"
+                    aria-label="<?= $isAvail ? 'Mark ' . htmlspecialchars($item['name']) . ' sold out' : 'Put ' . htmlspecialchars($item['name']) . ' back in stock' ?>"
+                    onclick="toggleStock(<?= (int)$item['id'] ?>, '<?= htmlspecialchars(addslashes($item['name'])) ?>', this)"
+                    class="tap relative flex h-11 w-20 shrink-0 items-center rounded-full border p-1 transition-colors duration-200 cursor-pointer <?= $isAvail ? 'border-pine bg-pine' : 'border-line bg-card' ?>"
+                  >
+                    <span class="stock-dot flex h-9 w-9 items-center justify-center rounded-full shadow-md font-extrabold text-xs transition-all duration-200 <?= $isAvail ? 'ml-auto bg-white text-pine' : 'ml-0 bg-ink text-canvas' ?>">
+                      <?= $isAvail ? 'ON' : 'OFF' ?>
+                    </span>
+                  </button>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
   <?php endif; ?>
 </section>
 

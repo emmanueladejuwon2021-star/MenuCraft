@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'role' => 'guest'
         ]);
         if ($res['ok']) {
-            flash('ok', 'Guest account created. You can order now.');
+            flash('ok', 'Guest account created! You can now place orders.');
             header('Location: ' . (cart_count() > 0 ? 'plate.php' : 'menu.php'));
             exit;
         } else {
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user']['name'] = $name;
             $_SESSION['user']['phone'] = $phone;
             $currentUser = $_SESSION['user'];
-            flash('ok', 'Saved!');
+            flash('ok', 'Profile details updated!');
             header('Location: guest-account.php');
             exit;
         }
@@ -70,101 +70,124 @@ $mode = $_GET['mode'] ?? 'signin';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-enter mx-auto max-w-lg space-y-4">
+<section class="page-enter mx-auto max-w-lg space-y-6 pb-16">
+
   <?php if ($isGuest && $currentUser): ?>
     <!-- Signed-in Profile View -->
-    <form method="POST" action="guest-account.php" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="update" />
-      <div>
-        <h1 class="text-lg font-semibold text-ink">Your account</h1>
-        <p class="mt-1 text-sm text-muted">Signed in as <?= htmlspecialchars($currentUser['email']) ?>. The kitchen uses this name on your ticket.</p>
+    <div class="overflow-hidden rounded-3xl border border-line bg-card shadow-card">
+      <div class="bg-gradient-to-r from-pine/15 via-pine/5 to-transparent px-6 py-6 border-b border-line">
+        <span class="text-xs font-bold uppercase tracking-wider text-pine">👤 Registered Guest</span>
+        <h1 class="mt-1 text-2xl font-extrabold text-ink">My Profile</h1>
+        <p class="mt-1 text-xs text-muted">Signed in as <?= htmlspecialchars($currentUser['email']) ?></p>
       </div>
 
-      <?php if ($error !== ''): ?>
-        <p class="rounded-xl bg-card border border-line p-3 text-sm text-danger"><?= htmlspecialchars($error) ?></p>
-      <?php endif; ?>
+      <form method="POST" action="guest-account.php" class="p-6 space-y-4">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="update" />
 
-      <label class="block text-sm font-medium text-ink">
-        Your name
-        <input required type="text" name="name" value="<?= htmlspecialchars($currentUser['name']) ?>" class="field mt-1" />
-      </label>
+        <?php if ($error !== ''): ?>
+          <div class="rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 p-3 text-xs font-bold text-red-600">
+            <?= htmlspecialchars($error) ?>
+          </div>
+        <?php endif; ?>
 
-      <label class="block text-sm font-medium text-ink">
-        Email
-        <input type="email" value="<?= htmlspecialchars($currentUser['email']) ?>" disabled class="field mt-1 opacity-70" />
-      </label>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Full Name</label>
+          <input required type="text" name="name" value="<?= htmlspecialchars($currentUser['name']) ?>" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+        </div>
 
-      <label class="block text-sm font-medium text-ink">
-        Phone
-        <input type="text" name="phone" value="<?= htmlspecialchars($currentUser['phone'] ?? '') ?>" placeholder="Optional" class="field mt-1" />
-      </label>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Email Address</label>
+          <input type="email" value="<?= htmlspecialchars($currentUser['email']) ?>" disabled class="h-11 w-full rounded-2xl border border-line bg-paper/50 px-4 text-sm font-medium text-muted cursor-not-allowed" />
+        </div>
 
-      <button type="submit" class="tap h-11 w-full rounded-full bg-pine text-sm font-semibold text-invert">
-        Save details
-      </button>
-    </form>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Phone Number</label>
+          <input type="text" name="phone" value="<?= htmlspecialchars($currentUser['phone'] ?? '') ?>" placeholder="e.g. 08012345678" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+        </div>
 
-    <a href="logout.php" class="tap inline-flex items-center justify-center h-11 w-full rounded-full border border-line bg-card text-sm font-medium text-ink">
-      Sign out
-    </a>
+        <div class="pt-2 space-y-2">
+          <button type="submit" class="tap flex h-12 w-full items-center justify-center gap-2 rounded-full bg-pine font-bold text-sm text-white shadow-soft transition-transform active:scale-95">
+            Save Details
+          </button>
+
+          <a href="logout.php" class="tap flex h-11 w-full items-center justify-center rounded-full border border-line bg-paper text-xs font-bold text-red-600 hover:bg-red-50">
+            Sign Out
+          </a>
+        </div>
+      </form>
+    </div>
+
   <?php else: ?>
+
     <!-- Guest Auth Form (Sign In / Sign Up) -->
-    <form method="POST" action="guest-account.php?mode=<?= htmlspecialchars($mode) ?>" class="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="<?= $mode === 'signup' ? 'signup' : 'login' ?>" />
+    <div class="overflow-hidden rounded-3xl border border-line bg-card shadow-card">
 
-      <div>
-        <h1 class="text-lg font-semibold text-ink"><?= $mode === 'signup' ? 'Create your account' : 'Sign in' ?></h1>
-        <p class="mt-1 text-sm text-muted">An account is optional. It keeps your name on the ticket so you can follow the kitchen.</p>
+      <div class="p-6 border-b border-line space-y-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-pine">👋 Guest Portal</span>
+          <h1 class="mt-1 text-2xl font-extrabold text-ink"><?= $mode === 'signup' ? 'Create Guest Account' : 'Welcome Back' ?></h1>
+          <p class="mt-1 text-xs text-muted">Sign in or create an account to easily save your orders and profile details.</p>
+        </div>
+
+        <!-- Mode switcher tabs -->
+        <div class="grid grid-cols-2 gap-1 rounded-full bg-paper p-1 border border-line">
+          <a href="guest-account.php?mode=signin" class="tap inline-flex h-9 items-center justify-center rounded-full text-xs font-bold transition-all <?= $mode === 'signin' ? 'bg-pine text-white shadow-soft' : 'text-muted hover:text-ink' ?>">
+            Sign In
+          </a>
+          <a href="guest-account.php?mode=signup" class="tap inline-flex h-9 items-center justify-center rounded-full text-xs font-bold transition-all <?= $mode === 'signup' ? 'bg-pine text-white shadow-soft' : 'text-muted hover:text-ink' ?>">
+            Create Account
+          </a>
+        </div>
       </div>
 
-      <!-- Mode switcher tabs -->
-      <div class="grid grid-cols-2 gap-2 rounded-full bg-paper p-1">
-        <a href="guest-account.php?mode=signin" class="tap inline-flex items-center justify-center rounded-full text-sm font-medium <?= $mode === 'signin' ? 'bg-pine text-invert' : 'text-muted' ?>">
-          Sign in
-        </a>
-        <a href="guest-account.php?mode=signup" class="tap inline-flex items-center justify-center rounded-full text-sm font-medium <?= $mode === 'signup' ? 'bg-pine text-invert' : 'text-muted' ?>">
-          Create account
-        </a>
-      </div>
+      <form method="POST" action="guest-account.php?mode=<?= htmlspecialchars($mode) ?>" class="p-6 space-y-4">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="<?= $mode === 'signup' ? 'signup' : 'login' ?>" />
 
-      <?php if ($error !== ''): ?>
-        <p class="rounded-xl bg-card border border-line p-3 text-sm text-danger"><?= htmlspecialchars($error) ?></p>
-      <?php endif; ?>
+        <?php if ($error !== ''): ?>
+          <div class="rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 p-3 text-xs font-bold text-red-600">
+            <?= htmlspecialchars($error) ?>
+          </div>
+        <?php endif; ?>
 
-      <?php if ($mode === 'signup'): ?>
-        <label class="block text-sm font-medium text-ink">
-          Your name
-          <input required type="text" name="name" class="field mt-1" placeholder="Jane Doe" />
-        </label>
-      <?php endif; ?>
+        <?php if ($mode === 'signup'): ?>
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Full Name</label>
+            <input required type="text" name="name" placeholder="e.g. Alex Johnson" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+          </div>
+        <?php endif; ?>
 
-      <label class="block text-sm font-medium text-ink">
-        Email
-        <input required type="email" name="email" class="field mt-1" placeholder="jane@example.com" />
-      </label>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Email Address</label>
+          <input required type="email" name="email" placeholder="alex@example.com" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+        </div>
 
-      <?php if ($mode === 'signup'): ?>
-        <label class="block text-sm font-medium text-ink">
-          Phone
-          <input type="text" name="phone" class="field mt-1" placeholder="Optional" />
-        </label>
-      <?php endif; ?>
+        <?php if ($mode === 'signup'): ?>
+          <div>
+            <label class="block text-xs font-bold text-ink mb-1">Phone Number <span class="text-muted font-normal">(Optional)</span></label>
+            <input type="text" name="phone" placeholder="08012345678" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+          </div>
+        <?php endif; ?>
 
-      <label class="block text-sm font-medium text-ink">
-        Password
-        <input required type="password" name="password" minlength="6" class="field mt-1" placeholder="••••••••" />
-      </label>
+        <div>
+          <label class="block text-xs font-bold text-ink mb-1">Password</label>
+          <input required type="password" name="password" minlength="6" placeholder="••••••••" class="h-11 w-full rounded-2xl border border-line bg-paper px-4 text-sm font-medium text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/20" />
+        </div>
 
-      <button type="submit" class="tap h-11 w-full rounded-full bg-pine text-sm font-semibold text-invert">
-        <?= $mode === 'signup' ? 'Create account' : 'Sign in' ?>
-      </button>
+        <div class="pt-2 space-y-3">
+          <button type="submit" class="tap flex h-12 w-full items-center justify-center gap-2 rounded-full bg-pine font-bold text-sm text-white shadow-soft transition-transform active:scale-95">
+            <span><?= $mode === 'signup' ? 'Create Account' : 'Sign In' ?></span>
+            <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+          </button>
 
-      <a href="menu.php" class="tap inline-flex w-full items-center justify-center text-sm text-muted">
-        Continue without an account
-      </a>
-    </form>
+          <a href="menu.php" class="tap flex h-11 w-full items-center justify-center rounded-full border border-line bg-paper text-xs font-bold text-muted hover:text-ink">
+            Continue as Guest without Account &rarr;
+          </a>
+        </div>
+      </form>
+    </div>
+
   <?php endif; ?>
 </section>
 
