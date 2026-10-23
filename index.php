@@ -81,9 +81,9 @@ require_once __DIR__ . '/includes/header.php';
           <div class="absolute top-4 left-4 rounded-full bg-black/60 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
             🔥 House Spotlight
           </div>
-          <?php if (!empty($spotlight['prep_time_minutes'])): ?>
+          <?php if (!empty($spotlight['prep_time'])): ?>
             <div class="absolute bottom-4 right-4 rounded-full bg-card/90 px-3 py-1 text-xs font-bold text-ink shadow-sm backdrop-blur-md">
-              ⏱️ <?= (int)$spotlight['prep_time_minutes'] ?> mins
+              ⏱️ <?= (int)$spotlight['prep_time'] ?> mins
             </div>
           <?php endif; ?>
         </div>
@@ -92,9 +92,9 @@ require_once __DIR__ . '/includes/header.php';
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-2xl font-bold text-ink leading-snug"><?= htmlspecialchars($spotlight['name']) ?></h2>
-              <?php if (!empty($spotlight['dietary_tags'])): ?>
+              <?php if (!empty($spotlight['tags'])): ?>
                 <div class="mt-1.5 flex flex-wrap gap-1.5">
-                  <?php foreach (explode(',', $spotlight['dietary_tags']) as $tag): ?>
+                  <?php foreach (explode(',', $spotlight['tags']) as $tag): ?>
                     <span class="rounded-full bg-paper px-2.5 py-0.5 text-[11px] font-semibold text-muted border border-line">
                       <?= htmlspecialchars(trim($tag)) ?>
                     </span>

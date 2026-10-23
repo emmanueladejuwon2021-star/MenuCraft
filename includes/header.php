@@ -9,7 +9,7 @@ $db = getDb();
 $settings = get_restaurant_settings($db);
 $plateCount = cart_count();
 $flash = get_flash();
-$currentPage = basename($_SERVER['PHP_SCRIPT'] ?? $_SERVER['SCRIPT_NAME'] ?? '');
+$currentPage = basename($_SERVER['PHP_SELF'] ?? $_SERVER['SCRIPT_NAME'] ?? '');
 $isStaffUser = is_staff();
 $currentUser = get_current_user_session();
 ?>
@@ -51,8 +51,8 @@ $currentUser = get_current_user_session();
       }
     }
   </script>
-  <link rel="stylesheet" href="assets/css/app.css">
-  <script src="assets/js/app.js" defer></script>
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <script src="/assets/js/app.js" defer></script>
 </head>
 <body class="flex min-h-full flex-col bg-canvas text-ink antialiased selection:bg-pine selection:text-white">
 
