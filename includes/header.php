@@ -9,7 +9,7 @@ $db = getDb();
 $settings = get_restaurant_settings($db);
 $plateCount = cart_count();
 $flash = get_flash();
-$currentPage = basename($_SERVER['PHP_SCRIPT'] ?? $_SERVER['SCRIPT_NAME'] ?? '');
+$currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
 $isStaffUser = is_staff();
 $currentUser = get_current_user_session();
 ?>
