@@ -28,7 +28,7 @@ $visibleItems = array_filter($items, function($item) use ($query, $selectedCateg
     if ($selectedCategory !== 'all' && (int)$item['category_id'] !== (int)$selectedCategory) {
         return false;
     }
-    $tags = array_map('trim', explode(',', $item['dietary_tags'] ?? $item['tags'] ?? ''));
+    $tags = array_map('trim', explode(',', $item['tags'] ?? ''));
     if ($selectedTag !== 'all' && !in_array($selectedTag, $tags, true)) {
         return false;
     }
@@ -120,7 +120,7 @@ require_once __DIR__ . '/includes/header.php';
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <?php foreach ($visibleItems as $item): ?>
         <?php
-          $tags = array_filter(array_map('trim', explode(',', $item['dietary_tags'] ?? $item['tags'] ?? '')));
+          $tags = array_filter(array_map('trim', explode(',', $item['tags'] ?? '')));
           $isAvailable = !empty($item['is_available']);
         ?>
         <article class="group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-card shadow-soft transition-all hover:border-pine/40 hover:shadow-card">
@@ -138,9 +138,9 @@ require_once __DIR__ . '/includes/header.php';
               </div>
             <?php endif; ?>
 
-            <?php if (!empty($item['prep_time_minutes']) && $isAvailable): ?>
+            <?php if (!empty($item['prep_time']) && $isAvailable): ?>
               <div class="absolute bottom-3 right-3 rounded-full bg-card/90 px-2.5 py-0.5 text-[11px] font-bold text-ink backdrop-blur-md shadow-xs">
-                ⏱️ <?= (int)$item['prep_time_minutes'] ?>m
+                ⏱️ <?= (int)$item['prep_time'] ?>m
               </div>
             <?php endif; ?>
           </div>
