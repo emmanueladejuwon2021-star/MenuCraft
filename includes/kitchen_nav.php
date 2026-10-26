@@ -4,7 +4,7 @@
  * @var string $title
  * @var string $hint
  */
-$currentScript = basename($_SERVER['PHP_SCRIPT'] ?? $_SERVER['SCRIPT_NAME'] ?? '');
+$currentScript = basename($_SERVER['SCRIPT_NAME'] ?? '');
 ?>
 <div class="mb-6 space-y-4 rounded-3xl border border-pine/30 bg-card/90 p-4 shadow-soft">
   <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

@@ -55,9 +55,11 @@
         &copy; <?= date('Y') ?> Powered by <span class="font-semibold text-ink">MenuCraft</span>. Fresh food, zero wait.
       </p>
       <div class="flex items-center gap-4 text-xs font-semibold">
-        <a href="iyabisi/kitchenlock/index.php" class="text-muted hover:text-pine transition-colors">
-          Kitchen Staff Entrance &rarr;
-        </a>
+        <?php if ($isStaffUser): ?>
+          <a href="iyabisi/kitchenlock/index.php" class="text-muted hover:text-pine transition-colors">
+            Kitchen Staff Entrance &rarr;
+          </a>
+        <?php endif; ?>
       </div>
     </div>
   </footer>
