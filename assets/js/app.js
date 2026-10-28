@@ -1,4 +1,4 @@
-// assets/js/app.js - MenuCraft Client Interactivity
+// assets/js/app.js - MenuCraft Client Interactivity (Improved)
 
 (function() {
   // Theme handling
@@ -13,6 +13,7 @@
     const isDark = document.documentElement.classList.toggle('dark');
     const theme = isDark ? 'dark' : 'light';
     localStorage.setItem('menucraft_theme', theme);
+    // Optional: update aria or other
   };
 
   // Toast Notification System
@@ -38,7 +39,9 @@
 
   // Cart / Plate interactions via AJAX
   window.addToPlate = async function(dishId, dishName, btnElement) {
+    let originalText = '';
     if (btnElement) {
+      originalText = btnElement.textContent.trim();
       btnElement.disabled = true;
       btnElement.textContent = 'Adding…';
     }
@@ -66,7 +69,7 @@
     } finally {
       if (btnElement) {
         btnElement.disabled = false;
-        btnElement.textContent = 'Add to plate';
+        btnElement.textContent = originalText || 'Add to plate';
       }
     }
   };
@@ -88,7 +91,7 @@
     });
   }
 
-  // Stock switch toggle via AJAX
+  // Stock switch toggle via AJAX (improved revert)
   window.toggleStock = async function(id, name, btn) {
     const isAvailable = btn.getAttribute('aria-pressed') === 'true';
     const nextStatus = !isAvailable;
@@ -143,7 +146,10 @@
         // Revert on failure
         btn.setAttribute('aria-pressed', originalPressed ? 'true' : 'false');
         btn.className = originalClass;
-        if (dot) dot.className = originalDotClass;
+        if (dot) {
+          dot.className = originalDotClass;
+          dot.textContent = originalPressed ? 'ON' : 'OFF';
+        }
         if (label) {
           label.textContent = originalLabelText;
           label.className = originalLabelClass;
@@ -154,7 +160,10 @@
       // Revert on network error
       btn.setAttribute('aria-pressed', originalPressed ? 'true' : 'false');
       btn.className = originalClass;
-      if (dot) dot.className = originalDotClass;
+      if (dot) {
+        dot.className = originalDotClass;
+        dot.textContent = originalPressed ? 'ON' : 'OFF';
+      }
       if (label) {
         label.textContent = originalLabelText;
         label.className = originalLabelClass;
