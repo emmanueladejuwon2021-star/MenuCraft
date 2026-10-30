@@ -1,0 +1,198 @@
+/* MenuCraft Theme Variables & Custom Styles */
+
+:root {
+  /* Light mode - warm restaurant palette */
+  --color-pine: #1a7f5a;
+  --color-pine-hover: #15684a;
+  --color-pine-light: #e6f4ef;
+  --color-clay: #c45c26;
+  --bg-canvas: #faf8f5;
+  --bg-card: #ffffff;
+  --bg-paper: #f3efe8;
+  --border-line: #e8e2d8;
+  --text-ink: #1c1917;
+  --text-muted: #6b6560;
+  --color-invert: #ffffff;
+  --shadow-soft: 0 4px 14px -2px rgba(28, 25, 23, 0.08), 0 2px 6px -1px rgba(28, 25, 23, 0.04);
+  --shadow-card: 0 10px 28px -6px rgba(28, 25, 23, 0.1), 0 4px 10px -2px rgba(28, 25, 23, 0.06);
+}
+
+.dark {
+  /* Dark mode - deep, calm, high contrast */
+  --color-pine: #34d399;
+  --color-pine-hover: #10b981;
+  --color-pine-light: #064e3b;
+  --color-clay: #fb923c;
+  --bg-canvas: #0c0a09;
+  --bg-card: #1c1917;
+  --bg-paper: #292524;
+  --border-line: #3f3a36;
+  --text-ink: #fafaf9;
+  --text-muted: #a8a29e;
+  --color-invert: #0c0a09;
+  --shadow-soft: 0 4px 14px -2px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 10px 28px -6px rgba(0, 0, 0, 0.5);
+}
+
+/* Base improvements */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-feature-settings: "ss01", "ss02";
+}
+
+/* Page enter animation */
+.page-enter {
+  animation: pageEnter 0.4s ease-out;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tap feedback */
+.tap {
+  transition: transform 0.1s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.tap:active {
+  transform: scale(0.97);
+}
+
+/* Toast notifications */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 20rem;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  #toast-container {
+    bottom: 5.5rem; /* above mobile nav */
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 1rem;
+  background: var(--bg-card);
+  color: var(--text-ink);
+  border: 1px solid var(--border-line);
+  box-shadow: var(--shadow-card);
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: toastIn 0.25s ease-out;
+}
+
+.toast.ok {
+  border-color: var(--color-pine);
+  background: var(--color-pine-light);
+  color: var(--color-pine);
+}
+
+.dark .toast.ok {
+  background: #064e3b;
+  color: #a7f3d0;
+}
+
+.toast.error {
+  border-color: #ef4444;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.dark .toast.error {
+  background: #450a0a;
+  color: #fecaca;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Loading state for buttons */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  color: white;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Better focus rings */
+:focus-visible {
+  outline: 2px solid var(--color-pine);
+  outline-offset: 2px;
+}
+
+/* Hide number input spinners if any */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Ensure images don't break layout */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mobile bottom nav spacing already handled in footer */
+
+/* Danger / sold-out color */
+.text-danger {
+  color: #dc2626;
+}
+.dark .text-danger {
+  color: #f87171;
+}
+
+/* Stock switch polish */
+.stock-dot {
+  transition: margin-left 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
