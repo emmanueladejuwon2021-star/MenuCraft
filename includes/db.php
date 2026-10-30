@@ -24,11 +24,13 @@ function getDb(): PDO {
 
     ensureSchema($pdo);
 
-    // Clean up old sessions (older than 30 days) occasionally
-    try {
-        $pdo->exec("DELETE FROM sessions WHERE created_at < datetime('now', '-30 days')");
-    } catch (Exception $e) {
-        // Ignore cleanup errors
+    // Clean up old sessions (older than 30 days) occasionally (1% of requests to reduce write contention)
+    if (mt_rand(1, 100) === 1) {
+        try {
+            $pdo->exec("DELETE FROM sessions WHERE created_at < datetime('now', '-30 days')");
+        } catch (Exception $e) {
+            // Ignore cleanup errors
+        }
     }
 
     return $pdo;
@@ -78,7 +80,8 @@ function ensureSchema(PDO $db): void {
     $db->exec("CREATE TABLE IF NOT EXISTS sessions (
         token TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )");
 
     $db->exec("CREATE TABLE IF NOT EXISTS orders (
@@ -100,6 +103,13 @@ function ensureSchema(PDO $db): void {
         id INTEGER PRIMARY KEY CHECK (id = 1),
         user_id INTEGER NOT NULL DEFAULT 0
     )");
+
+    // Add indexes for common query patterns
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at)");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_orders_view_token ON orders(view_token)");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_menu_items_category ON menu_items(category_id)");
+    $db->exec("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)");
 
     // Initialize default restaurant settings if not set
     $stmt = $db->query("SELECT id FROM restaurant_settings WHERE id = 1");
