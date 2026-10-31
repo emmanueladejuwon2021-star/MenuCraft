@@ -154,7 +154,15 @@
 
       if (res.ok && data.ok) {
         showToast(data.message || (newAvailable ? `${name} marked in stock` : `${name} marked sold out`), 'ok');
-        setTimeout(() => location.reload(), 600);
+        // Update button state without full reload for snappier UX
+        button.setAttribute('data-available', newAvailable);
+        button.classList.toggle('bg-pine', newAvailable === 1);
+        button.classList.toggle('bg-red-600', newAvailable === 0);
+        // Optional: update text if present
+        const label = button.querySelector('.switch-label');
+        if (label) label.textContent = newAvailable ? 'In Stock' : 'Sold Out';
+        button.classList.remove('btn-loading');
+        button.disabled = false;
       } else {
         showToast(data.message || 'Could not update stock.', 'error');
         button.classList.remove('btn-loading');
@@ -198,7 +206,7 @@
         return;
       }
       const link = document.createElement('a');
-      link.download = 'menucraft-qr.png';
+      link.download = 'menucraft-qr.png');
       link.href = canvas.toDataURL('image/png');
       link.click();
       showToast('QR code downloaded', 'ok');
