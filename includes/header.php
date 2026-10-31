@@ -17,8 +17,10 @@ $currentUser = get_current_user_session();
 <html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title><?= htmlspecialchars($settings['restaurant_name']) ?> — Digital Menu & Ordering</title>
+  <meta name="description" content="Live digital menu and ordering for <?= htmlspecialchars($settings['restaurant_name']) ?>. Order from your table with QR codes.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
   <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()) ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
