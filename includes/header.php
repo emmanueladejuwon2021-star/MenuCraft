@@ -55,6 +55,7 @@ $currentUser = get_current_user_session();
   <script src="assets/js/app.js" defer></script>
 </head>
 <body class="flex min-h-full flex-col bg-canvas text-ink antialiased selection:bg-pine selection:text-white">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- Main Navigation Header -->
   <header class="sticky top-0 z-40 border-b border-line bg-card/85 backdrop-blur-md transition-colors">
@@ -152,4 +153,4 @@ $currentUser = get_current_user_session();
   <?php endif; ?>
 
   <!-- Main Content Body -->
-  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+  <main id="main-content" class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
