@@ -38,9 +38,10 @@ function money(?string $symbol, $value): string {
 }
 
 function clean_label($value, int $max = 0): string {
+    // Fallback if mbstring not available
     $str = trim((string)($value ?? ''));
-    if ($max > 0 && mb_strlen($str) > $max) {
-        $str = mb_substr($str, 0, $max);
+    if ($max > 0 && (function_exists("mb_strlen") ? mb_strlen($str) > $max : strlen($str) > $max)) {
+        $str = function_exists("mb_substr") ? mb_substr($str, 0, $max) : substr($str, 0, $max);
     }
     return $str;
 }
