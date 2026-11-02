@@ -222,3 +222,61 @@ img {
 .dark .text-muted {
   color: #d6d3d1;
 }
+
+/* Additional improvements for UI/UX polish */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, .toast, .tap, .stock-dot {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Better scrollbar for category tabs */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Improved form focus and inputs */
+input, textarea, select {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Prevent layout shift on images */
+img[src=""] {
+  display: none;
+}
+
+/* Stronger primary buttons */
+.btn-primary {
+  background: var(--color-pine);
+  color: white;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover {
+  background: var(--color-pine-hover);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Accessibility: skip link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-pine);
+  color: white;
+  padding: 8px 16px;
+  z-index: 1000;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}
