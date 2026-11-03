@@ -19,7 +19,9 @@ function getDb(): PDO {
         $pdo->exec('PRAGMA foreign_keys = ON;');
         $pdo->exec('PRAGMA journal_mode = WAL;');
     } catch (PDOException $e) {
-        die("Database connection failed: " . htmlspecialchars($e->getMessage()));
+        http_response_code(500);
+        echo "<!DOCTYPE html><html><head><title>MenuCraft Error</title><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head><body style=\"font-family:system-ui;padding:2rem;text-align:center;\"><h1>Kitchen is temporarily closed</h1><p>Database connection failed. Please check the server configuration or contact support.</p><p style=\"color:#666;font-size:0.9rem;\">".htmlspecialchars($e->getMessage())."</p></body></html>";
+        exit;
     }
 
     ensureSchema($pdo);
