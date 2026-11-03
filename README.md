@@ -1,5 +1,7 @@
 # MenuCraft (PHP Edition)
 
+> **Note:** This is a PHP + SQLite application. It requires a PHP host (Vercel, Render, VPS, etc.). GitHub Pages cannot run the backend.
+
 A digital restaurant live menu, ordering system, and kitchen management application built in PHP and SQLite.
 
 Kitchen staff can mark dishes sold out, managers can change prices in bulk, and guests can open the live menu from a table QR code.
