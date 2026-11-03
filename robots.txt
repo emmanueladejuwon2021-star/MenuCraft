@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /iyabisi/
+Disallow: /orders.php
+Disallow: /dishes.php
+Disallow: /stock.php
+Disallow: /pricing.php
+Disallow: /account.php
+Disallow: /share.php
+Disallow: /menu.db
