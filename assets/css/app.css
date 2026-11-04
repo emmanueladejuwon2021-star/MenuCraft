@@ -266,17 +266,21 @@ img[src=""] {
   transform: scale(0.98);
 }
 
-/* Accessibility: skip link */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--color-pine);
-  color: white;
-  padding: 8px 16px;
-  z-index: 1000;
-  transition: top 0.2s;
+/* Better mobile bottom nav active state */
+nav.sticky a.text-pine {
+  font-weight: 700;
 }
-.skip-link:focus {
-  top: 0;
+
+/* Ensure toast doesn't cover bottom nav on mobile */
+@media (max-width: 640px) {
+  #toast-container {
+    bottom: 4.5rem;
+  }
+}
+
+/* Improved focus for keyboard users */
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 2px solid var(--color-pine);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
 }
