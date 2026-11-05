@@ -212,9 +212,3 @@
     initTheme();
   }
 })();
-
-// Additional robustness
-document.addEventListener('DOMContentLoaded', function() {
-  // Ensure theme applies even if deferred
-  initTheme();
-});

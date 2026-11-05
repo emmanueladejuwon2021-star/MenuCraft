@@ -280,3 +280,48 @@ img[src=""] {
 .skip-link:focus {
   top: 0;
 }
+
+/* Additional UI/UX improvements for MenuCraft */
+.dish-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dish-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Better mobile touch targets */
+@media (max-width: 768px) {
+  .tap, button, a[role="button"] {
+    min-height: 48px;
+  }
+  input, select, textarea {
+    font-size: 16px; /* prevent zoom on iOS */
+  }
+}
+
+/* Improved focus for keyboard nav */
+:focus-visible {
+  outline: 3px solid var(--color-pine);
+  outline-offset: 3px;
+}
+
+/* Skeleton or loading placeholder */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-paper) 25%, var(--border-line) 50%, var(--bg-paper) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Better sold-out overlay */
+.sold-out-overlay {
+  background: rgba(0,0,0,0.6);
+}
+
+/* Currency and price highlight */
+.price {
+  font-variant-numeric: tabular-nums;
+}
