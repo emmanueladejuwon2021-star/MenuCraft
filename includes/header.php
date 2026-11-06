@@ -153,4 +153,4 @@ $currentUser = get_current_user_session();
   <?php endif; ?>
 
   <!-- Main Content Body -->
-  <main id="main-content" class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+  <main id="main-content" class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-8 md:pb-6">

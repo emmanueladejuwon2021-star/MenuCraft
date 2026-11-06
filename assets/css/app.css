@@ -73,7 +73,7 @@ body {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  z-index: 100;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -279,4 +279,24 @@ img[src=""] {
 }
 .skip-link:focus {
   top: 0;
+}
+
+/* Ensure mobile content isn't hidden under sticky bottom nav */
+@media (max-width: 767px) {
+  main {
+    padding-bottom: 6rem !important;
+  }
+  .fixed.bottom-16 {
+    bottom: 4.5rem;
+  }
+}
+
+/* Better focus states for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-pine);
+  outline-offset: 2px;
 }
