@@ -82,6 +82,7 @@ require_once __DIR__ . '/includes/header.php';
                   <!-- Tactile Switch Button -->
                   <button
                     type="button"
+                    data-available="<?= $isAvail ? '1' : '0' ?>"
                     aria-pressed="<?= $isAvail ? 'true' : 'false' ?>"
                     aria-label="<?= $isAvail ? 'Mark ' . htmlspecialchars($item['name']) . ' sold out' : 'Put ' . htmlspecialchars($item['name']) . ' back in stock' ?>"
                     onclick="toggleStock(<?= (int)$item['id'] ?>, '<?= htmlspecialchars(addslashes($item['name'])) ?>', this)"
