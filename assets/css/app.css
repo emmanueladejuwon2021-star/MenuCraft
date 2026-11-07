@@ -194,7 +194,7 @@ img {
 
 /* Stock switch polish */
 .stock-dot {
-  transition: margin-left 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition: margin-left 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 /* Additional UI polish for better usability */
@@ -299,4 +299,9 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--color-pine);
   outline-offset: 2px;
+}
+
+/* Stock switch hover feedback */
+button[data-available]:hover {
+  filter: brightness(1.05);
 }
