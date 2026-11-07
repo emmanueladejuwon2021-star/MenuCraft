@@ -154,7 +154,31 @@
 
       if (res.ok && data.ok) {
         showToast(data.message || (newAvailable ? `${name} marked in stock` : `${name} marked sold out`), 'ok');
-        setTimeout(() => location.reload(), 600);
+        // Update UI without full reload for better UX
+        button.setAttribute('data-available', newAvailable ? '1' : '0');
+        button.setAttribute('aria-pressed', newAvailable ? 'true' : 'false');
+        button.classList.toggle('bg-pine', newAvailable === 1);
+        button.classList.toggle('border-pine', newAvailable === 1);
+        button.classList.toggle('bg-card', newAvailable === 0);
+        button.classList.toggle('border-line', newAvailable === 0);
+        const dot = button.querySelector('.stock-dot');
+        if (dot) {
+          dot.classList.toggle('ml-auto', newAvailable === 1);
+          dot.classList.toggle('ml-0', newAvailable === 0);
+          dot.classList.toggle('bg-white', newAvailable === 1);
+          dot.classList.toggle('text-pine', newAvailable === 1);
+          dot.classList.toggle('bg-ink', newAvailable === 0);
+          dot.classList.toggle('text-canvas', newAvailable === 0);
+          dot.textContent = newAvailable ? 'ON' : 'OFF';
+        }
+        const label = document.getElementById(`stock-label-${id}`);
+        if (label) {
+          label.textContent = newAvailable ? '\u25cf In stock' : '\u25cb Sold out';
+          label.classList.toggle('text-pine', newAvailable === 1);
+          label.classList.toggle('text-danger', newAvailable === 0);
+        }
+        button.classList.remove('btn-loading');
+        button.disabled = false;
       } else {
         showToast(data.message || 'Could not update stock.', 'error');
         button.classList.remove('btn-loading');
@@ -211,10 +235,7 @@
   if (document.readyState !== 'loading') {
     initTheme();
   }
-})();
 
-// Additional robustness
-document.addEventListener('DOMContentLoaded', function() {
-  // Ensure theme applies even if deferred
-  initTheme();
-});
+  // Expose for any external needs
+  window.initTheme = initTheme;
+})();
