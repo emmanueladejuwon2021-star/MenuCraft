@@ -108,12 +108,9 @@ if ($query !== '') {
 $editingDish = null;
 if (!empty($_GET['edit'])) {
     $editId = (int)$_GET['edit'];
-    foreach ($items as $it) {
-        if ((int)$it['id'] === $editId) {
-            $editingDish = $it;
-            break;
-        }
-    }
+    $stmt = $db->prepare("SELECT * FROM menu_items WHERE id = ?");
+    $stmt->execute([$editId]);
+    $editingDish = $stmt->fetch() ?: null;
 }
 $showForm = isset($_GET['new']) || ($editingDish !== null);
 $allTags = ['Gluten-Free', 'Vegetarian', 'Spicy'];

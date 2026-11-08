@@ -17,6 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $allowed = ['New', 'Cooking', 'Ready', 'Served'];
 
     if ($orderId > 0 && in_array($newStatus, $allowed, true)) {
+        $current = $db->prepare("SELECT status FROM orders WHERE id = ?");
+        $current->execute([$orderId]);
+        $curStatus = $current->fetchColumn() ?: "New";
+        $transitions = ["New" => "Cooking", "Cooking" => "Ready", "Ready" => "Served"];
+        if (!isset($transitions[$curStatus]) || $transitions[$curStatus] !== $newStatus) {
+            if (is_ajax()) { json_response(["ok" => false, "message" => "Invalid status transition."], 400); }
+            flash("error", "Cannot advance to that status from current.");
+            header("Location: orders.php?filter=" . urlencode($_GET["filter"] ?? "open"));
+            exit;
+        }
         $stmt = $db->prepare("UPDATE orders SET status = ? WHERE id = ?");
         $stmt->execute([$newStatus, $orderId]);
         
