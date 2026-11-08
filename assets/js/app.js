@@ -30,6 +30,9 @@
     applyTheme(isDark ? 'light' : 'dark');
   };
 
+  // Expose for any external needs
+  window.initTheme = initTheme;
+
   // ---------- CSRF ----------
   function getCsrfToken() {
     const meta = document.querySelector('meta[name="csrf-token"]');
@@ -154,7 +157,31 @@
 
       if (res.ok && data.ok) {
         showToast(data.message || (newAvailable ? `${name} marked in stock` : `${name} marked sold out`), 'ok');
-        setTimeout(() => location.reload(), 600);
+        // Update UI without full reload for better UX
+        button.setAttribute('data-available', newAvailable ? '1' : '0');
+        button.setAttribute('aria-pressed', newAvailable ? 'true' : 'false');
+        const label = document.getElementById('stock-label-' + id);
+        if (label) {
+          label.textContent = newAvailable ? '\u25cf In stock' : '\u25cb Sold out';
+          label.className = 'text-xs font-bold mt-0.5 ' + (newAvailable ? 'text-pine' : 'text-danger');
+        }
+        // Update button classes and inner text
+        button.classList.toggle('bg-pine', newAvailable);
+        button.classList.toggle('border-pine', newAvailable);
+        button.classList.toggle('bg-card', !newAvailable);
+        button.classList.toggle('border-line', !newAvailable);
+        const dot = button.querySelector('.stock-dot');
+        if (dot) {
+          dot.textContent = newAvailable ? 'ON' : 'OFF';
+          dot.classList.toggle('ml-auto', newAvailable);
+          dot.classList.toggle('ml-0', !newAvailable);
+          dot.classList.toggle('bg-white', newAvailable);
+          dot.classList.toggle('text-pine', newAvailable);
+          dot.classList.toggle('bg-ink', !newAvailable);
+          dot.classList.toggle('text-canvas', !newAvailable);
+        }
+        button.classList.remove('btn-loading');
+        button.disabled = false;
       } else {
         showToast(data.message || 'Could not update stock.', 'error');
         button.classList.remove('btn-loading');
@@ -212,9 +239,3 @@
     initTheme();
   }
 })();
-
-// Additional robustness
-document.addEventListener('DOMContentLoaded', function() {
-  // Ensure theme applies even if deferred
-  initTheme();
-});
