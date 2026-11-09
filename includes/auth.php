@@ -159,6 +159,7 @@ function register_user(PDO $db, array $data, ?array $caller = null): array {
 
         ensure_session();
         $_SESSION['user'] = $userData;
+        session_regenerate_id(true);
 
         return ['ok' => true, 'user' => $userData];
     } catch (Exception $e) {
@@ -201,6 +202,7 @@ function login_user(PDO $db, string $email, string $password): array {
 
     ensure_session();
     $_SESSION['user'] = $userData;
+    session_regenerate_id(true);
 
     return ['ok' => true, 'user' => $userData];
 }
