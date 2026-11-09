@@ -154,7 +154,23 @@
 
       if (res.ok && data.ok) {
         showToast(data.message || (newAvailable ? `${name} marked in stock` : `${name} marked sold out`), 'ok');
-        setTimeout(() => location.reload(), 600);
+        // Update UI in place for better UX (no full reload)
+        button.setAttribute('data-available', newAvailable ? '1' : '0');
+        button.setAttribute('aria-pressed', newAvailable ? 'true' : 'false');
+        // Reset classes and reapply
+        button.className = 'tap relative flex h-11 w-20 shrink-0 items-center rounded-full border p-1 transition-colors duration-200 cursor-pointer ' + (newAvailable ? 'border-pine bg-pine' : 'border-line bg-card');
+        const dot = button.querySelector('.stock-dot');
+        if (dot) {
+          dot.className = 'stock-dot flex h-9 w-9 items-center justify-center rounded-full shadow-md font-extrabold text-xs transition-all duration-200 ' + (newAvailable ? 'ml-auto bg-white text-pine' : 'ml-0 bg-ink text-canvas');
+          dot.textContent = newAvailable ? 'ON' : 'OFF';
+        }
+        const label = document.getElementById('stock-label-' + id);
+        if (label) {
+          label.className = 'text-xs font-bold mt-0.5 ' + (newAvailable ? 'text-pine' : 'text-danger');
+          label.textContent = newAvailable ? '● In stock' : '○ Sold out';
+        }
+        button.classList.remove('btn-loading');
+        button.disabled = false;
       } else {
         showToast(data.message || 'Could not update stock.', 'error');
         button.classList.remove('btn-loading');
