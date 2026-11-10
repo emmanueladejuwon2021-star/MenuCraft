@@ -157,7 +157,7 @@ body {
   border-right-color: transparent;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
-  color: white;
+  color: var(--color-pine);
 }
 
 @keyframes spin {
