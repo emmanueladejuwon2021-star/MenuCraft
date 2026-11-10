@@ -211,10 +211,14 @@
   if (document.readyState !== 'loading') {
     initTheme();
   }
+
+  // Expose for external callers if needed
+  window.initTheme = initTheme;
 })();
 
-// Additional robustness
+// Additional robustness - call safely
 document.addEventListener('DOMContentLoaded', function() {
-  // Ensure theme applies even if deferred
-  initTheme();
+  if (typeof window.initTheme === 'function') {
+    window.initTheme();
+  }
 });
