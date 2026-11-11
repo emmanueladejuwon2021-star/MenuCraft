@@ -281,13 +281,34 @@ img[src=""] {
   top: 0;
 }
 
-/* Ensure mobile content isn't hidden under sticky bottom nav */
+/* Better mobile bottom nav clearance */
 @media (max-width: 767px) {
-  main {
-    padding-bottom: 6rem !important;
+  main, section.page-enter {
+    padding-bottom: 7rem !important;
   }
-  .fixed.bottom-16 {
-    bottom: 4.5rem;
+  #toast-container {
+    bottom: 6.5rem;
+  }
+}
+
+/* Improved card hover and tap targets */
+.group:hover .group-hover\:scale-105 {
+  transform: scale(1.05);
+}
+
+/* Stronger empty states and better spacing */
+.empty-state, .rounded-3xl.border-dashed {
+  border-style: dashed;
+  border-width: 2px;
+}
+
+/* Accessibility: larger touch targets on mobile */
+@media (max-width: 640px) {
+  a, button, .tap {
+    min-height: 48px;
+  }
+  .plate-count-badge {
+    font-size: 0.75rem;
   }
 }
 
