@@ -80,6 +80,8 @@ The database (`menu.db`) will be automatically created and seeded with sample di
 
 **Note on deployment:** This is a PHP application requiring PHP 8.1+ with the PDO SQLite extension. Deploy to Vercel (via the included vercel.json and vercel-php), Render, a VPS, or any compatible PHP host. GitHub Pages serves only static files and cannot run this PHP backend.
 
+**Note on recent improvements:** CSRF protection added to the orders API, mobile navigation spacing and touch targets refined, and general UI polish applied for better usability on kitchen tablets and phones.
+
 ---
 
 ## 🧪 Running Tests
