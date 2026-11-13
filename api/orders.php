@@ -11,6 +11,7 @@ $db = getDb();
 $currentUser = get_current_user_session();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     // Note: This endpoint is intended for the app's own frontend. Add origin/CSRF checks for public exposure.
     $raw = file_get_contents('php://input');
     $body = json_decode($raw, true) ?: $_POST;
@@ -55,25 +56,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $createdAt
         ]);
 
-        $orderId = (int)$db->lastInsertId();
-        $order = [
-            'id' => $orderId,
-            'guest_name' => $guestName,
-            'guest_email' => $guestEmail,
-            'phone' => $guestPhone,
-            'note' => $note,
-            'items' => $built['lines'],
-            'total' => $built['total'],
-            'paid' => false,
+        // Optionally clear session cart if this is from the web plate
+        if (!empty($body['clear_plate'])) {
+            clear_cart();
+        }
+
+        http_response_code(201);
+        echo json_encode([
+            'ok' => true,
+            'message' => 'Order sent to the kitchen.',
+            'order_id' => (int)$db->lastInsertId(),
             'pay_ref' => $payRef,
             'view_token' => $viewToken,
-            'status' => 'New',
-            'created_at' => $createdAt,
-        ];
-
-        add_ticket($viewToken);
-        http_response_code(201);
-        echo json_encode(['ok' => true, 'order' => $order]);
+            'total' => $built['total'],
+        ]);
     } catch (InvalidArgumentException $e) {
         http_response_code(400);
         echo json_encode(['ok' => false, 'message' => $e->getMessage()]);
@@ -84,26 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// GET /api/orders
-$tickets = $_GET['tickets'] ?? get_tickets();
+// GET: list visible orders
+$tickets = get_tickets();
 $allOrders = $db->query("SELECT * FROM orders ORDER BY id DESC")->fetchAll();
+$visible = visibleOrders($allOrders, $currentUser, $tickets);
 
-$formatted = array_map(function($r) {
-    return [
-        'id' => (int)$r['id'],
-        'guest_name' => $r['guest_name'],
-        'guest_email' => $r['guest_email'],
-        'phone' => $r['phone'] ?? '',
-        'note' => $r['note'] ?? '',
-        'items' => json_decode($r['items_json'] ?? '[]', true) ?: [],
-        'total' => (float)$r['total'],
-        'paid' => !empty($r['paid']),
-        'pay_ref' => $r['pay_ref'] ?? '',
-        'view_token' => $r['view_token'] ?? '',
-        'status' => $r['status'] ?? 'New',
-        'created_at' => $r['created_at'],
-    ];
-}, $allOrders);
-
-$visible = visibleOrders($formatted, $currentUser, $tickets);
-echo json_encode(['ok' => true, 'orders' => $visible]);
+echo json_encode([
+    'ok' => true,
+    'orders' => $visible,
+]);

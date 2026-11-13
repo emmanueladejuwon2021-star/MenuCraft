@@ -1,6 +1,8 @@
 # MenuCraft (PHP Edition)
 
 > **Note:** This is a PHP + SQLite application. It requires a PHP host (Vercel, Render, VPS, etc.). GitHub Pages cannot run the backend.
+>
+> **Important for Vercel:** SQLite database files are ephemeral on Vercel serverless functions. Data (orders, menu changes, user accounts) will not persist across deployments or cold starts. For production use with persistent data, deploy to a traditional PHP host (VPS, cPanel, Render with persistent disk, or similar) or migrate the database to a hosted SQLite-compatible service (e.g. Turso, LiteFS) or MySQL/Postgres.
 
 A digital restaurant live menu, ordering system, and kitchen management application built in PHP and SQLite.
 
