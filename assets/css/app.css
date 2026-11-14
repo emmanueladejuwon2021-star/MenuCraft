@@ -353,3 +353,41 @@ textarea:focus-visible {
 .empty-state svg {
   opacity: 0.6;
 }
+
+/* Additional autonomous UI fixes and improvements - Nov 2026 */
+
+/* Fix potential overlap of sticky elements on mobile */
+@media (max-width: 767px) {
+  .sticky.top-\[4\.25rem\] {
+    top: 4.5rem;
+  }
+  main {
+    padding-bottom: 7rem !important;
+  }
+}
+
+/* Better card image aspect ratio consistency */
+.dish-card img {
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+/* Improved focus and hover for interactive elements */
+button, .tap, a.rounded-full {
+  transition: all 0.15s ease;
+}
+
+/* Prevent text overflow in long dish names */
+.dish-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Better empty state styling */
+.empty-state {
+  background: var(--bg-paper);
+  border-radius: 1.5rem;
+  border: 1px dashed var(--border-line);
+}
