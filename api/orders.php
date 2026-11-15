@@ -11,7 +11,8 @@ $db = getDb();
 $currentUser = get_current_user_session();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Note: This endpoint is intended for the app's own frontend. Add origin/CSRF checks for public exposure.
+    require_csrf();
+    // CSRF protection for order creation
     $raw = file_get_contents('php://input');
     $body = json_decode($raw, true) ?: $_POST;
 

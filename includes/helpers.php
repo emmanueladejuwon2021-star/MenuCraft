@@ -246,9 +246,11 @@ function sync_cart_with_menu(PDO $db): array {
     }
 
     $updated = [];
+    $removed = [];
     foreach ($cart as $item) {
         $id = (int)$item['id'];
         if (!isset($byId[$id]) || empty($byId[$id]['is_available'])) {
+            $removed[] = $item['name'] ?? 'a dish';
             continue;
         }
         $row = $byId[$id];
@@ -256,6 +258,12 @@ function sync_cart_with_menu(PDO $db): array {
         $item['price'] = (float)$row['price'];
         $item['image_url'] = $row['image_url'] ?? '';
         $updated[] = $item;
+    }
+
+    if (!empty($removed)) {
+        $names = implode(', ', array_slice($removed, 0, 3));
+        if (count($removed) > 3) $names .= ' and others';
+        flash('error', "Removed from plate (sold out or unavailable): {$names}");
     }
 
     save_cart($updated);
