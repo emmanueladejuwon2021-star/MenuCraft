@@ -234,23 +234,28 @@ document.addEventListener('submit', function(e) {
   }
 });
 
-// Live menu search filter enhancement
+// Enhanced live search with debounce for better UX
 document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.querySelector('input[name="q"]');
   if (!searchInput) return;
 
+  let debounceTimer;
   searchInput.addEventListener('input', function() {
-    const term = this.value.toLowerCase().trim();
-    const cards = document.querySelectorAll('article.group');
-    let visible = 0;
-    cards.forEach(card => {
-      const name = (card.querySelector('h3')?.textContent || card.textContent || '').toLowerCase();
-      const show = term === '' || name.includes(term);
-      card.style.display = show ? '' : 'none';
-      if (show) visible++;
-    });
-    // Update count if present
-    const countEl = document.querySelector('.showing-count');
-    if (countEl) countEl.textContent = `Showing ${visible} dishes`;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const term = this.value.toLowerCase().trim();
+      const cards = document.querySelectorAll('article.group, article.dish-card');
+      let visible = 0;
+      cards.forEach(card => {
+        const text = (card.textContent || '').toLowerCase();
+        const show = term === '' || text.includes(term);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      const countEl = document.querySelector('.showing-count, .text-xs.font-bold.text-muted.bg-paper');
+      if (countEl && countEl.textContent.includes('Showing')) {
+        countEl.textContent = `Showing ${visible} ${visible === 1 ? 'dish' : 'dishes'}`;
+      }
+    }, 200);
   });
 });

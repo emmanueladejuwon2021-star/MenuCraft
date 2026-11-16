@@ -123,7 +123,7 @@ require_once __DIR__ . '/includes/header.php';
           $tags = array_filter(array_map('trim', explode(',', $item['tags'] ?? '')));
           $isAvailable = !empty($item['is_available']);
         ?>
-        <article class="group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-card shadow-soft transition-all hover:border-pine/40 hover:shadow-card">
+        <article class="group dish-card relative flex flex-col overflow-hidden rounded-3xl border border-line bg-card shadow-soft transition-all hover:border-pine/40 hover:shadow-card">
 
           <div class="relative h-48 w-full overflow-hidden bg-paper">
             <?php if (!empty($item['image_url'])): ?>
