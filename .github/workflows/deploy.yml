@@ -1,5 +1,17 @@
-# Deployment note
-# This PHP application requires a server with PHP 8.1+ and PDO SQLite.
-# GitHub Pages serves only static files and cannot run PHP.
-# Deploy to a host that supports PHP (e.g. Render, Railway, a VPS, or local php -S).
-# The previous client/ build steps were for a different frontend and have been removed.
+name: Deploy Note
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  note:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment reminder
+        run: |
+          echo "MenuCraft is a PHP + SQLite application."
+          echo "GitHub Pages cannot run PHP backends."
+          echo "Deploy to Vercel (with vercel-php), Render, Railway, a VPS, or any PHP 8.1+ host with PDO SQLite."
+          echo "See README.md for details."
