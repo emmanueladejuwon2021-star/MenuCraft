@@ -7,7 +7,16 @@ function getDb(): PDO {
         return $pdo;
     }
 
-    $dbFile = getenv('DB_PATH') ?: __DIR__ . '/../menu.db';
+    // Prefer DB_PATH env, then /tmp on serverless (Vercel), else project root
+    $dbFile = getenv('DB_PATH');
+    if (!$dbFile) {
+        if (getenv('VERCEL') || getenv('VERCEL_ENV')) {
+            $dbFile = '/tmp/menu.db';
+        } else {
+            $dbFile = __DIR__ . '/../menu.db';
+        }
+    }
+
     $isNew = !file_exists($dbFile);
 
     try {
