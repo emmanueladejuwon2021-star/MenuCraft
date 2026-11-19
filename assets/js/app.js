@@ -208,7 +208,7 @@
         return;
       }
       const link = document.createElement('a');
-      link.download = 'menucraft-qr.png');
+      link.download = 'menucraft-qr.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
       showToast('QR code downloaded', 'ok');

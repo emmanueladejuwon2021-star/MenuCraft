@@ -296,3 +296,16 @@ textarea:focus-visible {
 button, a.tap, .tap {
   transition: all 0.15s ease;
 }
+
+/* Extra UI polish */
+.dish-card {
+  will-change: transform;
+}
+.toast {
+  word-break: break-word;
+}
+@media (max-width: 640px) {
+  .toast {
+    font-size: 0.8125rem;
+  }
+}
