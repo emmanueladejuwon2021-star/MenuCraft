@@ -6,7 +6,25 @@ require_once __DIR__ . '/helpers.php';
 
 function get_current_user_session(): ?array {
     ensure_session();
-    return $_SESSION['user'] ?? null;
+    $user = $_SESSION['user'] ?? null;
+    if (!$user || empty($user['token'])) {
+        return null;
+    }
+
+    // Validate token still exists in DB (handles logout on other devices / expiry cleanup)
+    try {
+        $db = getDb();
+        $stmt = $db->prepare("SELECT 1 FROM sessions WHERE token = ? AND user_id = ?");
+        $stmt->execute([$user['token'], (int)$user['id']]);
+        if (!$stmt->fetch()) {
+            unset($_SESSION['user']);
+            return null;
+        }
+    } catch (Exception $e) {
+        // On DB error, fall back to session data to avoid locking users out
+    }
+
+    return $user;
 }
 
 function is_staff(): bool {
