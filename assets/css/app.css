@@ -1,1 +1,133 @@
-/* full CSS content here */
+/* MenuCraft Theme Variables & Component Styles */
+
+:root {
+  --color-pine: #1a7f5a;
+  --color-pine-hover: #146848;
+  --color-pine-light: #e6f4ef;
+  --color-clay: #c45c26;
+  --bg-canvas: #f7f6f3;
+  --bg-card: #ffffff;
+  --bg-paper: #f0eee9;
+  --border-line: #e4e2dc;
+  --text-ink: #1c1917;
+  --text-muted: #6b6560;
+  --color-invert: #ffffff;
+  --shadow-soft: 0 4px 14px rgba(0,0,0,0.06);
+  --shadow-card: 0 8px 28px rgba(0,0,0,0.08);
+}
+
+.dark {
+  --color-pine: #2ecc8a;
+  --color-pine-hover: #25b87a;
+  --color-pine-light: #1a3d2e;
+  --color-clay: #e07a3d;
+  --bg-canvas: #121410;
+  --bg-card: #1c1f1a;
+  --bg-paper: #252820;
+  --border-line: #33362e;
+  --text-ink: #f5f3ef;
+  --text-muted: #a39e96;
+  --color-invert: #1c1917;
+  --shadow-soft: 0 4px 14px rgba(0,0,0,0.3);
+  --shadow-card: 0 8px 28px rgba(0,0,0,0.4);
+}
+
+html { scroll-behavior: smooth; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--color-pine);
+  color: white;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+.skip-link:focus { left: 1rem; }
+
+.page-enter {
+  animation: pageEnter 0.35s ease-out;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.tap { transition: transform 0.1s ease, background-color 0.15s; }
+.tap:active { transform: scale(0.97); }
+
+.btn-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+.btn-loading::after {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: 0.4em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: -0.15em;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#toast-container {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 22rem;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: var(--bg-card);
+  color: var(--text-ink);
+  border: 1px solid var(--border-line);
+  box-shadow: var(--shadow-card);
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: toastIn 0.25s ease-out;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast.ok { border-left: 4px solid var(--color-pine); }
+.toast.error { border-left: 4px solid #dc2626; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.img-fallback {
+  min-height: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-paper);
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  border-radius: 0.75rem;
+}
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Focus styles for accessibility */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--color-pine);
+  outline-offset: 2px;
+}
