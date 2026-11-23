@@ -136,10 +136,10 @@
     }
   };
 
-  // ---------- Stock toggle ----------
+  // ---------- Stock toggle (in-place UI update) ----------
   window.toggleStock = async function (id, name, button) {
     if (!button) return;
-    const isCurrentlyOn = button.getAttribute('data-available') === '1' || button.classList.contains('bg-pine');
+    const isCurrentlyOn = button.classList.contains('bg-pine');
     const newAvailable = isCurrentlyOn ? 0 : 1;
 
     const formData = new FormData();
@@ -164,14 +164,45 @@
 
       if (res.ok && data.ok) {
         showToast(data.message || (newAvailable ? `${name} marked in stock` : `${name} marked sold out`), 'ok');
-        setTimeout(() => location.reload(), 600);
+
+        // Update UI in place
+        const dot = button.querySelector('.stock-dot');
+        const label = document.getElementById(`stock-label-${id}`);
+        if (newAvailable) {
+          button.classList.add('border-pine', 'bg-pine');
+          button.classList.remove('border-line', 'bg-card');
+          if (dot) {
+            dot.classList.add('ml-auto', 'bg-white', 'text-pine');
+            dot.classList.remove('ml-0', 'bg-ink', 'text-canvas');
+            dot.textContent = 'ON';
+          }
+          if (label) {
+            label.className = 'text-xs font-bold mt-0.5 text-pine';
+            label.textContent = '\u25cf In stock';
+          }
+          button.setAttribute('aria-pressed', 'true');
+          button.setAttribute('aria-label', `Mark ${name} sold out`);
+        } else {
+          button.classList.remove('border-pine', 'bg-pine');
+          button.classList.add('border-line', 'bg-card');
+          if (dot) {
+            dot.classList.remove('ml-auto', 'bg-white', 'text-pine');
+            dot.classList.add('ml-0', 'bg-ink', 'text-canvas');
+            dot.textContent = 'OFF';
+          }
+          if (label) {
+            label.className = 'text-xs font-bold mt-0.5 text-danger';
+            label.textContent = '\u25cb Sold out';
+          }
+          button.setAttribute('aria-pressed', 'false');
+          button.setAttribute('aria-label', `Put ${name} back in stock`);
+        }
       } else {
         showToast(data.message || 'Could not update stock.', 'error');
-        button.classList.remove('btn-loading');
-        button.disabled = false;
       }
     } catch (err) {
       showToast('Network error. Please try again.', 'error');
+    } finally {
       button.classList.remove('btn-loading');
       button.disabled = false;
     }
