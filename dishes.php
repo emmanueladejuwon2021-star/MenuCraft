@@ -166,7 +166,7 @@ require_once __DIR__ . '/includes/header.php';
               <p class="text-sm font-bold text-pine mt-1"><?= money($settings['currency_symbol'], $dish['price']) ?> · <?= (int)$dish['prep_time'] ?> min · <?= htmlspecialchars($dish['tags'] ?: 'No tags') ?></p>
             </div>
             <div class="flex gap-2 shrink-0">
-              <button type="button" onclick="openEdit(<?= (int)$dish['id'] ?>, <?= htmlspecialchars(json_encode($dish), ENT_QUOTES) ?>)" class="tap rounded-full border border-line px-4 py-1.5 text-xs font-bold">Edit</button>
+              <button type="button" onclick="openEditModal(<?= (int)$dish['id'] ?>, <?= htmlspecialchars(json_encode($dish), ENT_QUOTES) ?>)" class="tap rounded-full border border-line px-4 py-1.5 text-xs font-bold">Edit</button>
               <form method="POST" class="inline" onsubmit="return confirm('Remove this dish permanently?');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete_dish">
@@ -207,36 +207,77 @@ require_once __DIR__ . '/includes/header.php';
   <?php endif; ?>
 </section>
 
-<!-- Simple edit modal via JS (inline for self-contained) -->
-<script>
-function openEdit(id, dish) {
-  const name = prompt('Dish name:', dish.name);
-  if (name === null || name.trim() === '') return;
-  const price = prompt('Price:', dish.price);
-  if (price === null || isNaN(parseFloat(price))) return;
-  const desc = prompt('Description:', dish.description || '');
-  const tags = prompt('Tags:', dish.tags || '');
-  const prep = prompt('Prep time (minutes):', dish.prep_time || 10);
-  const image = prompt('Image URL:', dish.image_url || '');
+<!-- Edit Dish Modal -->
+<div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-lg rounded-3xl border border-line bg-card p-6 shadow-card">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-ink">Edit Dish</h3>
+      <button type="button" onclick="closeEditModal()" class="text-muted hover:text-ink text-2xl leading-none">&times;</button>
+    </div>
+    <form id="edit-form" method="POST" class="space-y-3">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="edit_dish">
+      <input type="hidden" name="id" id="edit-id">
+      <input type="hidden" name="category_id" id="edit-category">
 
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.innerHTML = `
-    <?= csrf_field() ?>
-    <input type="hidden" name="action" value="edit_dish">
-    <input type="hidden" name="id" value="${id}">
-    <input type="hidden" name="category_id" value="${dish.category_id}">
-    <input type="hidden" name="name" value="${name.replace(/"/g, '"')}">
-    <input type="hidden" name="price" value="${parseFloat(price)}">
-    <input type="hidden" name="description" value="${(desc || '').replace(/"/g, '"')}">
-    <input type="hidden" name="tags" value="${(tags || '').replace(/"/g, '"')}">
-    <input type="hidden" name="prep_time" value="${parseInt(prep) || 10}">
-    <input type="hidden" name="image_url" value="${(image || '').replace(/"/g, '"')}">
-    <input type="hidden" name="is_available" value="${dish.is_available ? '1' : '0'}">
-  `;
-  document.body.appendChild(form);
-  form.submit();
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Name</label>
+        <input type="text" name="name" id="edit-name" required class="w-full rounded-xl border border-line px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Price</label>
+        <input type="number" name="price" id="edit-price" step="0.01" min="0" required class="w-full rounded-xl border border-line px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Description</label>
+        <textarea name="description" id="edit-desc" rows="2" class="w-full rounded-xl border border-line px-3 py-2 text-sm"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Tags</label>
+        <input type="text" name="tags" id="edit-tags" class="w-full rounded-xl border border-line px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Prep time (min)</label>
+        <input type="number" name="prep_time" id="edit-prep" min="1" max="180" class="w-full rounded-xl border border-line px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-ink mb-1">Image URL</label>
+        <input type="url" name="image_url" id="edit-image" class="w-full rounded-xl border border-line px-3 py-2 text-sm">
+      </div>
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="is_available" id="edit-available" value="1" class="rounded"> Available
+      </label>
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="tap flex-1 rounded-full bg-pine px-5 py-2.5 text-sm font-bold text-white">Save Changes</button>
+        <button type="button" onclick="closeEditModal()" class="tap flex-1 rounded-full border border-line px-5 py-2.5 text-sm font-bold">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditModal(id, dish) {
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-category').value = dish.category_id;
+  document.getElementById('edit-name').value = dish.name || '';
+  document.getElementById('edit-price').value = dish.price || '';
+  document.getElementById('edit-desc').value = dish.description || '';
+  document.getElementById('edit-tags').value = dish.tags || '';
+  document.getElementById('edit-prep').value = dish.prep_time || 10;
+  document.getElementById('edit-image').value = dish.image_url || '';
+  document.getElementById('edit-available').checked = !!dish.is_available;
+  document.getElementById('edit-modal').classList.remove('hidden');
+  document.getElementById('edit-modal').classList.add('flex');
 }
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.add('hidden');
+  document.getElementById('edit-modal').classList.remove('flex');
+}
+// Close on backdrop click
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
