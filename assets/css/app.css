@@ -131,3 +131,43 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   outline: 2px solid var(--color-pine);
   outline-offset: 2px;
 }
+
+/* Additional UI polish for better touch, spacing, and kitchen use */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.stock-switch {
+  min-width: 5.5rem;
+}
+
+/* Better empty states */
+.empty-state {
+  background: var(--bg-card);
+  border: 1px dashed var(--border-line);
+}
+
+/* Improve mobile bottom nav safe area */
+@supports (padding: max(0px)) {
+  nav.sticky.bottom-0 {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Stronger primary buttons */
+.btn-primary {
+  background: var(--color-pine);
+  color: white;
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--color-pine-hover); }
+.btn-primary:active { transform: scale(0.97); }
+
+/* Sold out overlay more prominent */
+.sold-out-overlay {
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(2px);
+}
