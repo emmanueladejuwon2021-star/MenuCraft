@@ -21,6 +21,14 @@ $currentUser = get_current_user_session();
   <title><?= htmlspecialchars($settings['restaurant_name']) ?> — Digital Menu & Ordering</title>
   <meta name="description" content="Order from <?= htmlspecialchars($settings['restaurant_name']) ?> live digital menu. Fresh dishes, real-time stock, table QR ordering. No app needed.">
   <meta name="theme-color" content="#1a7f5a">
+  <script>
+    (function(){
+      try {
+        var t = localStorage.getItem("menucraft-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        if (t === "dark") document.documentElement.classList.add("dark");
+      } catch(e){}
+    })();
+  </script>
   <meta property="og:title" content="<?= htmlspecialchars($settings['restaurant_name']) ?> — Live Digital Menu">
   <meta property="og:description" content="Browse today’s menu, add to your plate, and track your order in real time.">
   <meta property="og:type" content="website">

@@ -92,7 +92,7 @@ require_once __DIR__ . '/includes/kitchen_nav.php';
                 aria-pressed="<?= $isAvail ? 'true' : 'false' ?>"
                 aria-label="<?= $isAvail ? 'Mark ' . htmlspecialchars($item['name']) . ' sold out' : 'Put ' . htmlspecialchars($item['name']) . ' back in stock' ?>"
                 onclick="toggleStock(<?= (int)$item['id'] ?>, <?= json_encode($item['name']) ?>, this)"
-                class="tap relative flex h-11 w-20 shrink-0 items-center rounded-full border p-1 transition-colors duration-200 cursor-pointer <?= $isAvail ? 'border-pine bg-pine' : 'border-line bg-card' ?>"
+                class="tap stock-switch relative flex h-12 w-24 shrink-0 items-center rounded-full border p-1 transition-colors duration-200 cursor-pointer <?= $isAvail ? 'border-pine bg-pine' : 'border-line bg-card' ?>"
               >
                 <span class="stock-dot flex h-9 w-9 items-center justify-center rounded-full shadow-md font-extrabold text-xs transition-all duration-200 <?= $isAvail ? 'ml-auto bg-white text-pine' : 'ml-0 bg-ink text-canvas' ?>">
                   <?= $isAvail ? 'ON' : 'OFF' ?>
