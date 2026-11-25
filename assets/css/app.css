@@ -131,3 +131,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   outline: 2px solid var(--color-pine);
   outline-offset: 2px;
 }
+
+/* Fix missing danger color */
+.text-danger {
+  color: #dc2626;
+}
+.dark .text-danger {
+  color: #f87171;
+}
+
+/* Mobile toast positioning to avoid bottom nav */
+@media (max-width: 767px) {
+  #toast-container {
+    bottom: 5.5rem;
+    right: 1rem;
+    left: 1rem;
+    max-width: none;
+  }
+}
