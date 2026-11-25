@@ -278,6 +278,11 @@ function closeEditModal() {
 document.getElementById('edit-modal').addEventListener('click', function(e) {
   if (e.target === this) closeEditModal();
 });
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape" && !document.getElementById("edit-modal").classList.contains("hidden")) {
+    closeEditModal();
+  }
+});
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
