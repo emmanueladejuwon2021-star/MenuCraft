@@ -56,8 +56,8 @@ $currentUser = get_current_user_session();
       }
     }
   </script>
-  <link rel="stylesheet" href="assets/css/app.css">
-  <script src="assets/js/app.js" defer></script>
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <script src="/assets/js/app.js" defer></script>
 </head>
 <body class="flex min-h-full flex-col bg-canvas text-ink antialiased selection:bg-pine selection:text-white">
   <a href="#main-content" class="skip-link">Skip to main content</a>
