@@ -149,3 +149,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     max-width: none;
   }
 }
+
+/* Additional UI polish for better mobile and accessibility */
+@media (max-width: 767px) {
+  .dish-card {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Ensure high contrast for sold out */
+.sold-out-overlay {
+  background: rgba(0,0,0,0.6);
+}
