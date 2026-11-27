@@ -150,6 +150,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   }
 }
 
+/* Better disabled button states */
+button:disabled, .disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Smooth transitions for interactive elements */
+.tap, button, a {
+  transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+
 /* Additional UI polish for better mobile and accessibility */
 @media (max-width: 767px) {
   .dish-card {
