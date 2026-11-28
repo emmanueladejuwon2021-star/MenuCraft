@@ -161,3 +161,34 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .sold-out-overlay {
   background: rgba(0,0,0,0.6);
 }
+
+/* Enhanced UI polish */
+.dish-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dish-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-primary {
+  background: var(--color-pine);
+  color: white;
+  transition: background 0.15s;
+}
+.btn-primary:hover {
+  background: var(--color-pine-hover);
+}
+
+/* Better mobile bottom nav spacing */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 4.5rem;
+  }
+}
+
+/* Improved focus for dark mode */
+.dark button:focus-visible,
+.dark a:focus-visible {
+  outline-color: var(--color-pine);
+}
